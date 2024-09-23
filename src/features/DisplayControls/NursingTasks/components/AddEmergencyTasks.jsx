@@ -461,7 +461,7 @@ const AddEmergencyTasks = (props) => {
       <SideBarPanel
         title={
           <FormattedMessage
-            id="ADD_NURSING TASK"
+            id="ADD_NURSING_TASK"
             defaultMessage={"Add Nursing Task"}
           />
         }
