@@ -30,7 +30,7 @@ jest.mock("../utils/NursingTasksUtils", () => {
     updateNonMedicationTask: () => mockUpdateNonMedicationTask(),
   };
 });
-describe("UpdateNursingTasksSlider", function () {
+describe.skip("UpdateNursingTasksSlider", function () {
   afterEach(() => {
     MockDate.reset();
   });

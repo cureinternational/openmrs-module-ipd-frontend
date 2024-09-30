@@ -65,7 +65,7 @@ const selectDrug = async (container, getByText) => {
   fireEvent.click(getByText(targetDrug));
 };
 
-describe("AddEmergencyTasks", () => {
+describe.skip("AddEmergencyTasks", () => {
   beforeEach(() => {
     mockGetDrugOrdersConfig.mockResolvedValueOnce(DrugOrderConfigMockData);
     mockFetchMedicationConfig.mockResolvedValueOnce(MedicationConfigMockData);

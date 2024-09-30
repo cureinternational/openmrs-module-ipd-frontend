@@ -45,6 +45,7 @@ import {
 } from "../../DrugChart/utils/DrugChartUtils";
 import { displayShiftTimingsFormat } from "../../../../constants";
 import WarningIcon from "../../../../icons/warning.svg";
+import { IntlProvider } from "react-intl";
 import { isUserPrivileged } from "../../../../utils/CommonUtils";
 export default function NursingTasks(props) {
   const { patientId } = props;
@@ -565,15 +566,17 @@ export default function NursingTasks(props) {
         />
       )}
       {isSliderOpen.emergencyTasks && (
-        <AddEmergencyTasks
-          patientId={patientId}
-          providerId={provider.uuid}
-          updateEmergencyTasksSlider={updateEmergencyTasksSlider}
-          setShowNotification={setShowNotification}
-          setNotificationMessage={setNotificationMessage}
-          setNotificationStatus={setNotificationStatus}
-          disabled={isReadMode}
-        />
+        <IntlProvider>
+          <AddEmergencyTasks
+            patientId={patientId}
+            providerId={provider.uuid}
+            updateEmergencyTasksSlider={updateEmergencyTasksSlider}
+            setShowNotification={setShowNotification}
+            setNotificationMessage={setNotificationMessage}
+            setNotificationStatus={setNotificationStatus}
+            disabled={isReadMode}
+          />
+        </IntlProvider>
       )}
       {isLoading ? (
         <div className="loading-parent" data-testid="loading-icon">
