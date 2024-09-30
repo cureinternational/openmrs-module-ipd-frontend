@@ -566,7 +566,6 @@ export default function NursingTasks(props) {
         />
       )}
       {isSliderOpen.emergencyTasks && (
-        <IntlProvider>
           <AddEmergencyTasks
             patientId={patientId}
             providerId={provider.uuid}
@@ -576,7 +575,6 @@ export default function NursingTasks(props) {
             setNotificationStatus={setNotificationStatus}
             disabled={isReadMode}
           />
-        </IntlProvider>
       )}
       {isLoading ? (
         <div className="loading-parent" data-testid="loading-icon">
