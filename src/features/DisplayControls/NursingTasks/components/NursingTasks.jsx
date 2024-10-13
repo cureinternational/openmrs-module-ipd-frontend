@@ -290,20 +290,20 @@ export default function NursingTasks(props) {
             isReadMode
           );
           const filteredData = extractedData
-          .map((extract) =>
-            extract.filter((data) => {
-              return !(
-                data.serviceType == asNeededPlaceholderConceptName &&
-                data.endTimeInEpochSeconds <= startEndDates.endDate
-              );
-            })
-          )
-          .filter((innerArray) => innerArray.length > 0);
-        setMedicationNursingTasks(
-          extractedNonMedicationTasks.length > 0
-            ? [...filteredData, ...extractedNonMedicationTasks]
-            : filteredData
-        );
+            .map((extract) =>
+              extract.filter((data) => {
+                return !(
+                  data.serviceType == asNeededPlaceholderConceptName &&
+                  data.endTimeInEpochSeconds <= startEndDates.endDate
+                );
+              })
+            )
+            .filter((innerArray) => innerArray.length > 0);
+          setMedicationNursingTasks(
+            extractedNonMedicationTasks.length > 0
+              ? [...filteredData, ...extractedNonMedicationTasks]
+              : filteredData
+          );
         }
         setIsLoading(false);
         setIsShiftsButtonsDisabled({
