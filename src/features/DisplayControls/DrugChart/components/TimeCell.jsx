@@ -153,7 +153,7 @@ export default function TimeCell(props) {
                 }}
                 onBlur={(e) => e.target.blur()}
               >
-                Acknowledge Notes
+                Acknowledge Note
               </Button>
             </div>
           </div>
