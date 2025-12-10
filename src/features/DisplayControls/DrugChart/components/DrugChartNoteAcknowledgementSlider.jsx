@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import { TextArea, Toggle } from "carbon-components-react";
 import PropTypes from "prop-types";
 import { FormattedMessage } from "react-intl";
@@ -77,7 +77,7 @@ const DrugChartNoteAcknowledgementSlider = (props) => {
   const sliderTitle = (
     <FormattedMessage
       id="ACKNOWLEDGEMENT_NOTES_HEADER"
-      defaultMessage="Acknowledge Amendment"
+      defaultMessage="Acknowledge Amend Note"
     />
   );
 
