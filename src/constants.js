@@ -154,3 +154,8 @@ export const GenericErrorMessage = "Technical error";
 export const errorCodes = {
   FORBIDDEN: 403,
 };
+
+export const privilegeConstants = {
+  APPROVE_AMEND_NOTE: "Approve Amend Note",
+
+}
