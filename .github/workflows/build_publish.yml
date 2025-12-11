@@ -65,7 +65,7 @@ jobs:
     env:
       EVENT_TYPE: bahmni-ipd-microfrontend-event
       ORG_NAME: cureinternational
-      REPOSITORY_NAME: openmrs-module-ipd-frontend
+      REPOSITORY_NAME: cure-bahmni-docker
     steps:
       - name: Create repository_dispatch
         run: |
