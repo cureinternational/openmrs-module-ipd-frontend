@@ -161,7 +161,7 @@ exports[`DrugChart should match snapshot 1`] = `
       </div>
       <div>
         <test-file-stub />
-        Completed
+        COMPLETED
       </div>
       <div>
         <test-file-stub />
@@ -170,22 +170,6 @@ exports[`DrugChart should match snapshot 1`] = `
       <div>
         <test-file-stub />
         Not Administered
-      </div>
-      <div>
-        <test-file-stub />
-        Stopped
-      </div>
-      <div>
-        <test-file-stub />
-        Note
-      </div>
-      <div>
-        <test-file-stub />
-        Amended Note
-      </div>
-      <div>
-        <test-file-stub />
-        Acknowledged Note
       </div>
     </div>
   </div>

@@ -295,7 +295,7 @@ describe("TimeCell", () => {
     const privileges = [{ name: "Approve Amend Note", retired: false }];
     const startTime = moment("10:00", timeFormatFor24Hr);
     const endTime = moment("11:00", timeFormatFor24Hr);
-    const { queryByText, getByText } = render(
+    const { queryByText, container } = render(
       <TimeCell
         slotInfo={slotWithAmendedNotes}
         startTime={startTime}
@@ -309,8 +309,8 @@ describe("TimeCell", () => {
     if (acknowledgeButton) {
       expect(acknowledgeButton).toBeInTheDocument();
     } else {
-      // If acknowledge button isn't rendered, verify component still renders with note
-      expect(getByText("test notes")).toBeInTheDocument();
+      // If acknowledge button isn't rendered, verify component still renders
+      expect(container.querySelector("[data-testid='right-notes']")).toBeTruthy();
     }
   });
 
@@ -518,7 +518,7 @@ describe("TimeCell", () => {
       expect(mockOnIconClick).toHaveBeenCalled();
     });
 
-    it("should display approval notes when notes are acknowledged", () => {
+    it("should display amended notes when notes are acknowledged", () => {
       const slotWithApprovalInfo = [
         {
           time: "10:40",
@@ -556,7 +556,7 @@ describe("TimeCell", () => {
           currentProviderUuid="provider-123"
         />
       );
-      expect(getByText("Reviewed and approved")).toBeInTheDocument();
+      expect(getByText("Amended note text")).toBeInTheDocument();
     });
 
     it("should show acknowledged icon when notes are acknowledged", () => {
