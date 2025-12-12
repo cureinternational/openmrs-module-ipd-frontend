@@ -4,14 +4,19 @@ import { FormattedMessage } from "react-intl";
 import { I18nProvider } from "../../../i18n/I18nProvider";
 import SideBarPanel from "../../../SideBarPanel/components/SideBarPanel";
 import { SliderContext } from "../../../../context/SliderContext";
+import { IPDContext } from "../../../../context/IPDContext";
 import { NoteTile } from "./NoteTile";
 
 const NotesHistorySlider = (props) => {
   const { hostData, hostApi } = props;
-  const { setSliderContentModified } = useContext(SliderContext);
   const amendedText = hostData.amendedNotes?.map(note => note.amendedText).join('\n\n');
   const amendedReason = hostData.amendedNotes?.map(note => note.amendedReason).join('\n\n');
   const acknowledgedText = hostData.amendedNotes?.map(note => note.approvalNotes).join('\n\n');
+  
+  // Extract the name of person who acknowledged
+  const acknowledgedByName = hostData.amendedNotes?.find(
+    note => note.approvalStatus === "APPROVED" && note.approvedBy
+  )?.approvedBy?.display || hostData.performerName;
 
   const handleClose = () => {
     hostApi.onModalClose?.();
@@ -41,7 +46,7 @@ const NotesHistorySlider = (props) => {
                   tagLabel="Acknowledged"
                   tagType="green"
                   scheduledTime={hostData.scheduledTime}
-                  performerName={hostData.performerName}
+                  performerName={acknowledgedByName}
                   noteText={acknowledgedText}
               />
 
@@ -52,7 +57,7 @@ const NotesHistorySlider = (props) => {
                   performerName={hostData.performerName}
                   noteText={amendedText}
                   noteReason={amendedReason}
-                />
+              />
 
               <NoteTile
                 tagLabel="Original"

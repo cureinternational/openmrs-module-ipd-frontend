@@ -118,9 +118,18 @@ export default function TimeCell(props) {
             
     return (
       <div className="tooltip-content">
-        {notes && !isAcknowledged && (
+        {!isAcknowledged && (
           <div>
-            <div className="tooltip-notes">{notes}</div>
+            {(isNoteCreator(slot)||canAcknowledgeAmendment(privileges)) ? (
+              // For note creator: show amended text if it exists, otherwise show original notes
+              <div className="tooltip-notes">
+                {amendedText || notes}
+              </div>
+            ) : (
+              // For non-note creator: always show original notes
+              <div className="tooltip-notes">{notes}</div>
+            )}
+           
             {config?.drugChartNoteAmendment?.isAmendFeatureEnabled && showAmendButton && (
               <div className="tooltip-actions">
                 <Button

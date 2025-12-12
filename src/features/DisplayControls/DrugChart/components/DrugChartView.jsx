@@ -37,6 +37,7 @@ import {
 import WarningIcon from "../../../../icons/warning.svg";
 import DrugChartNoteAmendmentSlider from "./DrugChartNoteAmendmentSlider";
 import DrugChartNoteAcknowledgementSlider from "./DrugChartNoteAcknowledgementSlider";
+import NotesHistorySlider from "./NotesHistorySlider";
 import { SideBarPanelClose } from "../../../SideBarPanel/components/SideBarPanelClose";
 import Notification from "../../../../components/Notification/Notification";
 import RefreshDisplayControl from "../../../../context/RefreshDisplayControl";
