@@ -109,24 +109,15 @@ export default function TimeCell(props) {
             slot?.originalSlot?.administrationSummary?.approvalStatus ===
             "APPROVED";
             
-    const acknowledgedText = hasAmendedNotes
-      ? amendedNotes
-          .filter(note => note?.approvalNotes)
-          .map(note => note.approvalNotes)
-          .join('\n\n')
-      : null;
-            
     return (
       <div className="tooltip-content">
         {!isAcknowledged && (
           <div>
             {(isNoteCreator(slot)||canAcknowledgeAmendment(privileges)) ? (
-              // For note creator: show amended text if it exists, otherwise show original notes
-              <div className="tooltip-notes">
+               <div className="tooltip-notes">
                 {amendedText || notes}
               </div>
             ) : (
-              // For non-note creator: always show original notes
               <div className="tooltip-notes">{notes}</div>
             )}
            
@@ -156,7 +147,6 @@ export default function TimeCell(props) {
         )}
         {amendedText && !isAcknowledged && canAcknowledgeAmendment(privileges) && (
           <div>
-            <div className="tooltip-notes">{amendedText}</div>
             {!isNoteCreator(slot) && (
             <div className="tooltip-actions">
               <Button
@@ -180,8 +170,11 @@ export default function TimeCell(props) {
         )}
         {isAcknowledged && (
           <div>
-            <div className="tooltip-notes">{acknowledgedText}</div>
-              <div className="tooltip-actions">
+            <div className="tooltip-notes">
+              <div>Amend Note:</div>
+              <div style={{ marginTop: "8px" }}>{amendedText}</div>
+            </div>
+            <div className="tooltip-actions">
               <Button
                 kind="ghost"
                 size="sm"
