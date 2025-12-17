@@ -27,8 +27,7 @@ export const ADMINISTERED_MEDICATIONS_BASE_URL =
   RESTWS_V1 + "/ipd/scheduledMedicationAdministrations";
 export const EMERGENCY_MEDICATIONS_BASE_URL =
   RESTWS_V1 + "/ipd/adhocMedicationAdministrations";
-export const MEDICATION_ADMINISTRATION_NOTE_URL =
-  RESTWS_V1 + "/ipd/amendNotes";
+export const MEDICATION_ADMINISTRATION_NOTE_URL = RESTWS_V1 + "/ipd/amendNotes";
 export const BOOKMARK_PATIENT_BASE_URL =
   RESTWS_V1 + "/ipd/careteam/participants";
 export const PATIENT_URL = RESTWS_V1 + "/patient";
@@ -157,5 +156,10 @@ export const errorCodes = {
 
 export const privilegeConstants = {
   APPROVE_AMEND_NOTE: "Approve Amend Note",
+};
 
-}
+export const sliderTypes = {
+  AMENDMENT: "amendment",
+  ACKNOWLEDGEMENT: "acknowledgement",
+  HISTORY: "history",
+};

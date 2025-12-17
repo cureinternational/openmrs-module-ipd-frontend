@@ -7,7 +7,7 @@ import {
   performerFunction,
   asNeededPlaceholderConceptName,
   timeFormatFor24Hr,
-  privilegeConstants
+  privilegeConstants,
 } from "../../../../constants";
 import _ from "lodash";
 import { FormattedMessage } from "react-intl";
@@ -115,12 +115,7 @@ export const transformDrugOrders = (orders) => {
 };
 
 export const saveMedicationAmendmentNote = async (amendmentData) => {
-  const {
-    noteUuid,
-    amendedReason,
-    amendedText,
-    amendedByUuid,
-  } = amendmentData;
+  const { noteUuid, amendedReason, amendedText, amendedByUuid } = amendmentData;
 
   const payload = {
     amendedReason: amendedReason,
@@ -139,12 +134,11 @@ export const saveMedicationAmendmentNote = async (amendmentData) => {
   }
 };
 
-export const saveMedicationAcknowledgementNote = async (acknowledgementData) => {
-  const {
-    noteUuid,
-    acknowledgementNotes,
-    acknowledgedByUuid,
-  } = acknowledgementData;
+export const saveMedicationAcknowledgementNote = async (
+  acknowledgementData
+) => {
+  const { noteUuid, acknowledgementNotes, acknowledgedByUuid } =
+    acknowledgementData;
 
   const payload = {
     approvalStatus: APPROVAL_STATUS.APPROVED,
@@ -501,4 +495,9 @@ export const canAcknowledgeAmendment = (privileges = []) => {
   return privileges.some(
     (privilege) => privilegeConstants.APPROVE_AMEND_NOTE === privilege.name
   );
+};
+
+export const extractNameFromDisplay = (display) => {
+  if (!display) return "";
+  return display.includes(" - ") ? display.split(" - ")[1] : display;
 };
