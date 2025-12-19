@@ -496,7 +496,7 @@ export const setCurrentShiftTimes = (
 export const canAcknowledgeAmendment = (privileges = []) => {
   if (!Array.isArray(privileges)) return false;
   return privileges.some(
-    (privilege) => privilegeConstants.APPROVE_AMEND_NOTE === privilege.name
+    (privilege) => privilegeConstants.ADT_APPROVE_AMEND_NOTE === privilege.name
   );
 };
 

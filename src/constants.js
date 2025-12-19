@@ -155,7 +155,7 @@ export const errorCodes = {
 };
 
 export const privilegeConstants = {
-  APPROVE_AMEND_NOTE: "Approve Amend Note",
+  ADT_APPROVE_AMEND_NOTE: "app:adt:approveAmendNote",
 };
 
 export const sliderTypes = {
