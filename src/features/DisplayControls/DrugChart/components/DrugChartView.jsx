@@ -50,6 +50,9 @@ const NoMedicationTaskMessage = (
   />
 );
 
+const SCROLL_TO_SECTION_DELAY_MS = 700;
+const DEEP_LINK_BUFFER_MILLISECONDS = 5;
+
 export default function DrugChartWrapper(props) {
   const { patientId } = props;
   const {
@@ -343,8 +346,8 @@ export default function DrugChartWrapper(props) {
           Number(deepLinkParams.medicationAdministrationEpoch) / 1000;
         const response = await fetchMedications(
           patientId,
-          epochTime - 5,
-          epochTime + 5,
+          epochTime - DEEP_LINK_BUFFER_MILLISECONDS,
+          epochTime + DEEP_LINK_BUFFER_MILLISECONDS,
           visit
         );
 
@@ -357,10 +360,8 @@ export default function DrugChartWrapper(props) {
           return;
         }
 
-        // Get medication data from response
         const medicationData = response.data;
         if (!medicationData || medicationData.length === 0) {
-          console.warn("No medication data found for the given epoch time");
           return;
         }
 
@@ -370,10 +371,8 @@ export default function DrugChartWrapper(props) {
           drugChart
         );
 
-        // Search for the slot with matching note UUID
         let foundSlot = null;
         let foundRowData = null;
-
         for (const medication of transformedMedications) {
           const slot = medication.slots?.find((s) =>
             s.medicationAdministration?.notes?.some(
@@ -409,11 +408,10 @@ export default function DrugChartWrapper(props) {
         }));
         updateAcknowledgementSlider(true);
 
-        // Scroll to Drug Chart section
         if (scrollToSection) {
           setTimeout(() => {
             scrollToSection(componentKeys.DRUG_CHART);
-          }, 700);
+          }, SCROLL_TO_SECTION_DELAY_MS);
         }
 
         clearDeepLinkParams();

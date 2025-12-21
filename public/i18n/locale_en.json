@@ -246,6 +246,5 @@
   "UNDO_DISCHARGE": "Undo Discharge",
   "NOTE_AMENDMENT_SAVED_SUCCESS": "Amendment note saved successfully",
   "NOTE_ACKNOWLEDGEMENT_SAVED_SUCCESS": "Acknowledgement is successful",
-  "NO_PRIVILEGE_TO_ACKNOWLEDGE": "You do not have the required privilege to acknowledge medication amendments. Please contact your administrator.",
   "INSUFFICIENT_PRIVILEGE_TO_ACKNOWLEDGE": "Insufficient Acknowledge Privilege"
 }
