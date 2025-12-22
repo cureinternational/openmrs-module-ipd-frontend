@@ -94,6 +94,7 @@ describe("Allergies", () => {
       expect(screen.getByRole(/table/i)).toBeInTheDocument();
     });
 
+    // Check Severe severity (weight -1) - appears first
     expect(screen.getAllByTestId("table-body-row")[0]).toHaveTextContent(
       "Beef"
     );
@@ -105,6 +106,27 @@ describe("Allergies", () => {
     );
     expect(screen.getAllByTestId("table-body-row")[1]).toHaveTextContent(
       "Severe"
+    );
+
+    // Check Moderate severity (weight 0) - appears second
+    expect(screen.getAllByTestId("table-body-row")[2]).toHaveTextContent(
+      "Dust"
+    );
+    expect(screen.getAllByTestId("table-body-row")[2]).toHaveTextContent(
+      "Moderate"
+    );
+
+    // Check Mild severity (weight 1) - appears third
+    expect(screen.getAllByTestId("table-body-row")[3]).toHaveTextContent(
+      "Wheat"
+    );
+    expect(screen.getAllByTestId("table-body-row")[3]).toHaveTextContent(
+      "Mild"
+    );
+
+    // Check No Known Allergy (weight 2) - appears last
+    expect(screen.getAllByTestId("table-body-row")[4]).toHaveTextContent(
+      "No Known Allergy"
     );
   });
 

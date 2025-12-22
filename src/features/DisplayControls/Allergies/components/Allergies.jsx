@@ -39,7 +39,7 @@ const Allergies = (props) => {
           allergy?.resource?.recordedDate
         );
         const allergyData = {
-          allergen: allergy.resource.code.coding[0].display,
+          allergen: allergy.resource.code?.coding[0]?.display,
           id: allergy.resource.id,
           severity: getSeverity(allergy.resource.criticality),
           reaction: getAllergyReactions(allergy.resource.reaction),
@@ -62,13 +62,15 @@ const Allergies = (props) => {
   const getSortingWait = (severity) => {
     if (severity === "Severe") return -1;
     if (severity === "Moderate") return 0;
-    return 1;
+    if (severity === "Mild") return 1;
+    return 2;
   };
 
   const getSeverity = (criticality) => {
     if (criticality == "unable-to-assess") return "Moderate";
     else if (criticality == "high") return "Severe";
-    else return "Mild";
+    else if (criticality == "low") return "Mild";
+    else return "";
   };
 
   const getComments = (notes) =>
@@ -77,7 +79,7 @@ const Allergies = (props) => {
   const getAllergyReactions = (reactions) => {
     let allergyReactions = "";
     if (reactions && reactions.length > 0) {
-      reactions[0].manifestation.map((reaction) => {
+      reactions[0].manifestation?.map((reaction) => {
         allergyReactions =
           allergyReactions != ""
             ? `${allergyReactions}, ${reaction.coding[0].display}`
