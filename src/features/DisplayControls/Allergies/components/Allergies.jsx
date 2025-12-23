@@ -46,7 +46,7 @@ const Allergies = (props) => {
           comments: getComments(allergy.resource.note),
           sortWeight: getSortingWait(getSeverity(allergy.resource.criticality)),
           provider: allergy.resource.recorder.display,
-          date: formatDate(recordedDate)
+          date: formatDate(recordedDate),
         };
 
         if (
@@ -138,10 +138,7 @@ const Allergies = (props) => {
     {
       key: "date",
       header: (
-        <FormattedMessage
-          id={"DATE_COLUMN_HEADER"}
-          defaultMessage={`Date`}
-        />
+        <FormattedMessage id={"DATE_COLUMN_HEADER"} defaultMessage={`Date`} />
       ),
     },
   ];
@@ -185,19 +182,34 @@ const Allergies = (props) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row, index) => (
-              <TableRow
-                key={index + row.id}
-                {...getRowProps({ row })}
-                data-testid="table-body-row"
-              >
-                {row.cells.map((cell) => (
-                  <TableCell key={cell.id} className={"high-severity-color"}>
-                    {cell.value}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
+            {rows.map((row, index) => {
+              const isNoKnownAllergy = row.cells.some(
+                (cell) =>
+                  cell.info.header === "allergen" &&
+                  cell.value?.toLowerCase() === "no known allergy"
+              );
+              const shouldStrikethrough = rows.length > 1 && isNoKnownAllergy;
+              return (
+                <TableRow
+                  key={index + row.id}
+                  {...getRowProps({ row })}
+                  data-testid="table-body-row"
+                >
+                  {row.cells.map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      className={
+                        shouldStrikethrough
+                          ? "no-known-allergy"
+                          : "high-severity-color"
+                      }
+                    >
+                      {cell.value}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       )}

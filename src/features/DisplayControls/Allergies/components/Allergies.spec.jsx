@@ -7,7 +7,6 @@ import {
 import Allergies from "./Allergies";
 import "@testing-library/jest-dom/extend-expect";
 import { IPDContext } from "../../../../context/IPDContext";
-import { mockConfig } from "../../../../utils/CommonUtils";
 
 const mockData1 = { ...mockAllergiesIntolerenceResponse.data };
 const mockUseFetchAllergiesIntolerance = jest.fn();
@@ -31,7 +30,7 @@ describe("Allergies", () => {
     render(
       <IPDContext.Provider
         value={{
-          visitSummary: mockVisitSummaryData
+          visitSummary: mockVisitSummaryData,
         }}
       >
         <Allergies patientId={"__test_patient_uuid__"} />
@@ -138,7 +137,7 @@ describe("Allergies", () => {
     render(
       <IPDContext.Provider
         value={{
-          visitSummary: mockVisitSummaryData
+          visitSummary: mockVisitSummaryData,
         }}
       >
         <Allergies patientId={"__test_patient_uuid__"} />
@@ -161,7 +160,7 @@ describe("Allergies", () => {
     render(
       <IPDContext.Provider
         value={{
-          visitSummary: mockVisitSummaryData
+          visitSummary: mockVisitSummaryData,
         }}
       >
         <Allergies patientId={"__test_patient_uuid__"} />
@@ -182,7 +181,7 @@ describe("Allergies", () => {
           visitSummary: {
             ...mockVisitSummaryData,
             stopDateTime: 1698316200000,
-          }
+          },
         }}
       >
         <Allergies patientId={"__test_patient_uuid__"} />
