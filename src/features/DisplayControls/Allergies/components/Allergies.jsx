@@ -18,6 +18,7 @@ import {
   formatDate,
 } from "../../../../utils/DateTimeUtils";
 import { IPDContext } from "../../../../context/IPDContext";
+import { NO_KNOWN_ALLERGY_CODE } from "../utils/constants";
 
 const Allergies = (props) => {
   const { patientId } = props;
@@ -34,12 +35,15 @@ const Allergies = (props) => {
   useEffect(() => {
     if (allergiesData && allergiesData.entry) {
       const allergies = [];
+      console.log("JSON.stringify(allergiesData)");
+      console.log(JSON.stringify(allergiesData));
       allergiesData.entry?.map((allergy) => {
         const recordedDate = dateTimeToEpochInMilliSeconds(
           allergy?.resource?.recordedDate
         );
         const allergyData = {
           allergen: allergy.resource.code?.coding[0]?.display,
+          allergenCode: allergy.resource.code?.coding[0]?.code,
           id: allergy.resource.id,
           severity: getSeverity(allergy.resource.criticality),
           reaction: getAllergyReactions(allergy.resource.reaction),
@@ -166,7 +170,13 @@ const Allergies = (props) => {
     <div className="no-allergen-message"> {NoAllergenMessage} </div>
   ) : (
     <DataTable rows={rows} headers={headers} useZebraStyles={true}>
-      {({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
+      {({
+        rows: dataTableRows,
+        headers,
+        getTableProps,
+        getHeaderProps,
+        getRowProps,
+      }) => (
         <Table {...getTableProps()} useZebraStyles>
           <TableHead>
             <TableRow>
@@ -182,30 +192,24 @@ const Allergies = (props) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row, index) => {
-              const isNoKnownAllergy = row.cells.some(
-                (cell) =>
-                  cell.info.header === "allergen" &&
-                  cell.value?.toLowerCase() === "no known allergy"
-              );
+            {dataTableRows.map((row, index) => {
+              const allergyRecord = rows[index];
+              const isNoKnownAllergy =
+                allergyRecord?.allergenCode === NO_KNOWN_ALLERGY_CODE;
               const shouldStrikethrough = rows.length > 1 && isNoKnownAllergy;
               return (
                 <TableRow
                   key={index + row.id}
                   {...getRowProps({ row })}
                   data-testid="table-body-row"
+                  className={
+                    shouldStrikethrough
+                      ? "no-known-allergy"
+                      : "high-severity-color"
+                  }
                 >
                   {row.cells.map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      className={
-                        shouldStrikethrough
-                          ? "no-known-allergy"
-                          : "high-severity-color"
-                      }
-                    >
-                      {cell.value}
-                    </TableCell>
+                    <TableCell key={cell.id}>{cell.value}</TableCell>
                   ))}
                 </TableRow>
               );
