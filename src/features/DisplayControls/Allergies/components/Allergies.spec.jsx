@@ -16,6 +16,11 @@ jest.mock("../hooks/useFetchAllergiesIntolerance", () => {
     useFetchAllergiesIntolerance: () => mockUseFetchAllergiesIntolerance(),
   };
 });
+jest.mock("../utils/AllergiesUtils", () => ({
+  getNoKnownAllergyCode: jest.fn(() =>
+    Promise.resolve("f535bd4e-33ff-4f35-bf7c-189e07d1ac90")
+  ),
+}));
 
 describe("Allergies", () => {
   beforeEach(() => {

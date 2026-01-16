@@ -18,13 +18,14 @@ import {
   formatDate,
 } from "../../../../utils/DateTimeUtils";
 import { IPDContext } from "../../../../context/IPDContext";
-import { NO_KNOWN_ALLERGY_CODE } from "../utils/constants";
+import { getNoKnownAllergyCode } from "../utils/AllergiesUtils";
 
 const Allergies = (props) => {
   const { patientId } = props;
   const { visitSummary } = useContext(IPDContext);
   const { allergiesData, isLoading } = useFetchAllergiesIntolerance(patientId);
   const [rows, setRows] = useState([]);
+  const [noKnownAllergyCode, setNoKnownAllergyCode] = useState(null);
   const NoAllergenMessage = (
     <FormattedMessage
       id={"NO_ALLERGENS_MESSAGE"}
@@ -33,10 +34,20 @@ const Allergies = (props) => {
   );
 
   useEffect(() => {
+    const fetchCode = async () => {
+      try {
+        const code = await getNoKnownAllergyCode();
+        setNoKnownAllergyCode(code);
+      } catch (error) {
+        console.error("Failed to fetch no known allergy code:", error);
+      }
+    };
+    fetchCode();
+  }, []);
+
+  useEffect(() => {
     if (allergiesData && allergiesData.entry) {
       const allergies = [];
-      console.log("JSON.stringify(allergiesData)");
-      console.log(JSON.stringify(allergiesData));
       allergiesData.entry?.map((allergy) => {
         const recordedDate = dateTimeToEpochInMilliSeconds(
           allergy?.resource?.recordedDate
@@ -71,9 +82,9 @@ const Allergies = (props) => {
   };
 
   const getSeverity = (criticality) => {
-    if (criticality == "unable-to-assess") return "Moderate";
-    else if (criticality == "high") return "Severe";
-    else if (criticality == "low") return "Mild";
+    if (criticality === "unable-to-assess") return "Moderate";
+    else if (criticality === "high") return "Severe";
+    else if (criticality === "low") return "Mild";
     else return "";
   };
 
@@ -83,9 +94,9 @@ const Allergies = (props) => {
   const getAllergyReactions = (reactions) => {
     let allergyReactions = "";
     if (reactions && reactions.length > 0) {
-      reactions[0].manifestation?.map((reaction) => {
+      reactions[0].manifestation?.forEach((reaction) => {
         allergyReactions =
-          allergyReactions != ""
+          allergyReactions !== ""
             ? `${allergyReactions}, ${reaction.coding[0].display}`
             : `${reaction.coding[0].display}`;
       });
@@ -147,15 +158,13 @@ const Allergies = (props) => {
     },
   ];
 
-  const sortedRow = (rows) => {
-    const sortedRows = rows
+  const sortedRow = (rows) =>
+    rows
       .sort((a, b) => {
         if (a === b) return 0;
         return a.allergen > b.allergen ? 1 : -1;
       })
       .sort((a, b) => a.sortWeight - b.sortWeight);
-    return sortedRows;
-  };
 
   if (isLoading)
     return (
@@ -195,7 +204,7 @@ const Allergies = (props) => {
             {dataTableRows.map((row, index) => {
               const allergyRecord = rows[index];
               const isNoKnownAllergy =
-                allergyRecord?.allergenCode === NO_KNOWN_ALLERGY_CODE;
+                allergyRecord?.allergenCode === noKnownAllergyCode;
               const shouldStrikethrough = rows.length > 1 && isNoKnownAllergy;
               return (
                 <TableRow
