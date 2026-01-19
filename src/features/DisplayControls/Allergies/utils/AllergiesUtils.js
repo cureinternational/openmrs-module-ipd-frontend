@@ -10,20 +10,11 @@ export const fetchAllergiesData = async (patientUuid) => {
   }
 };
 
-export const fetchNoKnownAllergyCode = async () => {
-  const GLOBAL_PROPERTY_URL = `${ALLERGIES_BASE_URL}/globalProperty/noKnownAllergyCode`;
-  try {
-    return (await axios.get(GLOBAL_PROPERTY_URL)).data;
-  } catch (error) {
-    return error;
-  }
-};
-
-export const getNoKnownAllergyCode = async () => {
+export const getNoKnownAllergyUuid = async () => {
   try {
     const response = await axios.get(GLOBAL_PROPERTY_URL, {
       params: {
-        property: "allergy.concept.noKnownAllergyCode",
+        property: "allergy.concept.noKnownAllergyUuid",
       },
       withCredentials: true,
       headers: {
@@ -32,7 +23,7 @@ export const getNoKnownAllergyCode = async () => {
     });
     return response.data;
   } catch (error) {
-    console.error("Error fetching no known allergy code:", error);
+    console.error("Error fetching no known allergy uuid:", error);
     throw error;
   }
 };

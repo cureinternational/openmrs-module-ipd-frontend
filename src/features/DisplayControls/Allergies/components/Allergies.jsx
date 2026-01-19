@@ -18,14 +18,14 @@ import {
   formatDate,
 } from "../../../../utils/DateTimeUtils";
 import { IPDContext } from "../../../../context/IPDContext";
-import { getNoKnownAllergyCode } from "../utils/AllergiesUtils";
+import { getNoKnownAllergyUuid } from "../utils/AllergiesUtils";
 
 const Allergies = (props) => {
   const { patientId } = props;
   const { visitSummary } = useContext(IPDContext);
   const { allergiesData, isLoading } = useFetchAllergiesIntolerance(patientId);
   const [rows, setRows] = useState([]);
-  const [noKnownAllergyCode, setNoKnownAllergyCode] = useState(undefined);
+  const [noKnownAllergyUuid, setNoKnownAllergyUuid] = useState(undefined);
   const NoAllergenMessage = (
     <FormattedMessage
       id={"NO_ALLERGENS_MESSAGE"}
@@ -36,8 +36,8 @@ const Allergies = (props) => {
   useEffect(() => {
     const fetchCode = async () => {
       try {
-        const code = await getNoKnownAllergyCode();
-        setNoKnownAllergyCode(code);
+        const code = await getNoKnownAllergyUuid();
+        setNoKnownAllergyUuid(code);
       } catch (error) {
         console.error("Failed to fetch no known allergy code:", error);
       }
@@ -204,7 +204,7 @@ const Allergies = (props) => {
             {dataTableRows.map((row, index) => {
               const allergyRecord = rows[index];
               const isNoKnownAllergy =
-                allergyRecord?.allergenCode === noKnownAllergyCode;
+                allergyRecord?.allergenCode === noKnownAllergyUuid;
               const shouldStrikethrough = rows.length > 1 && isNoKnownAllergy;
               return (
                 <TableRow
