@@ -21,4 +21,6 @@ CVE-2025-6547 # pbkdf2: pbkdf2 silently returns static keys https://avd.aquasec.
 CVE-2025-7783 # form-data: Unsafe random function in form-data https://avd.aquasec.com/nvd/cve-2025-7783
 CVE-2025-58754
 CVE-2025-9287
-CVE-2025-9288 
+CVE-2025-9288
+CVE-2026-23745 # tar: https://avd.aquasec.com/nvd/cve-2026-23745
+CVE-2025-15284 # qs: https://avd.aquasec.com/nvd/cve-2025-15284
