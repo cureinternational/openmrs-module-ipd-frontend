@@ -25,7 +25,7 @@ const Allergies = (props) => {
   const { visitSummary } = useContext(IPDContext);
   const { allergiesData, isLoading } = useFetchAllergiesIntolerance(patientId);
   const [rows, setRows] = useState([]);
-  const [noKnownAllergyCode, setNoKnownAllergyCode] = useState(null);
+  const [noKnownAllergyCode, setNoKnownAllergyCode] = useState(undefined);
   const NoAllergenMessage = (
     <FormattedMessage
       id={"NO_ALLERGENS_MESSAGE"}
