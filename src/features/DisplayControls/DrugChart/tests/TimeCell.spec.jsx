@@ -1,10 +1,9 @@
 import React from "react";
 import TimeCell from "../components/TimeCell";
 import "@testing-library/jest-dom/extend-expect";
-import { render, waitFor, screen, fireEvent } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import moment from "moment";
 import { timeFormatFor24Hr } from "../../../../constants";
-import DrugChartUtils from "../utils/DrugChartUtils";
 
 const MockTooltipCarbon = jest.fn();
 jest.mock("../../../../icons/note.svg");
@@ -280,9 +279,7 @@ describe("TimeCell", () => {
             providers: [
               { function: "Performer", provider: { uuid: "provider-123" } },
             ],
-            amendedNotes: [
-              { amendedText: "Amended note text" }
-            ]
+            amendedNotes: [{ amendedText: "Amended note text" }],
           },
           administrationSummary: {
             status: "Administered",
@@ -310,7 +307,9 @@ describe("TimeCell", () => {
       expect(acknowledgeButton).toBeInTheDocument();
     } else {
       // If acknowledge button isn't rendered, verify component still renders
-      expect(container.querySelector("[data-testid='right-notes']")).toBeTruthy();
+      expect(
+        container.querySelector("[data-testid='right-notes']")
+      ).toBeTruthy();
     }
   });
 
@@ -326,9 +325,7 @@ describe("TimeCell", () => {
             providers: [
               { function: "Performer", provider: { uuid: "provider-123" } },
             ],
-            amendedNotes: [
-              { amendedText: "Amended note text" }
-            ]
+            amendedNotes: [{ amendedText: "Amended note text" }],
           },
           administrationSummary: {
             status: "Administered",
@@ -365,9 +362,7 @@ describe("TimeCell", () => {
             providers: [
               { function: "Performer", provider: { uuid: "provider-123" } },
             ],
-            amendedNotes: [
-              { amendedText: "Amended note text" }
-            ]
+            amendedNotes: [{ amendedText: "Amended note text" }],
           },
           administrationSummary: {
             status: "Administered",
@@ -409,8 +404,8 @@ describe("TimeCell", () => {
                 {
                   amendedText: "Amended note text",
                   approvalStatus: "APPROVED",
-                }
-              ]
+                },
+              ],
             },
             administrationSummary: {
               status: "Administered",
@@ -449,8 +444,8 @@ describe("TimeCell", () => {
                 {
                   amendedText: "Amended note text",
                   approvalStatus: "PENDING",
-                }
-              ]
+                },
+              ],
             },
             administrationSummary: {
               status: "Administered",
@@ -491,8 +486,8 @@ describe("TimeCell", () => {
                 {
                   amendedText: "Amended note text",
                   approvalStatus: "APPROVED",
-                }
-              ]
+                },
+              ],
             },
             administrationSummary: {
               status: "Administered",
@@ -530,18 +525,33 @@ describe("TimeCell", () => {
               providers: [
                 { function: "Performer", provider: { uuid: "provider-456" } },
               ],
-              amendedNotes: [
-                {
-                  amendedText: "Amended note text",
-                  approvalStatus: "APPROVED",
-                  approvalNotes: "Reviewed and approved",
-                }
-              ]
             },
             administrationSummary: {
               status: "Administered",
               hasAmendedNotes: true,
               approvalStatus: "APPROVED",
+              noteInfo: {
+                acknowledgementNotes: [
+                  {
+                    text: "Acknowledged note",
+                    recordedTime: 1770399475000,
+                  },
+                ],
+                amendedNotes: [
+                  {
+                    uuid: "ce552ce6-2e47-457c-b8d0-eece90c0e9b7",
+                    recordedTime: 1770398805000,
+                    text: "Amended note text",
+                    amendmentReason: "Incorrect Time",
+                    previousNoteUuid: "e66f16d8-0344-4ae8-80f9-570f3c0dc230",
+                    acknowledgement: {
+                      taskUuid: "7b119828-90b5-498c-b1a9-b8c7669ca4be",
+                      remarks: "Acknowledged note",
+                      acknowledgedTime: 1770399475000,
+                    },
+                  },
+                ],
+              },
             },
           },
         },
@@ -575,8 +585,8 @@ describe("TimeCell", () => {
                 {
                   amendedText: "Amended note text",
                   approvalStatus: "APPROVED",
-                }
-              ]
+                },
+              ],
             },
             administrationSummary: {
               status: "Administered",
@@ -596,7 +606,9 @@ describe("TimeCell", () => {
           currentProviderUuid="provider-123"
         />
       );
-      expect(container.querySelector("[data-testid='right-notes']")).toBeTruthy();
+      expect(
+        container.querySelector("[data-testid='right-notes']")
+      ).toBeTruthy();
     });
 
     it("should render History button regardless of current provider when notes are acknowledged", () => {
@@ -615,8 +627,8 @@ describe("TimeCell", () => {
                 {
                   amendedText: "Amended note text",
                   approvalStatus: "APPROVED",
-                }
-              ]
+                },
+              ],
             },
             administrationSummary: {
               status: "Administered",
