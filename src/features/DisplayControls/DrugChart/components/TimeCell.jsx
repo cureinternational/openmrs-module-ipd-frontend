@@ -65,7 +65,7 @@ export default function TimeCell(props) {
     return noteAuthor?.provider?.uuid === currentProviderUuid;
   };
 
-  const getNoteIcon = (hasAmendedNotes, isAcknowledged, slot) => {
+  const getNoteIcon = (hasAmendedNotes, isAcknowledged) => {
     if (isAcknowledged) {
       return (
         <div className="note-icon-container">
@@ -73,10 +73,7 @@ export default function TimeCell(props) {
         </div>
       );
     }
-    if (
-      hasAmendedNotes &&
-      (isNoteCreator(slot) || canAcknowledgeAmendment(privileges))
-    ) {
+    if (hasAmendedNotes) {
       return (
         <div className="note-icon-container">
           <AmendedIcon />
@@ -90,27 +87,11 @@ export default function TimeCell(props) {
     );
   };
 
-  const canAmendNotes = (slot) => {
-    const isAcknowledged =
-      slot?.originalSlot?.administrationSummary?.approvalStatus === "APPROVED";
-
-    if (isAcknowledged) {
-      return false;
-    }
-
-    return isNoteCreator(slot);
-  };
-
   const renderTooltipContent = (notes, slot, amendedNotes = null) => {
-    const showAmendButton = canAmendNotes(slot);
+    const showAmendButton = !isAcknowledged;
     const hasAmendedNotes = amendedNotes && amendedNotes.length > 0;
 
-    const amendedText = hasAmendedNotes
-      ? amendedNotes
-          .filter((note) => note?.amendedText)
-          .map((note) => note.amendedText)
-          .join("\n\n")
-      : null;
+    const amendedText = hasAmendedNotes ? amendedNotes[0]?.text : null;
 
     const isAcknowledged =
       slot?.originalSlot?.administrationSummary?.approvalStatus === "APPROVED";
@@ -154,25 +135,25 @@ export default function TimeCell(props) {
           !isAcknowledged &&
           canAcknowledgeAmendment(privileges) && (
             <div>
-              {!isNoteCreator(slot) && (
-                <div className="tooltip-actions">
-                  <Button
-                    kind="ghost"
-                    size="sm"
-                    className="no-focus-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (slot.originalSlot) {
-                        slot.originalSlot.clickAction = "acknowledge";
-                      }
-                      onIconClick && onIconClick(slot);
-                    }}
-                    onBlur={(e) => e.target.blur()}
-                  >
-                    Acknowledge Note
-                  </Button>
-                </div>
-              )}
+              {/*{!isNoteCreator(slot) && (*/}
+              <div className="tooltip-actions">
+                <Button
+                  kind="ghost"
+                  size="sm"
+                  className="no-focus-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (slot.originalSlot) {
+                      slot.originalSlot.clickAction = "acknowledge";
+                    }
+                    onIconClick && onIconClick(slot);
+                  }}
+                  onBlur={(e) => e.target.blur()}
+                >
+                  Acknowledge Note
+                </Button>
+              </div>
+              {/*)}*/}
             </div>
           )}
         {isAcknowledged && (
@@ -226,7 +207,7 @@ export default function TimeCell(props) {
             slot?.originalSlot?.administrationSummary?.approvalStatus ===
             "APPROVED";
           const amendedNotesResponse =
-            slot?.originalSlot?.medicationAdministration?.amendedNotes;
+            slot?.originalSlot?.administrationSummary?.noteInfo?.amendedNotes;
 
           return (
             <div key={minutes}>
@@ -236,7 +217,7 @@ export default function TimeCell(props) {
                   <Tooltip
                     autoOrientation={true}
                     renderIcon={() =>
-                      getNoteIcon(hasAmendedNotes, isAcknowledged, slot)
+                      getNoteIcon(hasAmendedNotes, isAcknowledged)
                     }
                   >
                     {renderTooltipContent(notes, slot, amendedNotesResponse)}
@@ -244,17 +225,20 @@ export default function TimeCell(props) {
                 </span>
               ) : (
                 <span data-testid="add-left-notes">
-                  <TooltipDefinition tooltipText="Add Notes">
-                    <div
-                      className="note-icon-container"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onIconClick && onIconClick(slot);
-                      }}
-                    >
-                      <DocumentAdd />
-                    </div>
-                  </TooltipDefinition>
+                  {(status === "Administered-Late" ||
+                    status === "Administered") && (
+                    <TooltipDefinition tooltipText="Add Notes">
+                      <div
+                        className="note-icon-container"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onIconClick && onIconClick(slot);
+                        }}
+                      >
+                        <DocumentAdd />
+                      </div>
+                    </TooltipDefinition>
+                  )}
                 </span>
               )}
             </div>
@@ -279,7 +263,7 @@ export default function TimeCell(props) {
               slot?.originalSlot?.administrationSummary?.approvalStatus ===
               "APPROVED";
             const amendedNotesResponse =
-              slot?.originalSlot?.medicationAdministration?.amendedNotes;
+              slot?.originalSlot?.administrationSummary?.noteInfo?.amendedNotes;
 
             return (
               <div key={minutes}>
@@ -289,7 +273,7 @@ export default function TimeCell(props) {
                     <Tooltip
                       autoOrientation={true}
                       renderIcon={() =>
-                        getNoteIcon(hasAmendedNotes, isAcknowledged, slot)
+                        getNoteIcon(hasAmendedNotes, isAcknowledged)
                       }
                     >
                       {renderTooltipContent(notes, slot, amendedNotesResponse)}
@@ -297,17 +281,20 @@ export default function TimeCell(props) {
                   </span>
                 ) : (
                   <span data-testid="add-right-notes">
-                    <TooltipDefinition tooltipText="Add Notes">
-                      <div
-                        className="note-icon-container"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onIconClick && onIconClick(slot);
-                        }}
-                      >
-                        <DocumentAdd />
-                      </div>
-                    </TooltipDefinition>
+                    {(status === "Administered-Late" ||
+                      status === "Administered") && (
+                      <TooltipDefinition tooltipText="Add Notes">
+                        <div
+                          className="note-icon-container"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onIconClick && onIconClick(slot);
+                          }}
+                        >
+                          <DocumentAdd />
+                        </div>
+                      </TooltipDefinition>
+                    )}
                   </span>
                 )}
               </div>

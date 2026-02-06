@@ -216,7 +216,12 @@ export default function DrugChartWrapper(props) {
 
   const handleSlotClick = (slot, rowData) => {
     const action = slot.clickAction || slot.originalSlot?.clickAction;
-    setSelectedSlotData(prepareSlotData(slot, rowData, enable24HourTime));
+    let preparedSelectedSlotData = prepareSlotData(
+      slot,
+      rowData,
+      enable24HourTime
+    );
+    setSelectedSlotData(preparedSelectedSlotData);
 
     if (action === "acknowledge") {
       setSliderContentModified((prevState) => ({
@@ -234,10 +239,7 @@ export default function DrugChartWrapper(props) {
       updateHistoryViewer(true);
     } else {
       const hasAmendment =
-        slot?.medicationAdministration?.amendedNotes?.length > 0 &&
-        slot?.medicationAdministration?.amendedNotes.some(
-          (note) => note?.amendedText && note?.approvalStatus === "PENDING"
-        );
+        preparedSelectedSlotData.noteInfo.amendedNotes.length > 0;
 
       if (hasAmendment) {
         setSliderContentModified((prevState) => ({
@@ -389,18 +391,18 @@ export default function DrugChartWrapper(props) {
           clearDeepLinkParams();
           return;
         }
-
+        let preparedSelectedSlotData = prepareSlotData(
+          foundSlot,
+          foundRowData,
+          enable24HourTime
+        );
         const amendedByUuid =
-          foundSlot?.medicationAdministration?.amendedNotes?.[0]?.amendedBy
-            ?.uuid;
+          preparedSelectedSlotData.noteInfo.amendedNotes?.[0]?.amendedBy?.uuid;
         if (amendedByUuid && amendedByUuid === provider?.uuid) {
           clearDeepLinkParams();
           return;
         }
-
-        setSelectedSlotData(
-          prepareSlotData(foundSlot, foundRowData, enable24HourTime)
-        );
+        setSelectedSlotData(preparedSelectedSlotData);
 
         setSliderContentModified((prevState) => ({
           ...prevState,

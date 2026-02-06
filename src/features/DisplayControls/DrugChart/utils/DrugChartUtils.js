@@ -199,13 +199,12 @@ export const mapDrugOrdersAndSlots = (drugChartData, drugOrders, drugChart) => {
         let performerName = "",
           notes = "",
           hasAmendedNotes = false,
-          approvalStatus = "";
+          approvalStatus = "",
+          noteInfo = {};
         if (medicationAdministration) {
-          const {
-            providers,
-            notes: administeredNotes,
-            amendedNotes,
-          } = medicationAdministration;
+          const { providers, notes: administeredNotes } =
+            medicationAdministration;
+          noteInfo = extractNotesSummary(administeredNotes);
           let performer = providers.find(
             (provider) => provider.function === performerFunction
           );
@@ -215,18 +214,18 @@ export const mapDrugOrdersAndSlots = (drugChartData, drugOrders, drugChart) => {
               ? performer.display.split(" - ")[1]
               : performer.display
             : "";
-          notes =
-            administeredNotes && administeredNotes.length > 0 && performer
-              ? administeredNotes?.find(
-                  (note) => note.author.uuid === performer.uuid
-                ).text
-              : "";
-          if (amendedNotes && amendedNotes.length > 0) {
-            hasAmendedNotes = amendedNotes.some(
-              (note) => note.amendedText && note.amendedReason
-            );
-            approvalStatus = amendedNotes?.[0].approvalStatus;
+          if (noteInfo.acknowledgementNotes.length > 0) {
+            notes = noteInfo.acknowledgementNotes[0].text;
+          } else if (noteInfo.amendedNotes.length > 0) {
+            notes = noteInfo.amendedNotes[0].text;
+          } else if (noteInfo.newNote) {
+            notes = noteInfo.newNote?.text;
+          } else {
+            notes = noteInfo.original?.text;
           }
+          hasAmendedNotes = noteInfo.amendedNotes.length > 0;
+          approvalStatus =
+            noteInfo.acknowledgementNotes.length > 0 ? "APPROVED" : "PENDING";
         }
         orders[uuid].slots.push({
           ...slot,
@@ -236,6 +235,7 @@ export const mapDrugOrdersAndSlots = (drugChartData, drugOrders, drugChart) => {
             status: administrationStatus,
             hasAmendedNotes,
             approvalStatus,
+            noteInfo,
           },
         });
       }
@@ -252,6 +252,7 @@ export const mapDrugOrdersAndSlots = (drugChartData, drugOrders, drugChart) => {
     return [];
   }
 };
+
 export const ifMedicationNotesPresent = (medicationNotes, side) =>
   (side === "Administered-Late" ||
     side === "Administered" ||
@@ -504,6 +505,48 @@ export const canAcknowledgeAmendment = (privileges = []) => {
   );
 };
 
+export const extractNotesSummary = (notes) => {
+  let ack = [],
+    fil = [],
+    amended = [];
+  if (notes) {
+    const data = notes.reduce(
+      (acc, note) => {
+        if (note.acknowledgement) {
+          acc.ack.push({
+            text: note.acknowledgement.remarks,
+            recordedTime: note.acknowledgement.acknowledgedTime,
+            author: note.acknowledgement.approvedBy,
+          });
+          acc.amended.push(note);
+        } else if (note.previousNoteUuid == null) {
+          acc.fil.push(note);
+        } else {
+          acc.amended.push(note);
+        }
+        return acc;
+      },
+      { ack: [], fil: [], amended: [] }
+    );
+    ack = data.ack;
+    fil = data.fil;
+    amended = data.amended;
+  }
+  amended.sort((a, b) => b.recordedTime - a.recordedTime);
+  let original = null;
+  let newNote = null;
+  const first = fil[0];
+  if (first) {
+    first.amendmentReason === null ? (original = first) : (newNote = first);
+  }
+  return {
+    acknowledgementNotes: ack,
+    original,
+    newNote,
+    amendedNotes: amended,
+  };
+};
+
 export const prepareSlotData = (slot, rowData, enable24HourTime) => {
   let dosageInfo = "";
   const dosingInstructions = rowData?.dosingInstructions;
@@ -536,27 +579,25 @@ export const prepareSlotData = (slot, rowData, enable24HourTime) => {
   }
 
   const note = slot.medicationAdministration?.notes?.[0];
-  const amendNotes = slot.medicationAdministration?.amendedNotes;
-  const amendNote = amendNotes?.[0];
-  const dateFomat = enable24HourTime
+  const dateFormat = enable24HourTime
     ? displayShiftTimingsFormat
     : displayShiftTimings12HourFormat;
 
+  const { noteInfo } = slot.administrationSummary;
+  const { amendedNotes } = noteInfo;
+  const amendNote = amendedNotes?.[0];
   return {
     slot,
     drugName: rowData.name,
     dosageInfo: dosageInfo,
-    scheduledTime: formatDate(slot.startTime * 1000, dateFomat),
-    amendedTime: formatDate(amendNote?.amendedTime, dateFomat),
-    approvedTime: formatDate(amendNote?.approvedDateTime, dateFomat),
+    scheduledTime: formatDate(slot.startTime * 1000, dateFormat),
+    amendedTime: formatDate(amendNote?.amendedTime, dateFormat),
+    approvedTime: formatDate(amendNote?.approvedDateTime, dateFormat),
     status: slot.administrationSummary?.status,
     performerName: slot.administrationSummary?.performerName,
     existingNotes: slot.administrationSummary?.notes,
-    notes:
-      amendNotes?.length > 0
-        ? amendNotes
-        : slot.medicationAdministration?.notes,
-    amendedNotes: amendNotes,
+    notes: slot.medicationAdministration?.notes,
+    noteInfo,
     medicationAdministrationNoteUUID: note?.uuid,
     medicationAdministrationUuid: slot.medicationAdministration?.uuid,
   };

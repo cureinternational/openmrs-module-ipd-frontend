@@ -121,7 +121,7 @@ const DrugChartSlider = (props) => {
             </div>
           </div>
           {sliderType === sliderTypes.AMENDMENT &&
-            (hostData.notes ? (
+            (hostData.notes?.length > 0 ? (
               <DrugChartNoteAmendment
                 amendmentReasons={amendmentReasons}
                 amendmentReason={amendmentReason}
@@ -171,8 +171,12 @@ const DrugChartSlider = (props) => {
   function sliderTitle() {
     const titles = {
       amendment: {
-        id: hostData.notes ? "AMENDMENT_NOTES_HEADER" : "NEW_NOTE_HEADER",
-        defaultMessage: hostData.notes ? "Amendment Note(s)" : "Add Note",
+        id:
+          hostData.notes?.length > 0
+            ? "AMENDMENT_NOTES_HEADER"
+            : "NEW_NOTE_HEADER",
+        defaultMessage:
+          hostData.notes?.length > 0 ? "Amendment Note(s)" : "Add Note",
       },
       acknowledgement: {
         id: "ACKNOWLEDGEMENT_NOTES_HEADER",
