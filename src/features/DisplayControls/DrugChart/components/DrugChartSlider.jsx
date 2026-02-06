@@ -16,6 +16,7 @@ import {
 import "../styles/DrugChartSlider.scss";
 
 import { sliderTypes } from "../../../../constants";
+import DrugChartNoteCreation from "./DrugChartNoteCreation";
 
 const DrugChartSlider = (props) => {
   const { hostData, hostApi, sliderType } = props;
@@ -119,16 +120,26 @@ const DrugChartSlider = (props) => {
               <NoteHistory hostData={hostData} />
             </div>
           </div>
-          {sliderType === sliderTypes.AMENDMENT && (
-            <DrugChartNoteAmendment
-              amendmentReasons={amendmentReasons}
-              amendmentReason={amendmentReason}
-              amendmentNotes={amendmentNotes}
-              isSaveDisabled={isSaveDisabled}
-              onReasonChange={handleAmendmentReasonChange}
-              onNotesChange={handleAmendmentNotesChange}
-            />
-          )}
+          {sliderType === sliderTypes.AMENDMENT &&
+            (hostData.notes ? (
+              <DrugChartNoteAmendment
+                amendmentReasons={amendmentReasons}
+                amendmentReason={amendmentReason}
+                amendmentNotes={amendmentNotes}
+                isSaveDisabled={isSaveDisabled}
+                onReasonChange={handleAmendmentReasonChange}
+                onNotesChange={handleAmendmentNotesChange}
+              />
+            ) : (
+              <DrugChartNoteCreation
+                amendmentReasons={amendmentReasons}
+                amendmentReason={amendmentReason}
+                amendmentNotes={amendmentNotes}
+                isSaveDisabled={isSaveDisabled}
+                onReasonChange={handleAmendmentReasonChange}
+                onNotesChange={handleAmendmentNotesChange}
+              />
+            ))}
           {sliderType === sliderTypes.ACKNOWLEDGEMENT && (
             <DrugChartNoteAcknowledgement
               privileges={privileges}
@@ -160,8 +171,8 @@ const DrugChartSlider = (props) => {
   function sliderTitle() {
     const titles = {
       amendment: {
-        id: "AMENDMENT_NOTES_HEADER",
-        defaultMessage: "Amendment Note(s)",
+        id: hostData.notes ? "AMENDMENT_NOTES_HEADER" : "NEW_NOTE_HEADER",
+        defaultMessage: hostData.notes ? "Amendment Note(s)" : "Add Note",
       },
       acknowledgement: {
         id: "ACKNOWLEDGEMENT_NOTES_HEADER",

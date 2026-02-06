@@ -1,54 +1,66 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { NoteTile } from "./NoteTile";
-import { extractNameFromDisplay } from "../utils/DrugChartUtils";
+import AmendmentHistory from "../../../../components/AmendmentHistory/AmendmentHistory";
 
 const NoteHistory = ({ hostData }) => {
-  const amendedText = hostData.amendedNotes
-    ?.map((note) => note.amendedText)
-    .join("\n\n");
-  const amendedReason = hostData.amendedNotes
-    ?.map((note) => note.amendedReason)
-    .join("\n\n");
-  const amendedBy = hostData.amendedNotes
-    ?.map((note) => note.amendedBy?.display || hostData.performerName)
-    .join("\n\n");
-  const acknowledgedText = hostData.amendedNotes
-    ?.map((note) => note.approvalNotes)
-    .join("\n\n");
-  const acknowledgedByName =
-    hostData.amendedNotes?.find(
-      (note) => note.approvalStatus === "APPROVED" && note.approvedBy
-    )?.approvedBy?.display || hostData.performerName;
+  console.log("hostData in NoteHistory", hostData);
+  const { ack, fil, amended } = hostData.notes
+    ? hostData.notes.reduce(
+        (acc, note) => {
+          if (note.acknowledgement) {
+            acc.ack.push(note);
+          } else if (note.previousNoteUuid === null) {
+            acc.fil.push(note);
+          } else {
+            acc.amended.push(note);
+          }
+          return acc;
+        },
+        { ack: [], fil: [], amended: [] }
+      )
+    : { ack: [], fil: [], amended: [] };
 
+  let original = null;
+  let newNote = null;
+
+  const first = fil[0];
+  if (first) {
+    first.amendmentReason === null ? (original = first) : (newNote = first);
+  }
+  amended.sort((a, b) => b.recordedTime - a.recordedTime);
   return (
     <>
-      {acknowledgedText && acknowledgedByName && (
+      {ack.length > 0 && (
         <NoteTile
           tagLabel="Acknowledged"
           tagType="green"
-          scheduledTime={hostData.approvedTime}
-          performerName={extractNameFromDisplay(acknowledgedByName)}
-          noteText={acknowledgedText}
+          scheduledTime={ack[0].acknowledgement.acknowledgedTime}
+          performerName={ack[0].acknowledgement.approvedBy.display}
+          noteText={ack[0].text}
+          noteReason={ack[0].amendmentReason}
         />
       )}
-      {amendedText && amendedReason && (
+      {amended.length > 0 && <AmendmentHistory amendments={amended} />}
+      {original && (
         <NoteTile
-          tagLabel="Amended"
-          tagType="blue"
-          scheduledTime={hostData.amendedTime}
-          performerName={extractNameFromDisplay(amendedBy)}
-          noteText={amendedText}
-          noteReason={amendedReason}
+          tagLabel={"Original"}
+          tagType="gray"
+          scheduledTime={original.recordedTime}
+          performerName={original.author.display}
+          noteText={original.text}
         />
       )}
-      <NoteTile
-        tagLabel="Original"
-        tagType="gray"
-        scheduledTime={hostData.scheduledTime}
-        performerName={hostData.performerName}
-        noteText={hostData.existingNotes}
-      />
+      {newNote && (
+        <NoteTile
+          tagLabel={"New"}
+          tagType="gray"
+          scheduledTime={newNote.recordedTime}
+          performerName={newNote.author.display}
+          noteText={newNote.text}
+          noteReason={newNote.amendmentReason}
+        />
+      )}
     </>
   );
 };

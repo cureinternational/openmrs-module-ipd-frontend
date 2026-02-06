@@ -215,15 +215,6 @@ export default function DrugChartWrapper(props) {
   };
 
   const handleSlotClick = (slot, rowData) => {
-    const clickableStatuses = [
-      "Administered",
-      "Administered-Late",
-      "Not-Administered",
-    ];
-    if (!clickableStatuses.includes(slot.administrationSummary?.status)) {
-      return;
-    }
-
     const action = slot.clickAction || slot.originalSlot?.clickAction;
     setSelectedSlotData(prepareSlotData(slot, rowData, enable24HourTime));
 
