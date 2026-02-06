@@ -67,7 +67,7 @@ const DrugChartSlider = (props) => {
       if (!isAmendmentFormValid()) return;
       setIsSaveDisabled(true);
       const amendmentData = {
-        noteUuid: hostData?.medicationAdministrationNoteUUID,
+        medicationAdministrationUuid: hostData?.medicationAdministrationUuid,
         amendedReason: amendmentReason,
         amendedText: amendmentNotes,
         amendedByUuid: provider?.uuid,
@@ -83,7 +83,7 @@ const DrugChartSlider = (props) => {
       if (!isAcknowledgementFormValid()) return;
       setIsSaveDisabled(true);
       const acknowledgementData = {
-        noteUuid: hostData?.medicationAdministrationNoteUUID,
+        medicationAdministrationUuid: hostData?.medicationAdministrationUuid,
         acknowledgementNotes,
         acknowledgedByUuid: provider?.uuid,
       };

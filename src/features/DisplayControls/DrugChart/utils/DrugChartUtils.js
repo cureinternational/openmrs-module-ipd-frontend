@@ -3,7 +3,7 @@ import moment from "moment";
 import React from "react";
 import {
   MEDICATIONS_BASE_URL,
-  MEDICATION_ADMINISTRATION_NOTE_URL,
+  MEDICATION_ADMINISTRATION_URL,
   performerFunction,
   asNeededPlaceholderConceptName,
   timeFormatFor24Hr,
@@ -15,10 +15,6 @@ import { formatDate } from "../../../../utils/DateTimeUtils";
 import _ from "lodash";
 import { FormattedMessage } from "react-intl";
 import { getAdministrationStatus } from "../../../../utils/CommonUtils";
-
-const APPROVAL_STATUS = {
-  APPROVED: "APPROVED",
-};
 
 export const fetchMedications = async (
   patientUuid,
@@ -118,17 +114,23 @@ export const transformDrugOrders = (orders) => {
 };
 
 export const saveMedicationAmendmentNote = async (amendmentData) => {
-  const { noteUuid, amendedReason, amendedText, amendedByUuid } = amendmentData;
+  const {
+    medicationAdministrationUuid,
+    amendedReason,
+    amendedText,
+    amendedByUuid,
+  } = amendmentData;
 
   const payload = {
-    amendedReason: amendedReason,
-    amendedText: amendedText,
-    amendedByUuid: amendedByUuid,
+    authorUuid: amendedByUuid,
+    recordedTime: Math.floor(Date.now() / 1000),
+    text: amendedText,
+    reason: amendedReason,
   };
 
   try {
     return await axios.post(
-      `${MEDICATION_ADMINISTRATION_NOTE_URL}/${noteUuid}`,
+      `${MEDICATION_ADMINISTRATION_URL}/${medicationAdministrationUuid}/note`,
       payload
     );
   } catch (error) {
@@ -140,18 +142,20 @@ export const saveMedicationAmendmentNote = async (amendmentData) => {
 export const saveMedicationAcknowledgementNote = async (
   acknowledgementData
 ) => {
-  const { noteUuid, acknowledgementNotes, acknowledgedByUuid } =
-    acknowledgementData;
+  const {
+    medicationAdministrationUuid,
+    acknowledgementNotes,
+    acknowledgedByUuid,
+  } = acknowledgementData;
 
   const payload = {
-    approvalStatus: APPROVAL_STATUS.APPROVED,
-    approvalNotes: acknowledgementNotes,
+    remarks: acknowledgementNotes,
     approvedByUuid: acknowledgedByUuid,
   };
 
   try {
     return await axios.post(
-      `${MEDICATION_ADMINISTRATION_NOTE_URL}/${noteUuid}/acknowledge`,
+      `${MEDICATION_ADMINISTRATION_URL}/${medicationAdministrationUuid}/acknowledgement`,
       payload
     );
   } catch (error) {
@@ -554,6 +558,7 @@ export const prepareSlotData = (slot, rowData, enable24HourTime) => {
         : slot.medicationAdministration?.notes,
     amendedNotes: amendNotes,
     medicationAdministrationNoteUUID: note?.uuid,
+    medicationAdministrationUuid: slot.medicationAdministration?.uuid,
   };
 };
 
