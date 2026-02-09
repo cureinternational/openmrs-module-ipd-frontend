@@ -95,8 +95,9 @@ describe("AmendmentHistory", () => {
     it("should display only first amendment when collapsed", () => {
       const amendments = [mockAmendment, mockAmendment2, mockAmendment3];
       render(<AmendmentHistory amendments={amendments} />);
+      const parentDiv = screen.getAllByTestId("note-tile")[0].parentElement;
+      fireEvent.click(parentDiv);
       const noteTiles = screen.getAllByTestId("note-tile");
-      // Should have 1 parent tile visible
       expect(noteTiles).toHaveLength(1);
     });
 
@@ -119,6 +120,8 @@ describe("AmendmentHistory", () => {
     it("should have no-margin and active-tile classes when not expanded", () => {
       const amendments = [mockAmendment, mockAmendment2];
       render(<AmendmentHistory amendments={amendments} />);
+      const parentDiv = screen.getAllByTestId("note-tile")[0].parentElement;
+      fireEvent.click(parentDiv);
       const noteTile = screen.getByTestId("note-tile");
       expect(noteTile).not.toHaveClass("no-margin");
       expect(noteTile).not.toHaveClass("active-tile");
@@ -129,8 +132,6 @@ describe("AmendmentHistory", () => {
     it("should display all amendments when expanded", () => {
       const amendments = [mockAmendment, mockAmendment2, mockAmendment3];
       render(<AmendmentHistory amendments={amendments} />);
-      const parentDiv = screen.getAllByTestId("note-tile")[0].parentElement;
-      fireEvent.click(parentDiv);
 
       const noteTiles = screen.getAllByTestId("note-tile");
       expect(noteTiles).toHaveLength(3);
@@ -142,25 +143,13 @@ describe("AmendmentHistory", () => {
         <AmendmentHistory amendments={amendments} />
       );
       const mainDiv = container.querySelector(".amendment-history");
-      expect(mainDiv).not.toHaveClass("expanded");
-
-      const parentDiv = container.querySelector(
-        ".amendment-history > div:first-child > div"
-      );
-      fireEvent.click(parentDiv);
 
       expect(mainDiv).toHaveClass("expanded");
     });
 
     it("should apply no-margin and active-tile classes when expanded", () => {
       const amendments = [mockAmendment, mockAmendment2];
-      const { container } = render(
-        <AmendmentHistory amendments={amendments} />
-      );
-      const parentDiv = container.querySelector(
-        ".amendment-history > div:first-child > div"
-      );
-      fireEvent.click(parentDiv);
+      render(<AmendmentHistory amendments={amendments} />);
 
       const noteTile = screen.getAllByTestId("note-tile")[0];
       expect(noteTile).toHaveClass("no-margin");

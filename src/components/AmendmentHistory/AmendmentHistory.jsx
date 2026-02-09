@@ -5,7 +5,7 @@ import { NoteTile } from "../../features/DisplayControls/DrugChart/components/No
 import PropTypes from "prop-types";
 
 const AmendmentHistory = ({ amendments = [] }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded);
