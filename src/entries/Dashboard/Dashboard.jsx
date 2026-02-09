@@ -48,7 +48,9 @@ export default function Dashboard(props) {
     window.location.hash.split("?")[1] || ""
   );
   const openAcknowledge = urlParams.get("openAcknowledge") === "true";
-  const medicationAdministrationNoteUUID = urlParams.get("noteUuid");
+  const medicationAdministrationUUID = urlParams.get(
+    "medicationAdministrationUuid"
+  );
   const medicationAdministrationEpoch = urlParams.get(
     "medicationAdministrationEpoch"
   );
@@ -229,7 +231,7 @@ export default function Dashboard(props) {
               scrollToSection,
               deepLinkParams: {
                 openAcknowledge,
-                medicationAdministrationNoteUUID,
+                medicationAdministrationUUID,
                 medicationAdministrationEpoch,
               },
             }}
