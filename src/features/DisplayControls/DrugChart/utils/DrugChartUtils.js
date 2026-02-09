@@ -200,7 +200,10 @@ export const mapDrugOrdersAndSlots = (drugChartData, drugOrders, drugChart) => {
           notes = "",
           hasAmendedNotes = false,
           approvalStatus = "",
-          noteInfo = {};
+          noteInfo = {
+            acknowledgementNotes: [],
+            amendedNotes: [],
+          };
         if (medicationAdministration) {
           const { providers, notes: administeredNotes } =
             medicationAdministration;
@@ -236,6 +239,7 @@ export const mapDrugOrdersAndSlots = (drugChartData, drugOrders, drugChart) => {
             hasAmendedNotes,
             approvalStatus,
             noteInfo,
+            isMissed: status === "MISSED",
           },
         });
       }
@@ -518,10 +522,9 @@ export const extractNotesSummary = (notes) => {
             recordedTime: note.acknowledgement.acknowledgedTime,
             author: note.acknowledgement.approvedBy,
           });
-          if(notes.length === 1){
+          if (notes.length === 1) {
             acc.fil.push(note);
-          }else
-          acc.amended.push(note);
+          } else acc.amended.push(note);
         } else if (note.previousNoteUuid == null) {
           acc.fil.push(note);
         } else {

@@ -99,7 +99,8 @@ export default function TimeCell(props) {
   };
 
   const renderTooltipContent = (notes, slot, amendedNotes = null) => {
-    const showAmendButton = !isAcknowledged && slot.status !== "MISSED";
+    const showAmendButton =
+      !isAcknowledged && !slot?.originalSlot?.administrationSummary.isMissed;
     const hasAmendedNotes = amendedNotes && amendedNotes.length > 0;
     const noteInfo = slot?.originalSlot?.administrationSummary?.noteInfo;
 
