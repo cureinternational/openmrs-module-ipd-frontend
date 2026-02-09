@@ -518,6 +518,9 @@ export const extractNotesSummary = (notes) => {
             recordedTime: note.acknowledgement.acknowledgedTime,
             author: note.acknowledgement.approvedBy,
           });
+          if(notes.length === 1){
+            acc.fil.push(note);
+          }else
           acc.amended.push(note);
         } else if (note.previousNoteUuid == null) {
           acc.fil.push(note);

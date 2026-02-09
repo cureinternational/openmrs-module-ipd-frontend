@@ -13,6 +13,7 @@ import {
 } from "../utils/DrugChartUtils";
 import { timeFormatFor24Hr } from "../../../../constants.js";
 import moment from "moment";
+import { FormattedMessage } from "react-intl";
 
 export default function TimeCell(props) {
   const {
@@ -65,7 +66,7 @@ export default function TimeCell(props) {
     return noteAuthor?.provider?.uuid === currentProviderUuid;
   };
 
-  const getNoteIcon = (hasAmendedNotes, isAcknowledged) => {
+  const getNoteIcon = (hasAmendedNotes, isAcknowledged, slot) => {
     if (isAcknowledged) {
       return (
         <div className="note-icon-container">
@@ -73,7 +74,7 @@ export default function TimeCell(props) {
         </div>
       );
     }
-    if (hasAmendedNotes) {
+    if (hasAmendedNotes || isNewNotes(slot)) {
       return (
         <div className="note-icon-container">
           <AmendedIcon />
@@ -87,12 +88,27 @@ export default function TimeCell(props) {
     );
   };
 
+  const isNewNotes = (slot) => {
+    const { noteInfo = {} } = slot.originalSlot.administrationSummary;
+    return !!(
+      noteInfo.acknowledgementNotes.length === 0 &&
+      noteInfo.amendedNotes.length === 0 &&
+      noteInfo.newNote &&
+      !noteInfo.original
+    );
+  };
+
   const renderTooltipContent = (notes, slot, amendedNotes = null) => {
-    const showAmendButton = !isAcknowledged;
+    const showAmendButton = !isAcknowledged && slot.status !== "MISSED";
     const hasAmendedNotes = amendedNotes && amendedNotes.length > 0;
+    const noteInfo = slot?.originalSlot?.administrationSummary?.noteInfo;
 
-    const amendedText = hasAmendedNotes ? amendedNotes[0]?.text : null;
-
+    let amendedText;
+    if (hasAmendedNotes) {
+      amendedText = amendedNotes[0]?.text;
+    } else {
+      amendedText = noteInfo?.newNote?.text;
+    }
     const isAcknowledged =
       slot?.originalSlot?.administrationSummary?.approvalStatus === "APPROVED";
 
@@ -131,7 +147,7 @@ export default function TimeCell(props) {
         {notes && amendedText && !isAcknowledged && (
           <div style={{ marginTop: "12px" }}></div>
         )}
-        {amendedText &&
+        {(amendedText || isNewNotes(slot)) &&
           !isAcknowledged &&
           canAcknowledgeAmendment(privileges) && (
             <div>
@@ -201,13 +217,11 @@ export default function TimeCell(props) {
       >
         {left.map((slot) => {
           const { status, administrationInfo, notes, minutes } = slot;
-          const hasAmendedNotes =
-            slot?.originalSlot?.administrationSummary?.hasAmendedNotes || false;
-          const isAcknowledged =
-            slot?.originalSlot?.administrationSummary?.approvalStatus ===
-            "APPROVED";
-          const amendedNotesResponse =
-            slot?.originalSlot?.administrationSummary?.noteInfo?.amendedNotes;
+          const summary = slot?.originalSlot?.administrationSummary;
+          const noteInfo = summary?.noteInfo || {};
+          const hasAmendedNotes = summary?.hasAmendedNotes || false;
+          const isAcknowledged = summary?.approvalStatus === "APPROVED";
+          const amendedNotesResponse = noteInfo?.amendedNotes;
 
           return (
             <div key={minutes}>
@@ -217,7 +231,7 @@ export default function TimeCell(props) {
                   <Tooltip
                     autoOrientation={true}
                     renderIcon={() =>
-                      getNoteIcon(hasAmendedNotes, isAcknowledged)
+                      getNoteIcon(hasAmendedNotes, isAcknowledged, slot)
                     }
                   >
                     {renderTooltipContent(notes, slot, amendedNotesResponse)}
@@ -227,7 +241,17 @@ export default function TimeCell(props) {
                 <span data-testid="add-left-notes">
                   {(status === "Administered-Late" ||
                     status === "Administered") && (
-                    <TooltipDefinition tooltipText="Add Notes">
+                    <TooltipDefinition
+                      tooltipText={
+                        <div style={{ color: "#fff" }}>
+                          <FormattedMessage
+                            id="ADD_NOTES"
+                            defaultMessage="Add Notes"
+                          />
+                        </div>
+                      }
+                      direction="top"
+                    >
                       <div
                         className="note-icon-container"
                         onClick={(e) => {
@@ -256,15 +280,11 @@ export default function TimeCell(props) {
         >
           {right.map((slot) => {
             const { status, administrationInfo, notes, minutes } = slot;
-            const hasAmendedNotes =
-              slot?.originalSlot?.administrationSummary?.hasAmendedNotes ||
-              false;
-            const isAcknowledged =
-              slot?.originalSlot?.administrationSummary?.approvalStatus ===
-              "APPROVED";
-            const amendedNotesResponse =
-              slot?.originalSlot?.administrationSummary?.noteInfo?.amendedNotes;
-
+            const summary = slot?.originalSlot?.administrationSummary;
+            const noteInfo = summary?.noteInfo || {};
+            const hasAmendedNotes = summary?.hasAmendedNotes || false;
+            const isAcknowledged = summary?.approvalStatus === "APPROVED";
+            const amendedNotesResponse = noteInfo?.amendedNotes;
             return (
               <div key={minutes}>
                 <SVGIcon iconType={status} info={administrationInfo} />
@@ -273,7 +293,7 @@ export default function TimeCell(props) {
                     <Tooltip
                       autoOrientation={true}
                       renderIcon={() =>
-                        getNoteIcon(hasAmendedNotes, isAcknowledged)
+                        getNoteIcon(hasAmendedNotes, isAcknowledged, slot)
                       }
                     >
                       {renderTooltipContent(notes, slot, amendedNotesResponse)}
@@ -283,7 +303,17 @@ export default function TimeCell(props) {
                   <span data-testid="add-right-notes">
                     {(status === "Administered-Late" ||
                       status === "Administered") && (
-                      <TooltipDefinition tooltipText="Add Notes">
+                      <TooltipDefinition
+                        tooltipText={
+                          <div style={{ color: "#fff" }}>
+                            <FormattedMessage
+                              id="ADD_NOTES"
+                              defaultMessage="Add Notes"
+                            />
+                          </div>
+                        }
+                        direction="top"
+                      >
                         <div
                           className="note-icon-container"
                           onClick={(e) => {

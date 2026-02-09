@@ -57,6 +57,16 @@ const slotInfoWithNotes = [
     status: "Administered",
     administrationInfo: "Superman[12.20]",
     notes: "test notes",
+    originalSlot: {
+      administrationSummary: {
+        noteInfo: {
+          acknowledgementNotes: [],
+          amendedNotes: [],
+          newNote: {},
+          original: {}
+        }
+      },
+    }
   },
 ];
 
@@ -203,6 +213,14 @@ describe("TimeCell", () => {
           administrationSummary: {
             status: "Administered",
             approvalStatus: null,
+            noteInfo: {
+              amendedNotes: [
+                {
+                  text: "Amended note text 1",
+                },
+              ],
+              acknowledgementNotes: []
+            }
           },
         },
       },
@@ -246,6 +264,10 @@ describe("TimeCell", () => {
           },
           administrationSummary: {
             status: "Administered",
+            noteInfo: {
+              acknowledgementNotes: [],
+              amendedNotes: []
+            }
           },
         },
       },
@@ -285,6 +307,10 @@ describe("TimeCell", () => {
             status: "Administered",
             hasAmendedNotes: true,
             approvalStatus: null,
+            noteInfo: {
+              acknowledgementNotes: [],
+              amendedNotes: [{text: "Note"}]
+            }
           },
         },
       },
@@ -331,6 +357,10 @@ describe("TimeCell", () => {
             status: "Administered",
             hasAmendedNotes: true,
             approvalStatus: "APPROVED",
+            noteInfo: {
+              acknowledgementNotes: [],
+              amendedNotes: [{text: "Note"}]
+            }
           },
         },
       },
@@ -368,6 +398,10 @@ describe("TimeCell", () => {
             status: "Administered",
             hasAmendedNotes: true,
             approvalStatus: null,
+            noteInfo: {
+              acknowledgementNotes: [],
+              amendedNotes: [{text: "Note"}]
+            }
           },
         },
       },
@@ -411,6 +445,10 @@ describe("TimeCell", () => {
               status: "Administered",
               hasAmendedNotes: true,
               approvalStatus: "APPROVED",
+              noteInfo: {
+                acknowledgementNotes: [{text: "Ack Note"}],
+                amendedNotes: []
+              }
             },
           },
         },
@@ -451,6 +489,10 @@ describe("TimeCell", () => {
               status: "Administered",
               hasAmendedNotes: true,
               approvalStatus: null,
+              noteInfo: {
+                acknowledgementNotes: [],
+                amendedNotes: [{text: "Note"}]
+              }
             },
           },
         },
@@ -493,6 +535,10 @@ describe("TimeCell", () => {
               status: "Administered",
               hasAmendedNotes: true,
               approvalStatus: "APPROVED",
+              noteInfo: {
+                acknowledgementNotes: [{text: "Ack Note"}],
+                amendedNotes: []
+              }
             },
           },
         },
@@ -592,6 +638,10 @@ describe("TimeCell", () => {
               status: "Administered",
               hasAmendedNotes: true,
               approvalStatus: "APPROVED",
+              noteInfo: {
+                acknowledgementNotes: [{text: "Ack Note"}],
+                amendedNotes: []
+              }
             },
           },
         },
@@ -634,6 +684,15 @@ describe("TimeCell", () => {
               status: "Administered",
               hasAmendedNotes: true,
               approvalStatus: "APPROVED",
+              noteInfo: {
+                acknowledgementNotes: [
+                  {
+                    text: "Acknowledged note",
+                    recordedTime: 1770399475000,
+                    author: { display: "Nurse Joy" },
+                  },
+                ],
+              },
             },
           },
         },
