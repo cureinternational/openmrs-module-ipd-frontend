@@ -321,14 +321,14 @@ export default function DrugChartWrapper(props) {
     const handleDeepLink = async () => {
       if (
         !deepLinkParams?.openAcknowledge ||
-        !deepLinkParams?.medicationAdministrationNoteUUID ||
+        !deepLinkParams?.medicationAdministrationUUID ||
         !deepLinkParams?.medicationAdministrationEpoch
       ) {
         return;
       }
 
       const deepLinkKey =
-        deepLinkParams.medicationAdministrationNoteUUID +
+        deepLinkParams.medicationAdministrationUUID +
         "-" +
         deepLinkParams.medicationAdministrationEpoch;
       if (window.__processedDeepLink === deepLinkKey) {
@@ -368,11 +368,10 @@ export default function DrugChartWrapper(props) {
         let foundSlot = null;
         let foundRowData = null;
         for (const medication of transformedMedications) {
-          const slot = medication.slots?.find((s) =>
-            s.medicationAdministration?.notes?.some(
-              (note) =>
-                note.uuid === deepLinkParams.medicationAdministrationNoteUUID
-            )
+          const slot = medication.slots?.find(
+            (s) =>
+              s.medicationAdministration?.uuid ===
+              deepLinkParams.medicationAdministrationUUID
           );
           if (slot) {
             foundSlot = slot;
