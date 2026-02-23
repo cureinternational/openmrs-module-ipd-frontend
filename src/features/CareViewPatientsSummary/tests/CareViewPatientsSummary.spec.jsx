@@ -35,10 +35,9 @@ jest.mock("../../CareViewSummary/utils/CareViewSummary", () => {
     getSlotsForPatients: () => mockGetSlotsForPatients(),
     getTasksForPatients: () => mockGetTasksForPatients(),
     getColumnData: () => mockGetColumnData(),
-    currentShiftHoursArray: () =>mockCurrentShiftHoursArray(),
-    setCurrentShiftTimes: ()=>mockSetCurrentShiftTimes(),
-    getPreviousShiftDetails: ()=>mockGetPreviousShiftDetails()
-
+    currentShiftHoursArray: () => mockCurrentShiftHoursArray(),
+    setCurrentShiftTimes: () => mockSetCurrentShiftTimes(),
+    getPreviousShiftDetails: () => mockGetPreviousShiftDetails(),
   };
 });
 
@@ -72,13 +71,14 @@ describe("CareViewPatientsSummary", () => {
       shiftIndex: 0,
     });
     mockSetCurrentShiftTimes.mockReturnValue([
-       "1713234600000",
-       "1713274200000"]
-    )
+      "1713234600000",
+      "1713274200000",
+    ]);
     mockGetPreviousShiftDetails.mockReturnValue({
       endDateTime: "1713234600000",
       previousShiftIndex: 1,
-      startDateTime: "1713187800000"})
+      startDateTime: "1713187800000",
+    });
   });
 
   it("should match snapshot", () => {
@@ -236,6 +236,51 @@ describe("CareViewPatientsSummary", () => {
     await waitFor(() => {
       expect(queryByText("A-6")).toBeTruthy();
       expect(queryByText("C-1")).toBeTruthy();
+    });
+  });
+
+  it("should filter patients when PENDING filter is selected", async () => {
+    // First getTasksForPatients call is fetchPreviousShiftTasks — PT51140 (A-6) has a pending task
+    // Second call is fetchTasks (current shift) — returns empty
+    mockGetTasksForPatients
+      .mockReturnValueOnce([
+        {
+          patientUuid: "17fd50c7-8f9e-48da-b9ed-88c1bd358798", // PT51140, bed A-6
+          tasks: [
+            {
+              taskType: { display: "nursing_activity_system" },
+              status: "REQUESTED",
+              name: "Blood Pressure",
+              uuid: "task-uuid-pending-1",
+            },
+          ],
+        },
+        {
+          patientUuid: "7278eb93-8c1d-4ef4-bcbf-4c6ee91365f7", // PT49722, bed C-1
+          tasks: [],
+        },
+      ])
+      .mockReturnValueOnce([]);
+
+    const { queryByText } = render(
+      <IntlProvider locale="en">
+        <CareViewContext.Provider
+          value={{ ...mockContext, taskFilterType: "PENDING" }}
+        >
+          <CareViewPatientsSummary
+            patientsSummary={mockPatientsList.admittedPatients}
+            navHourEpoch={mockNavHourEpoch}
+            filterValue={mockFilterValue}
+          />
+        </CareViewContext.Provider>
+      </IntlProvider>
+    );
+
+    await waitFor(() => {
+      // PT51140 has a pending nursing task — should be visible
+      expect(queryByText("A-6")).toBeTruthy();
+      // PT49722 has no pending tasks — should be hidden
+      expect(queryByText("C-1")).toBeFalsy();
     });
   });
 });

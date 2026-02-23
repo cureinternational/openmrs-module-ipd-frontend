@@ -15,7 +15,10 @@ const makeContext = (overrides = {}) => ({
   ...overrides,
 });
 
-const defaultNavHourEpoch = { startHourEpoch: 1710504000, endHourEpoch: 1710511200 };
+const defaultNavHourEpoch = {
+  startHourEpoch: 1710504000,
+  endHourEpoch: 1710511200,
+};
 
 describe("Header", () => {
   afterEach(() => {
@@ -26,7 +29,10 @@ describe("Header", () => {
     const { container } = render(
       <IntlProvider locale="en">
         <CareViewContext.Provider value={makeContext()}>
-          <Header timeframeLimitInHours={2} navHourEpoch={defaultNavHourEpoch} />
+          <Header
+            timeframeLimitInHours={2}
+            navHourEpoch={defaultNavHourEpoch}
+          />
         </CareViewContext.Provider>
       </IntlProvider>
     );
@@ -37,7 +43,10 @@ describe("Header", () => {
     const { queryByTestId } = render(
       <IntlProvider locale="en">
         <CareViewContext.Provider value={makeContext()}>
-          <Header timeframeLimitInHours={2} navHourEpoch={defaultNavHourEpoch} />
+          <Header
+            timeframeLimitInHours={2}
+            navHourEpoch={defaultNavHourEpoch}
+          />
         </CareViewContext.Provider>
       </IntlProvider>
     );
@@ -50,8 +59,13 @@ describe("Header", () => {
   it("should render header details correctly for 12 hour format", () => {
     const { queryByTestId } = render(
       <IntlProvider locale="en">
-        <CareViewContext.Provider value={makeContext({ ipdConfig: { enable24HourTime: false } })}>
-          <Header timeframeLimitInHours={2} navHourEpoch={defaultNavHourEpoch} />
+        <CareViewContext.Provider
+          value={makeContext({ ipdConfig: { enable24HourTime: false } })}
+        >
+          <Header
+            timeframeLimitInHours={2}
+            navHourEpoch={defaultNavHourEpoch}
+          />
         </CareViewContext.Provider>
       </IntlProvider>
     );
@@ -65,7 +79,10 @@ describe("Header", () => {
     render(
       <IntlProvider locale="en">
         <CareViewContext.Provider value={makeContext()}>
-          <Header timeframeLimitInHours={2} navHourEpoch={defaultNavHourEpoch} />
+          <Header
+            timeframeLimitInHours={2}
+            navHourEpoch={defaultNavHourEpoch}
+          />
         </CareViewContext.Provider>
       </IntlProvider>
     );
@@ -76,11 +93,31 @@ describe("Header", () => {
     expect(screen.getByText("Pending")).toBeTruthy();
   });
 
+  it("should call setTaskFilterType with ALL when All tab is clicked", () => {
+    render(
+      <IntlProvider locale="en">
+        <CareViewContext.Provider
+          value={makeContext({ taskFilterType: TASK_FILTER_HEADER.NEW })}
+        >
+          <Header
+            timeframeLimitInHours={2}
+            navHourEpoch={defaultNavHourEpoch}
+          />
+        </CareViewContext.Provider>
+      </IntlProvider>
+    );
+    fireEvent.click(screen.getByText("All"));
+    expect(mockSetTaskFilterType).toHaveBeenCalledWith(TASK_FILTER_HEADER.ALL);
+  });
+
   it("should call setTaskFilterType with NEW when New tab is clicked", () => {
     render(
       <IntlProvider locale="en">
         <CareViewContext.Provider value={makeContext()}>
-          <Header timeframeLimitInHours={2} navHourEpoch={defaultNavHourEpoch} />
+          <Header
+            timeframeLimitInHours={2}
+            navHourEpoch={defaultNavHourEpoch}
+          />
         </CareViewContext.Provider>
       </IntlProvider>
     );
@@ -92,11 +129,16 @@ describe("Header", () => {
     render(
       <IntlProvider locale="en">
         <CareViewContext.Provider value={makeContext()}>
-          <Header timeframeLimitInHours={2} navHourEpoch={defaultNavHourEpoch} />
+          <Header
+            timeframeLimitInHours={2}
+            navHourEpoch={defaultNavHourEpoch}
+          />
         </CareViewContext.Provider>
       </IntlProvider>
     );
     fireEvent.click(screen.getByText("Pending"));
-    expect(mockSetTaskFilterType).toHaveBeenCalledWith(TASK_FILTER_HEADER.PENDING);
+    expect(mockSetTaskFilterType).toHaveBeenCalledWith(
+      TASK_FILTER_HEADER.PENDING
+    );
   });
 });

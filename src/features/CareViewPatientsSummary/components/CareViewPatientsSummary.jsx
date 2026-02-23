@@ -10,7 +10,10 @@ import { PatientDetailsCell } from "./PatientDetailsCell";
 import { SlotDetailsCell } from "./SlotDetailsCell";
 import { Header } from "./Header";
 import { getPreviousShiftDetails } from "../../CareViewSummary/utils/CareViewSummary";
-import { currentShiftHoursArray, setCurrentShiftTimes } from "../../DisplayControls/DrugChart/utils/DrugChartUtils";
+import {
+  currentShiftHoursArray,
+  setCurrentShiftTimes,
+} from "../../DisplayControls/DrugChart/utils/DrugChartUtils";
 import { TASK_FILTER_HEADER } from "../../../constants";
 
 export const CareViewPatientsSummary = ({
@@ -20,17 +23,20 @@ export const CareViewPatientsSummary = ({
 }) => {
   const [slotDetails, setSlotDetails] = useState([]);
   const [nonMedicationDetails, setNonMedicationDetails] = useState([]);
-  const [previousShiftNonMedicationDetails, setPreviousShiftNonMedicationDetails] = useState([]);
-  const { careViewConfig, ipdConfig, taskFilterType = TASK_FILTER_HEADER.ALL } = useContext(CareViewContext);
+  const [
+    previousShiftNonMedicationDetails,
+    setPreviousShiftNonMedicationDetails,
+  ] = useState([]);
+  const {
+    careViewConfig,
+    ipdConfig,
+    taskFilterType = TASK_FILTER_HEADER.ALL,
+  } = useContext(CareViewContext);
   const { shiftDetails: shiftConfig = {} } = ipdConfig;
   const timeframeLimitInHours = careViewConfig.timeframeLimitInHours;
-  const shiftDetails = currentShiftHoursArray(
-    new Date(),
-    shiftConfig
-  );
+  const shiftDetails = currentShiftHoursArray(new Date(), shiftConfig);
   const shiftRangeArray = shiftDetails.rangeArray;
   const shiftIndex = shiftDetails.shiftIndex;
- 
 
   const fetchSlots = async (patients) => {
     const patientUuids = patients.map((patient) => patient.patientDetails.uuid);
@@ -53,11 +59,8 @@ export const CareViewPatientsSummary = ({
   };
 
   const fetchPreviousShiftTasks = async (patients) => {
-    const [startDateTime, endDateTime] =  setCurrentShiftTimes(
-      shiftDetails
-    );
-    const previousShiftDetails =
-    getPreviousShiftDetails(
+    const [startDateTime, endDateTime] = setCurrentShiftTimes(shiftDetails);
+    const previousShiftDetails = getPreviousShiftDetails(
       shiftRangeArray,
       shiftIndex,
       startDateTime,
@@ -66,31 +69,33 @@ export const CareViewPatientsSummary = ({
     const patientUuids = patients.map((patient) => patient.patientDetails.uuid);
     const response = await getTasksForPatients(
       patientUuids,
-      previousShiftDetails.startDateTime ,
-      previousShiftDetails.endDateTime 
+      previousShiftDetails.startDateTime,
+      previousShiftDetails.endDateTime
     );
     const groupedData = [];
-    response.forEach(patientData => {
-    const patientUuid = patientData.patientUuid;
-    const patientTasks = [];
-    patientData.tasks.forEach(task => {
-      if (task.taskType?.display === "nursing_activity_system" && task.status === "REQUESTED") {
-        
+    response.forEach((patientData) => {
+      const patientUuid = patientData.patientUuid;
+      const patientTasks = [];
+      patientData.tasks.forEach((task) => {
+        if (
+          task.taskType?.display === "nursing_activity_system" &&
+          task.status === "REQUESTED"
+        ) {
           patientTasks.push({
-              taskName: task.name,
-              taskId: task.uuid 
+            taskName: task.name,
+            taskId: task.uuid,
           });
-      }
+        }
+      });
+      groupedData.push({
+        patient: patientUuid,
+        tasks: patientTasks,
+      });
     });
-    groupedData.push({
-      patient: patientUuid,
-      tasks: patientTasks
-    });
-  });
     setPreviousShiftNonMedicationDetails(groupedData);
-  }
- 
-  useEffect(() => { 
+  };
+
+  useEffect(() => {
     if (patientsSummary.length > 0) {
       fetchPreviousShiftTasks(patientsSummary);
       fetchSlots(patientsSummary);
@@ -106,7 +111,7 @@ export const CareViewPatientsSummary = ({
             timeframeLimitInHours={timeframeLimitInHours}
             navHourEpoch={navHourEpoch}
           />
-          {patientsSummary.reduce((rows, patientSummary, idx) => {
+          {patientsSummary.reduce((rows, patientSummary) => {
             const {
               patientDetails,
               bedDetails,
@@ -120,11 +125,19 @@ export const CareViewPatientsSummary = ({
             );
             const tasks = matchingShift ? matchingShift.tasks : [];
 
-            if (taskFilterType === TASK_FILTER_HEADER.NEW && newTreatments === 0) return rows;
-            if (taskFilterType === TASK_FILTER_HEADER.PENDING && tasks.length === 0) return rows;
+            if (
+              taskFilterType === TASK_FILTER_HEADER.NEW &&
+              newTreatments === 0
+            )
+              return rows;
+            if (
+              taskFilterType === TASK_FILTER_HEADER.PENDING &&
+              tasks.length === 0
+            )
+              return rows;
 
             rows.push(
-              <tr key={idx} className={"patient-row-container"}>
+              <tr key={uuid} className={"patient-row-container"}>
                 <PatientDetailsCell
                   bedDetails={bedDetails}
                   patientDetails={patientDetails}

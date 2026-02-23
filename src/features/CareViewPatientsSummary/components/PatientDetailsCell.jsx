@@ -10,7 +10,6 @@ import {
 import { Link } from "carbon-components-react";
 import { FormattedMessage, useIntl } from "react-intl";
 import propTypes from "prop-types";
-import PropTypes from "prop-types";
 import { CareViewContext } from "../../../context/CareViewContext";
 import {
   getCurrentShiftTimes,
@@ -207,8 +206,8 @@ export const PatientDetailsCell = ({
 
 PatientDetailsCell.propTypes = {
   patientDetails: {
-    person: PropTypes.object.isRequired,
-    uuid: PropTypes.string.isRequired,
+    person: propTypes.object.isRequired,
+    uuid: propTypes.string.isRequired,
   },
   bedDetails: propTypes.object.isRequired,
   careTeamDetails: propTypes.object.isRequired,
