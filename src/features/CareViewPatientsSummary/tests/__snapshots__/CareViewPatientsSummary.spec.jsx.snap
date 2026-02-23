@@ -15,7 +15,59 @@ exports[`CareViewPatientsSummary should match snapshot 1`] = `
           <td
             class="patient-details-container"
             data-testid="patient-details-header"
-          />
+          >
+            <div
+              class="bx--content-switcher"
+              data-testid="task-filter-switcher"
+              role="tablist"
+            >
+              <button
+                aria-selected="true"
+                class="bx--content-switcher-btn bx--content-switcher--selected"
+                data-testid="filter-tab-all"
+                role="tab"
+                tabindex="0"
+                type="button"
+              >
+                <span
+                  class="bx--content-switcher__label"
+                  title="All"
+                >
+                  All
+                </span>
+              </button>
+              <button
+                aria-selected="false"
+                class="bx--content-switcher-btn"
+                data-testid="filter-tab-new"
+                role="tab"
+                tabindex="-1"
+                type="button"
+              >
+                <span
+                  class="bx--content-switcher__label"
+                  title="New"
+                >
+                  New
+                </span>
+              </button>
+              <button
+                aria-selected="false"
+                class="bx--content-switcher-btn"
+                data-testid="filter-tab-pending"
+                role="tab"
+                tabindex="-1"
+                type="button"
+              >
+                <span
+                  class="bx--content-switcher__label"
+                  title="Pending"
+                >
+                  Pending
+                </span>
+              </button>
+            </div>
+          </td>
           <td
             class="slot-details-header"
             data-testid="slot-details-header-0"
@@ -200,6 +252,7 @@ exports[`CareViewPatientsSummary should match snapshot 1`] = `
                 </span>
                 <div
                   class="treatments-notification"
+                  data-testid="new-medications-notification"
                 >
                   <div
                     class="warning_icon"
@@ -222,15 +275,14 @@ exports[`CareViewPatientsSummary should match snapshot 1`] = `
                         d="M29,30H3a1,1,0,0,1-.8872-1.4614l13-25a1,1,0,0,1,1.7744,0l13,25A1,1,0,0,1,29,30ZM4.6507,28H27.3493l.002-.0033L16.002,6.1714h-.004L4.6487,27.9967Z"
                       />
                     </svg>
-                     
-                     
                   </div>
                   <div
                     class="treatments-notification-span"
                   >
                     <div>
-                      • 
-                      1 New treatment(s): 
+                      •
+                       
+                      1 New Medication(s): 
                       <a
                         class="bx--link"
                         data-testid="treatments-ipd-dashboard"

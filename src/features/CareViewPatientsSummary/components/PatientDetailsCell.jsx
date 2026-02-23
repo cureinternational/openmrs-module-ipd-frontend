@@ -117,45 +117,52 @@ export const PatientDetailsCell = ({
           <span>{person.display}</span>&nbsp;(
           <span>{person.gender}</span>)<span className={"separator"}>|</span>
           <span>{getAgeInYearsMonthsDays(person.birthdate, new Date(), intl)}</span>
-          {(newTreatments > 0 || previousShiftPendingTasks.length > 0) && (
-            <>
-              <div className="treatments-notification">
-                <div className="warning_icon">
-                  <WarningAlt20 className={"warning-icon-20"} />{" "} </div>
-                <div className="treatments-notification-span">
-                 { newTreatments > 0 && <div>&bull; { newTreatments + " New treatment(s): "}
-                  <>
-                    <Link
-                      href={getIPDPatientDashboardUrl(
-                        patientDetails.uuid,
-                        visitDetails?.uuid,
-                        "careViewDashboard"
-                      )}
-                      data-testid="treatments-ipd-dashboard"
-                    >
-                      <FormattedMessage
-                        id={"SCHEDULE_TREATMENTS"}
-                        defaultMessage={"Schedule Treatments"}
-                      />
-                    </Link>
-                  </>
-                  </div>}
-                  { previousShiftPendingTasks.length > 0 &&
-                  <div> &bull;{" Previous Pending: "} {
-                    previousShiftPendingTasks.map((task, index) => (
-                      <span key={task.taskId}>
-                        {index === previousShiftPendingTasks.length - 1 ? (
-                          <span>{task.taskName}</span>
-                        ) : (
-                          <span>{task.taskName + ", "}</span>
-                        )}
-                      </span>
-                    ))
-                  }</div>
-                  }
+          {newTreatments > 0 && (
+            <div className="treatments-notification" data-testid="new-medications-notification">
+              <div className="warning_icon">
+                <WarningAlt20 className={"warning-icon-20"} />
+              </div>
+              <div className="treatments-notification-span">
+                <div>
+                  &bull;{" "}
+                  {newTreatments + " New Medication(s): "}
+                  <Link
+                    href={getIPDPatientDashboardUrl(
+                      patientDetails.uuid,
+                      visitDetails?.uuid,
+                      "careViewDashboard"
+                    )}
+                    data-testid="treatments-ipd-dashboard"
+                  >
+                    <FormattedMessage
+                      id={"SCHEDULE_TREATMENTS"}
+                      defaultMessage={"Schedule Treatments"}
+                    />
+                  </Link>
                 </div>
               </div>
-            </>
+            </div>
+          )}
+          {previousShiftPendingTasks.length > 0 && (
+            <div className="treatments-notification" data-testid="pending-tasks-notification">
+              <div className="warning_icon">
+                <WarningAlt20 className={"warning-icon-20"} />
+              </div>
+              <div className="treatments-notification-span">
+                <div>
+                  &bull;{" Pending Nursing Tasks: "}
+                  {previousShiftPendingTasks.map((task, index) => (
+                    <span key={task.taskId}>
+                      {index === previousShiftPendingTasks.length - 1 ? (
+                        <span>{task.taskName}</span>
+                      ) : (
+                        <span>{task.taskName + ", "}</span>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
           )}
         </div>
         {isBookmarked && (

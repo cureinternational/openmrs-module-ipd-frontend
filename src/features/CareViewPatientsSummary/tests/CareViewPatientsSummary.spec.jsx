@@ -179,7 +179,7 @@ describe("CareViewPatientsSummary", () => {
     });
   });
 
-  it("should new treatments notification be present under patient details", async () => {
+  it("should new medications notification be present under patient details", async () => {
     render(
       <IntlProvider locale="en">
         <CareViewContext.Provider value={mockContext}>
@@ -191,7 +191,51 @@ describe("CareViewPatientsSummary", () => {
         </CareViewContext.Provider>
       </IntlProvider>
     );
-    const careViewPatientDetails = screen.getAllByText(/New treatment/i);
+    const careViewPatientDetails = screen.getAllByText(/New Medication/i);
     expect(careViewPatientDetails.length).toBe(1);
+  });
+
+  it("should filter patients when NEW filter is selected", async () => {
+    const { queryByText } = render(
+      <IntlProvider locale="en">
+        <CareViewContext.Provider
+          value={{ ...mockContext, taskFilterType: "NEW" }}
+        >
+          <CareViewPatientsSummary
+            patientsSummary={mockPatientsList.admittedPatients}
+            navHourEpoch={mockNavHourEpoch}
+            filterValue={mockFilterValue}
+          />
+        </CareViewContext.Provider>
+      </IntlProvider>
+    );
+
+    await waitFor(() => {
+      // PT49722 has newTreatments: 1 — should be visible
+      expect(queryByText("C-1")).toBeTruthy();
+      // PT51140 has newTreatments: 0 — should be hidden
+      expect(queryByText("A-6")).toBeFalsy();
+    });
+  });
+
+  it("should show all patients when ALL filter is selected", async () => {
+    const { queryByText } = render(
+      <IntlProvider locale="en">
+        <CareViewContext.Provider
+          value={{ ...mockContext, taskFilterType: "ALL" }}
+        >
+          <CareViewPatientsSummary
+            patientsSummary={mockPatientsList.admittedPatients}
+            navHourEpoch={mockNavHourEpoch}
+            filterValue={mockFilterValue}
+          />
+        </CareViewContext.Provider>
+      </IntlProvider>
+    );
+
+    await waitFor(() => {
+      expect(queryByText("A-6")).toBeTruthy();
+      expect(queryByText("C-1")).toBeTruthy();
+    });
   });
 });

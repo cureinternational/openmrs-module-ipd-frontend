@@ -11,6 +11,7 @@ import { SlotDetailsCell } from "./SlotDetailsCell";
 import { Header } from "./Header";
 import { getPreviousShiftDetails } from "../../CareViewSummary/utils/CareViewSummary";
 import { currentShiftHoursArray, setCurrentShiftTimes } from "../../DisplayControls/DrugChart/utils/DrugChartUtils";
+import { TASK_FILTER_HEADER } from "../../../constants";
 
 export const CareViewPatientsSummary = ({
   patientsSummary,
@@ -20,7 +21,7 @@ export const CareViewPatientsSummary = ({
   const [slotDetails, setSlotDetails] = useState([]);
   const [nonMedicationDetails, setNonMedicationDetails] = useState([]);
   const [previousShiftNonMedicationDetails, setPreviousShiftNonMedicationDetails] = useState([]);
-  const { careViewConfig, ipdConfig } = useContext(CareViewContext);
+  const { careViewConfig, ipdConfig, taskFilterType = TASK_FILTER_HEADER.ALL } = useContext(CareViewContext);
   const { shiftDetails: shiftConfig = {} } = ipdConfig;
   const timeframeLimitInHours = careViewConfig.timeframeLimitInHours;
   const shiftDetails = currentShiftHoursArray(
@@ -105,18 +106,24 @@ export const CareViewPatientsSummary = ({
             timeframeLimitInHours={timeframeLimitInHours}
             navHourEpoch={navHourEpoch}
           />
-          {patientsSummary.map((patientSummary, idx) => {
+          {patientsSummary.reduce((rows, patientSummary, idx) => {
             const {
               patientDetails,
               bedDetails,
               careTeam,
               newTreatments,
-              visitDetails
+              visitDetails,
             } = patientSummary;
             const { uuid } = patientDetails;
-            const matchingShift = previousShiftNonMedicationDetails.find(shift => shift.patient === uuid);
+            const matchingShift = previousShiftNonMedicationDetails.find(
+              (shift) => shift.patient === uuid
+            );
             const tasks = matchingShift ? matchingShift.tasks : [];
-            return (
+
+            if (taskFilterType === TASK_FILTER_HEADER.NEW && newTreatments === 0) return rows;
+            if (taskFilterType === TASK_FILTER_HEADER.PENDING && tasks.length === 0) return rows;
+
+            rows.push(
               <tr key={idx} className={"patient-row-container"}>
                 <PatientDetailsCell
                   bedDetails={bedDetails}
@@ -137,7 +144,8 @@ export const CareViewPatientsSummary = ({
                 />
               </tr>
             );
-          })}
+            return rows;
+          }, [])}
         </tbody>
       </table>
     </div>
