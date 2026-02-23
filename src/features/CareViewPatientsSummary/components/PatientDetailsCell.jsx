@@ -161,7 +161,9 @@ export const PatientDetailsCell = ({
               </div>
               <div className="treatments-notification-span">
                 <div>
-                  &bull;{" Pending Nursing Tasks: "}
+                  &bull;{" "}
+                  {previousShiftPendingTasks.length +
+                    " Pending Nursing Tasks: "}
                   {previousShiftPendingTasks.map((task, index) => (
                     <span key={task.taskId}>
                       {index === previousShiftPendingTasks.length - 1 ? (
