@@ -4,6 +4,7 @@ import {
   BookmarkAdd20,
   BookmarkFilled20,
   HospitalBed16,
+  ResultNew20,
   WarningAlt20,
 } from "@carbon/icons-react";
 import { Link } from "carbon-components-react";
@@ -11,7 +12,10 @@ import { FormattedMessage, useIntl } from "react-intl";
 import propTypes from "prop-types";
 import PropTypes from "prop-types";
 import { CareViewContext } from "../../../context/CareViewContext";
-import { getCurrentShiftTimes, getAgeInYearsMonthsDays } from "../../../utils/DateTimeUtils";
+import {
+  getCurrentShiftTimes,
+  getAgeInYearsMonthsDays,
+} from "../../../utils/DateTimeUtils";
 import { getIPDPatientDashboardUrl } from "../../../utils/CommonUtils";
 
 export const PatientDetailsCell = ({
@@ -21,7 +25,7 @@ export const PatientDetailsCell = ({
   navHourEpoch,
   newTreatments,
   visitDetails,
-  previousShiftPendingTasks
+  previousShiftPendingTasks,
 }) => {
   const { person, uuid } = patientDetails;
   const {
@@ -116,16 +120,20 @@ export const PatientDetailsCell = ({
           <FormattedMessage id={"PATIENT"} defaultMessage={"Patient"} />:{" "}
           <span>{person.display}</span>&nbsp;(
           <span>{person.gender}</span>)<span className={"separator"}>|</span>
-          <span>{getAgeInYearsMonthsDays(person.birthdate, new Date(), intl)}</span>
+          <span>
+            {getAgeInYearsMonthsDays(person.birthdate, new Date(), intl)}
+          </span>
           {newTreatments > 0 && (
-            <div className="treatments-notification" data-testid="new-medications-notification">
+            <div
+              className="treatments-notification"
+              data-testid="new-medications-notification"
+            >
               <div className="warning_icon">
-                <WarningAlt20 className={"warning-icon-20"} />
+                <ResultNew20 className={"result-new-icon-20"} />
               </div>
               <div className="treatments-notification-span">
                 <div>
-                  &bull;{" "}
-                  {newTreatments + " New Medication(s): "}
+                  &bull; {newTreatments + " New Medication(s): "}
                   <Link
                     href={getIPDPatientDashboardUrl(
                       patientDetails.uuid,
@@ -144,7 +152,10 @@ export const PatientDetailsCell = ({
             </div>
           )}
           {previousShiftPendingTasks.length > 0 && (
-            <div className="treatments-notification" data-testid="pending-tasks-notification">
+            <div
+              className="treatments-notification"
+              data-testid="pending-tasks-notification"
+            >
               <div className="warning_icon">
                 <WarningAlt20 className={"warning-icon-20"} />
               </div>

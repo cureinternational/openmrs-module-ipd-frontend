@@ -75,7 +75,7 @@ exports[`PatientDetailsCell should not show nurse name if the current time cross
               >
                 <svg
                   aria-hidden="true"
-                  class="warning-icon-20"
+                  class="result-new-icon-20"
                   fill="currentColor"
                   focusable="false"
                   height="20"
@@ -84,11 +84,16 @@ exports[`PatientDetailsCell should not show nurse name if the current time cross
                   width="20"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path
-                    d="M16 23a1.5 1.5 0 101.5 1.5A1.5 1.5 0 0016 23zM15 12H17V21H15z"
+                  <circle
+                    cx="26"
+                    cy="26"
+                    r="4"
                   />
                   <path
-                    d="M29,30H3a1,1,0,0,1-.8872-1.4614l13-25a1,1,0,0,1,1.7744,0l13,25A1,1,0,0,1,29,30ZM4.6507,28H27.3493l.002-.0033L16.002,6.1714h-.004L4.6487,27.9967Z"
+                    d="M10 13H12V15H10zM10 18H12V20H10zM10 23H12V25H10zM14 13H22V15H14zM14 18H22V20H14zM14 23H18V25H14z"
+                  />
+                  <path
+                    d="M7,28V7h3v3H22V7h3V18h2V7a2,2,0,0,0-2-2H22V4a2,2,0,0,0-2-2H12a2,2,0,0,0-2,2V5H7A2,2,0,0,0,5,7V28a2,2,0,0,0,2,2H18V28ZM12,4h8V8H12Z"
                   />
                 </svg>
               </div>
@@ -96,8 +101,7 @@ exports[`PatientDetailsCell should not show nurse name if the current time cross
                 class="treatments-notification-span"
               >
                 <div>
-                  •
-                   
+                  • 
                   1 New Medication(s): 
                   <a
                     class="bx--link"
@@ -206,7 +210,7 @@ exports[`PatientDetailsCell should not show nurse name if the current time cross
             >
               <svg
                 aria-hidden="true"
-                class="warning-icon-20"
+                class="result-new-icon-20"
                 fill="currentColor"
                 focusable="false"
                 height="20"
@@ -215,11 +219,16 @@ exports[`PatientDetailsCell should not show nurse name if the current time cross
                 width="20"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <path
-                  d="M16 23a1.5 1.5 0 101.5 1.5A1.5 1.5 0 0016 23zM15 12H17V21H15z"
+                <circle
+                  cx="26"
+                  cy="26"
+                  r="4"
                 />
                 <path
-                  d="M29,30H3a1,1,0,0,1-.8872-1.4614l13-25a1,1,0,0,1,1.7744,0l13,25A1,1,0,0,1,29,30ZM4.6507,28H27.3493l.002-.0033L16.002,6.1714h-.004L4.6487,27.9967Z"
+                  d="M10 13H12V15H10zM10 18H12V20H10zM10 23H12V25H10zM14 13H22V15H14zM14 18H22V20H14zM14 23H18V25H14z"
+                />
+                <path
+                  d="M7,28V7h3v3H22V7h3V18h2V7a2,2,0,0,0-2-2H22V4a2,2,0,0,0-2-2H12a2,2,0,0,0-2,2V5H7A2,2,0,0,0,5,7V28a2,2,0,0,0,2,2H18V28ZM12,4h8V8H12Z"
                 />
               </svg>
             </div>
@@ -227,8 +236,7 @@ exports[`PatientDetailsCell should not show nurse name if the current time cross
               class="treatments-notification-span"
             >
               <div>
-                •
-                 
+                • 
                 1 New Medication(s): 
                 <a
                   class="bx--link"
@@ -391,7 +399,7 @@ exports[`PatientDetailsCell should render patientDetailsCell component 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="warning-icon-20"
+              class="result-new-icon-20"
               fill="currentColor"
               focusable="false"
               height="20"
@@ -400,11 +408,16 @@ exports[`PatientDetailsCell should render patientDetailsCell component 1`] = `
               width="20"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <path
-                d="M16 23a1.5 1.5 0 101.5 1.5A1.5 1.5 0 0016 23zM15 12H17V21H15z"
+              <circle
+                cx="26"
+                cy="26"
+                r="4"
               />
               <path
-                d="M29,30H3a1,1,0,0,1-.8872-1.4614l13-25a1,1,0,0,1,1.7744,0l13,25A1,1,0,0,1,29,30ZM4.6507,28H27.3493l.002-.0033L16.002,6.1714h-.004L4.6487,27.9967Z"
+                d="M10 13H12V15H10zM10 18H12V20H10zM10 23H12V25H10zM14 13H22V15H14zM14 18H22V20H14zM14 23H18V25H14z"
+              />
+              <path
+                d="M7,28V7h3v3H22V7h3V18h2V7a2,2,0,0,0-2-2H22V4a2,2,0,0,0-2-2H12a2,2,0,0,0-2,2V5H7A2,2,0,0,0,5,7V28a2,2,0,0,0,2,2H18V28ZM12,4h8V8H12Z"
               />
             </svg>
           </div>
@@ -412,8 +425,7 @@ exports[`PatientDetailsCell should render patientDetailsCell component 1`] = `
             class="treatments-notification-span"
           >
             <div>
-              •
-               
+              • 
               1 New Medication(s): 
               <a
                 class="bx--link"
@@ -527,7 +539,7 @@ exports[`PatientDetailsCell should show nurse name only if a nurse bookmarks a p
               >
                 <svg
                   aria-hidden="true"
-                  class="warning-icon-20"
+                  class="result-new-icon-20"
                   fill="currentColor"
                   focusable="false"
                   height="20"
@@ -536,11 +548,16 @@ exports[`PatientDetailsCell should show nurse name only if a nurse bookmarks a p
                   width="20"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path
-                    d="M16 23a1.5 1.5 0 101.5 1.5A1.5 1.5 0 0016 23zM15 12H17V21H15z"
+                  <circle
+                    cx="26"
+                    cy="26"
+                    r="4"
                   />
                   <path
-                    d="M29,30H3a1,1,0,0,1-.8872-1.4614l13-25a1,1,0,0,1,1.7744,0l13,25A1,1,0,0,1,29,30ZM4.6507,28H27.3493l.002-.0033L16.002,6.1714h-.004L4.6487,27.9967Z"
+                    d="M10 13H12V15H10zM10 18H12V20H10zM10 23H12V25H10zM14 13H22V15H14zM14 18H22V20H14zM14 23H18V25H14z"
+                  />
+                  <path
+                    d="M7,28V7h3v3H22V7h3V18h2V7a2,2,0,0,0-2-2H22V4a2,2,0,0,0-2-2H12a2,2,0,0,0-2,2V5H7A2,2,0,0,0,5,7V28a2,2,0,0,0,2,2H18V28ZM12,4h8V8H12Z"
                   />
                 </svg>
               </div>
@@ -548,8 +565,7 @@ exports[`PatientDetailsCell should show nurse name only if a nurse bookmarks a p
                 class="treatments-notification-span"
               >
                 <div>
-                  •
-                   
+                  • 
                   1 New Medication(s): 
                   <a
                     class="bx--link"
@@ -663,7 +679,7 @@ exports[`PatientDetailsCell should show nurse name only if a nurse bookmarks a p
             >
               <svg
                 aria-hidden="true"
-                class="warning-icon-20"
+                class="result-new-icon-20"
                 fill="currentColor"
                 focusable="false"
                 height="20"
@@ -672,11 +688,16 @@ exports[`PatientDetailsCell should show nurse name only if a nurse bookmarks a p
                 width="20"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <path
-                  d="M16 23a1.5 1.5 0 101.5 1.5A1.5 1.5 0 0016 23zM15 12H17V21H15z"
+                <circle
+                  cx="26"
+                  cy="26"
+                  r="4"
                 />
                 <path
-                  d="M29,30H3a1,1,0,0,1-.8872-1.4614l13-25a1,1,0,0,1,1.7744,0l13,25A1,1,0,0,1,29,30ZM4.6507,28H27.3493l.002-.0033L16.002,6.1714h-.004L4.6487,27.9967Z"
+                  d="M10 13H12V15H10zM10 18H12V20H10zM10 23H12V25H10zM14 13H22V15H14zM14 18H22V20H14zM14 23H18V25H14z"
+                />
+                <path
+                  d="M7,28V7h3v3H22V7h3V18h2V7a2,2,0,0,0-2-2H22V4a2,2,0,0,0-2-2H12a2,2,0,0,0-2,2V5H7A2,2,0,0,0,5,7V28a2,2,0,0,0,2,2H18V28ZM12,4h8V8H12Z"
                 />
               </svg>
             </div>
@@ -684,8 +705,7 @@ exports[`PatientDetailsCell should show nurse name only if a nurse bookmarks a p
               class="treatments-notification-span"
             >
               <div>
-                •
-                 
+                • 
                 1 New Medication(s): 
                 <a
                   class="bx--link"
