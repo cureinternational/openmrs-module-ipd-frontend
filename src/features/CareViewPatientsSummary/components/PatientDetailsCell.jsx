@@ -143,7 +143,7 @@ export const PatientDetailsCell = ({
                   >
                     <FormattedMessage
                       id={"SCHEDULE_TREATMENTS"}
-                      defaultMessage={"Schedule Treatments"}
+                      defaultMessage={"Schedule Medications"}
                     />
                   </Link>
                 </div>
