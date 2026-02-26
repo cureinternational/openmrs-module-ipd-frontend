@@ -59,7 +59,7 @@
     "react-intl": "^3.3.2",
     "react-scroll-sync-hook": "0.0.3",
     "react-svg-loader": "^3.0.3",
-    "swiper": "^11.0.7"
+    "swiper": "^12.1.2"
   },
   "scripts": {
     "preinstall": "git config core.hooksPath .git-hooks",
@@ -99,6 +99,7 @@
     "browserify-sign": "4.2.2",
     "follow-redirects": "1.15.4",
     "braces": "^3.0.3",
-    "ws": "^5.2.4"
+    "ws": "^5.2.4",
+    "minimatch": "^3.1.3"
   }
 }
