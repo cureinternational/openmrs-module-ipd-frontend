@@ -1,14 +1,16 @@
 import React, { useContext, useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import {
   DataTableSkeleton,
+  Tab,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
+  Tabs,
 } from "carbon-components-react";
 import { IPDContext } from "../../../../context/IPDContext";
 import {
@@ -19,12 +21,10 @@ import {
 import { getDateTimeFromEpochTime } from "../../../../utils/DateTimeUtils";
 import "../styles/CareInstructions.scss";
 
-const NOT_ACKNOWLEDGED_TAB = "notAcknowledged";
-const ACKNOWLEDGED_TAB = "acknowledged";
-
 const CareInstructions = (props) => {
   const { config: { formConcepts = [] } = {} } = props;
   const ipdContext = useContext(IPDContext);
+  const intl = useIntl();
   const {
     allFormsFilledInCurrentVisit = [],
     isAllFormsFilledInCurrentVisitLoading,
@@ -32,7 +32,6 @@ const CareInstructions = (props) => {
   } = ipdContext;
   const { enable24HourTime = false } = config || {};
 
-  const [activeTab, setActiveTab] = useState(NOT_ACKNOWLEDGED_TAB);
   const [instructions, setInstructions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -156,35 +155,26 @@ const CareInstructions = (props) => {
 
   return (
     <div className={"care-instructions-display-control"}>
-      <div className={"tab-list"}>
-        <button
-          className={`tab-item ${
-            activeTab === NOT_ACKNOWLEDGED_TAB ? "active" : ""
-          }`}
-          onClick={() => setActiveTab(NOT_ACKNOWLEDGED_TAB)}
+      <Tabs>
+        <Tab
+          id="notAcknowledged"
+          label={intl.formatMessage({
+            id: "NOT_ACKNOWLEDGED_TAB",
+            defaultMessage: "Not Acknowledged",
+          })}
         >
-          <FormattedMessage
-            id={"NOT_ACKNOWLEDGED_TAB"}
-            defaultMessage={"Not Acknowledged"}
-          />
-        </button>
-        <button
-          className={`tab-item ${
-            activeTab === ACKNOWLEDGED_TAB ? "active" : ""
-          }`}
-          onClick={() => setActiveTab(ACKNOWLEDGED_TAB)}
+          {renderNotAcknowledgedContent()}
+        </Tab>
+        <Tab
+          id="acknowledged"
+          label={intl.formatMessage({
+            id: "ACKNOWLEDGED_TAB",
+            defaultMessage: "Acknowledged",
+          })}
         >
-          <FormattedMessage
-            id={"ACKNOWLEDGED_TAB"}
-            defaultMessage={"Acknowledged"}
-          />
-        </button>
-      </div>
-      <div className={"care-instructions-tab-content"}>
-        {activeTab === NOT_ACKNOWLEDGED_TAB
-          ? renderNotAcknowledgedContent()
-          : renderAcknowledgedContent()}
-      </div>
+          {renderAcknowledgedContent()}
+        </Tab>
+      </Tabs>
     </div>
   );
 };

@@ -1,5 +1,7 @@
 import React from "react";
 import { render, waitFor, fireEvent } from "@testing-library/react";
+
+window.HTMLElement.prototype.scrollIntoView = jest.fn();
 import { IntlProvider } from "react-intl";
 import { IPDContext } from "../../../../context/IPDContext";
 import CareInstructions from "../components/CareInstructions";
@@ -140,9 +142,8 @@ describe("CareInstructions", () => {
       mockIPDContextEmpty
     );
     await waitFor(() => {
-      const notAcknowledgedTab = getByText("Not Acknowledged");
-      expect(notAcknowledgedTab).toBeTruthy();
-      expect(notAcknowledgedTab.className).toContain("active");
+      expect(getByText("Not Acknowledged")).toBeTruthy();
+      expect(getByText("Acknowledged")).toBeTruthy();
     });
   });
 
