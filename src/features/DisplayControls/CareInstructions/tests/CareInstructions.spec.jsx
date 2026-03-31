@@ -1,11 +1,14 @@
 import React from "react";
 import { render, waitFor, fireEvent } from "@testing-library/react";
+import axios from "axios";
+import MockAdapter from "axios-mock-adapter";
 
 window.HTMLElement.prototype.scrollIntoView = jest.fn();
 import { IntlProvider } from "react-intl";
 import { IPDContext } from "../../../../context/IPDContext";
 import CareInstructions from "../components/CareInstructions";
 import * as CareInstructionsUtils from "../utils/CareInstructionsUtils";
+import { fetchEncounterObs } from "../utils/CareInstructionsUtils";
 
 const mockFormConcepts = [
   {
@@ -303,5 +306,41 @@ describe("extractInstructionsFromObs", () => {
       configuredConcepts
     );
     expect(result).toHaveLength(0);
+  });
+});
+
+describe("fetchEncounterObs", () => {
+  let mockAxios;
+
+  beforeEach(() => {
+    mockAxios = new MockAdapter(axios);
+  });
+
+  afterEach(() => {
+    mockAxios.restore();
+  });
+
+  it("should call the correct URL with withCredentials and return response data", async () => {
+    const encounterUuid = "test-encounter-uuid";
+    const mockResponse = {
+      observations: [{ concept: { name: "Test" }, value: "Value" }],
+    };
+    mockAxios
+      .onGet(new RegExp(`.*${encounterUuid}.*`))
+      .reply(200, mockResponse);
+
+    const result = await fetchEncounterObs(encounterUuid);
+
+    expect(result).toEqual(mockResponse);
+    expect(mockAxios.history.get[0].url).toContain(encounterUuid);
+    expect(mockAxios.history.get[0].withCredentials).toBe(true);
+  });
+
+  it("should return null when the API call fails", async () => {
+    mockAxios.onGet(new RegExp(".*")).reply(500);
+
+    const result = await fetchEncounterObs("any-uuid");
+
+    expect(result).toBeNull();
   });
 });

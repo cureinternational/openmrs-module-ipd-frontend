@@ -14,7 +14,6 @@ import {
 } from "carbon-components-react";
 import { IPDContext } from "../../../../context/IPDContext";
 import {
-  careInstructionsHeaders,
   extractInstructionsFromObs,
   fetchEncounterObs,
 } from "../utils/CareInstructionsUtils";
@@ -35,6 +34,51 @@ const CareInstructions = (props) => {
   const [instructions, setInstructions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  const getCareInstructionsHeaders = () => [
+    {
+      key: "dateAndTime",
+      header: intl.formatMessage({
+        id: "CARE_INSTRUCTIONS_DATE_AND_TIME_HEADER",
+        defaultMessage: "Date and Time",
+      }),
+    },
+    {
+      key: "form",
+      header: intl.formatMessage({
+        id: "CARE_INSTRUCTIONS_FORM_HEADER",
+        defaultMessage: "Form",
+      }),
+    },
+    {
+      key: "instructionType",
+      header: intl.formatMessage({
+        id: "CARE_INSTRUCTIONS_INSTRUCTION_TYPE_HEADER",
+        defaultMessage: "Instruction Type",
+      }),
+    },
+    {
+      key: "instruction",
+      header: intl.formatMessage({
+        id: "CARE_INSTRUCTIONS_INSTRUCTION_HEADER",
+        defaultMessage: "Instruction",
+      }),
+    },
+    {
+      key: "providerName",
+      header: intl.formatMessage({
+        id: "CARE_INSTRUCTIONS_PROVIDER_NAME_HEADER",
+        defaultMessage: "Provider Name",
+      }),
+    },
+    {
+      key: "action",
+      header: intl.formatMessage({
+        id: "CARE_INSTRUCTIONS_ACTION_HEADER",
+        defaultMessage: "Action",
+      }),
+    },
+  ];
+
   useEffect(() => {
     const loadInstructions = async () => {
       if (isAllFormsFilledInCurrentVisitLoading) return;
@@ -42,60 +86,71 @@ const CareInstructions = (props) => {
 
       setIsLoading(true);
 
-      const configuredFormNames = formConcepts.map((fc) => fc.formName);
+      try {
+        const configuredFormNames = formConcepts.map((fc) => fc.formName);
 
-      const matchingFormEntries = allFormsFilledInCurrentVisit.filter((form) =>
-        configuredFormNames.includes(form.formName)
-      );
+        const matchingFormEntries = allFormsFilledInCurrentVisit.filter(
+          (form) => configuredFormNames.includes(form.formName)
+        );
 
-      const allInstructions = [];
+        const allInstructions = [];
 
-      await Promise.all(
-        matchingFormEntries.map(async (formEntry) => {
-          const formConceptConfig = formConcepts.find(
-            (fc) => fc.formName === formEntry.formName
-          );
-          if (!formConceptConfig) return;
+        // One fetchEncounterObs request per matching form entry (intentional N+1 —
+        // no bulk encounter obs endpoint available; requests run in parallel via Promise.all)
+        await Promise.all(
+          matchingFormEntries.map(async (formEntry) => {
+            const formConceptConfig = formConcepts.find(
+              (fc) => fc.formName === formEntry.formName
+            );
+            if (!formConceptConfig) return;
 
-          const encounterData = await fetchEncounterObs(
-            formEntry.encounterUuid
-          );
-          if (!encounterData || !encounterData.observations) return;
+            const encounterData = await fetchEncounterObs(
+              formEntry.encounterUuid
+            );
+            if (!encounterData || !encounterData.observations) return;
 
-          const extracted = extractInstructionsFromObs(
-            encounterData.observations,
-            formConceptConfig.concepts
-          );
+            const extracted = extractInstructionsFromObs(
+              encounterData.observations,
+              formConceptConfig.concepts
+            );
 
-          extracted.forEach((item) => {
-            allInstructions.push({
-              id: `${formEntry.encounterUuid}-${item.conceptName}`,
-              dateAndTime: getDateTimeFromEpochTime(
-                formEntry.encounterDateTime,
-                enable24HourTime
-              ),
-              encounterDateTime: formEntry.encounterDateTime,
-              form: formEntry.formName,
-              instructionType: item.conceptName,
-              instruction: item.value,
-              providerName:
-                formEntry.providers && formEntry.providers.length > 0
-                  ? formEntry.providers[0].providerName
-                  : "",
-              action: "",
+            extracted.forEach((item, idx) => {
+              allInstructions.push({
+                id: `${formEntry.encounterUuid}-${item.conceptName}-${idx}`,
+                dateAndTime: getDateTimeFromEpochTime(
+                  formEntry.encounterDateTime,
+                  enable24HourTime
+                ),
+                encounterDateTime: formEntry.encounterDateTime,
+                form: formEntry.formName,
+                instructionType: item.conceptName,
+                instruction: item.value,
+                providerName:
+                  formEntry.providers && formEntry.providers.length > 0
+                    ? formEntry.providers[0].providerName ?? ""
+                    : "",
+                action: "",
+              });
             });
-          });
-        })
-      );
+          })
+        );
 
-      allInstructions.sort((a, b) => b.encounterDateTime - a.encounterDateTime);
+        allInstructions.sort(
+          (a, b) => b.encounterDateTime - a.encounterDateTime
+        );
 
-      setInstructions(allInstructions);
-      setIsLoading(false);
+        setInstructions(allInstructions);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     loadInstructions();
-  }, [allFormsFilledInCurrentVisit, isAllFormsFilledInCurrentVisitLoading]);
+  }, [
+    allFormsFilledInCurrentVisit,
+    isAllFormsFilledInCurrentVisitLoading,
+    formConcepts,
+  ]);
 
   const isDataLoading = isAllFormsFilledInCurrentVisitLoading || isLoading;
 
@@ -117,7 +172,7 @@ const CareInstructions = (props) => {
       <Table useZebraStyles>
         <TableHead>
           <TableRow>
-            {careInstructionsHeaders.map((header) => (
+            {getCareInstructionsHeaders().map((header) => (
               <TableHeader key={header.key}>{header.header}</TableHeader>
             ))}
           </TableRow>
@@ -138,6 +193,7 @@ const CareInstructions = (props) => {
     );
   };
 
+  // TODO: Acknowledged tab — not yet implemented; will show acknowledged instructions in a future story
   const renderAcknowledgedContent = () => {
     return (
       <div className={"no-acknowledged-records"}>

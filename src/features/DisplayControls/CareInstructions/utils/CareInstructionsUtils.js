@@ -1,58 +1,5 @@
-import React from "react";
 import axios from "axios";
 import { FETCH_ALL_OBSERVATIONS_IN_ENCOUNTER_URL } from "../../../../constants";
-import { FormattedMessage } from "react-intl";
-
-export const careInstructionsHeaders = [
-  {
-    key: "dateAndTime",
-    header: (
-      <FormattedMessage
-        id={"DATE_AND_TIME_COLUMN_HEADER"}
-        defaultMessage={"Date and Time"}
-      />
-    ),
-  },
-  {
-    key: "form",
-    header: (
-      <FormattedMessage id={"FORM_COLUMN_HEADER"} defaultMessage={"Form"} />
-    ),
-  },
-  {
-    key: "instructionType",
-    header: (
-      <FormattedMessage
-        id={"INSTRUCTION_TYPE_COLUMN_HEADER"}
-        defaultMessage={"Instruction Type"}
-      />
-    ),
-  },
-  {
-    key: "instruction",
-    header: (
-      <FormattedMessage
-        id={"INSTRUCTION_COLUMN_HEADER"}
-        defaultMessage={"Instruction"}
-      />
-    ),
-  },
-  {
-    key: "providerName",
-    header: (
-      <FormattedMessage
-        id={"PROVIDER_NAME_COLUMN_HEADER"}
-        defaultMessage={"Provider Name"}
-      />
-    ),
-  },
-  {
-    key: "action",
-    header: (
-      <FormattedMessage id={"ACTION_COLUMN_HEADER"} defaultMessage={"Action"} />
-    ),
-  },
-];
 
 export const extractInstructionsFromObs = (
   observations,
