@@ -16,7 +16,7 @@ import { IPDContext } from "../../../../context/IPDContext";
 import {
   extractInstructionsFromObs,
   fetchEncounterObs,
-} from "../utils/CareInstructionsUtils";
+} from "../utils/CareInstructionsUtils.jsx";
 import { getDateTimeFromEpochTime } from "../../../../utils/DateTimeUtils";
 import "../styles/CareInstructions.scss";
 

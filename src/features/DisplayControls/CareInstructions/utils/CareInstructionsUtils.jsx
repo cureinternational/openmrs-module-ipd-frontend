@@ -1,5 +1,7 @@
-import axios from "axios";
-import { FETCH_ALL_OBSERVATIONS_IN_ENCOUNTER_URL } from "../../../../constants";
+import { fetchObservationsForEncounter } from "../../../../utils/CommonUtils";
+
+export const fetchEncounterObs = (encounterUuid) =>
+  fetchObservationsForEncounter(encounterUuid);
 
 export const extractInstructionsFromObs = (
   observations,
@@ -35,18 +37,4 @@ export const extractInstructionsFromObs = (
 
   searchObs(observations);
   return results;
-};
-
-export const fetchEncounterObs = async (encounterUuid) => {
-  try {
-    const url = FETCH_ALL_OBSERVATIONS_IN_ENCOUNTER_URL.replace(
-      "{encounterUuid}",
-      encounterUuid
-    );
-    const response = await axios.get(url, { withCredentials: true });
-    return response.data;
-  } catch (e) {
-    console.error(e);
-    return null;
-  }
 };

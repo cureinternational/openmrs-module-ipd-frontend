@@ -7,7 +7,7 @@ window.HTMLElement.prototype.scrollIntoView = jest.fn();
 import { IntlProvider } from "react-intl";
 import { IPDContext } from "../../../../context/IPDContext";
 import CareInstructions from "../components/CareInstructions";
-import * as CareInstructionsUtils from "../utils/CareInstructionsUtils";
+import * as CareInstructionsUtils from "../utils/CareInstructionsUtils.jsx";
 
 const mockFormConcepts = [
   {
