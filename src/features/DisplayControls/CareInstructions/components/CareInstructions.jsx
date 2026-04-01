@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import { FormattedMessage, useIntl } from "react-intl";
 import {
@@ -20,6 +20,8 @@ import {
 import { getDateTimeFromEpochTime } from "../../../../utils/DateTimeUtils";
 import "../styles/CareInstructions.scss";
 
+const SKELETON_ROW_COUNT = 3;
+
 const CareInstructions = (props) => {
   const { config: { formConcepts = [] } = {} } = props;
   const ipdContext = useContext(IPDContext);
@@ -34,50 +36,53 @@ const CareInstructions = (props) => {
   const [instructions, setInstructions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const getCareInstructionsHeaders = () => [
-    {
-      key: "dateAndTime",
-      header: intl.formatMessage({
-        id: "CARE_INSTRUCTIONS_DATE_AND_TIME_HEADER",
-        defaultMessage: "Date and Time",
-      }),
-    },
-    {
-      key: "form",
-      header: intl.formatMessage({
-        id: "CARE_INSTRUCTIONS_FORM_HEADER",
-        defaultMessage: "Form",
-      }),
-    },
-    {
-      key: "instructionType",
-      header: intl.formatMessage({
-        id: "CARE_INSTRUCTIONS_INSTRUCTION_TYPE_HEADER",
-        defaultMessage: "Instruction Type",
-      }),
-    },
-    {
-      key: "instruction",
-      header: intl.formatMessage({
-        id: "CARE_INSTRUCTIONS_INSTRUCTION_HEADER",
-        defaultMessage: "Instruction",
-      }),
-    },
-    {
-      key: "providerName",
-      header: intl.formatMessage({
-        id: "CARE_INSTRUCTIONS_PROVIDER_NAME_HEADER",
-        defaultMessage: "Provider Name",
-      }),
-    },
-    {
-      key: "action",
-      header: intl.formatMessage({
-        id: "CARE_INSTRUCTIONS_ACTION_HEADER",
-        defaultMessage: "Action",
-      }),
-    },
-  ];
+  const careInstructionsHeaders = useMemo(
+    () => [
+      {
+        key: "dateAndTime",
+        header: intl.formatMessage({
+          id: "CARE_INSTRUCTIONS_DATE_AND_TIME_HEADER",
+          defaultMessage: "Date and Time",
+        }),
+      },
+      {
+        key: "form",
+        header: intl.formatMessage({
+          id: "CARE_INSTRUCTIONS_FORM_HEADER",
+          defaultMessage: "Form",
+        }),
+      },
+      {
+        key: "instructionType",
+        header: intl.formatMessage({
+          id: "CARE_INSTRUCTIONS_INSTRUCTION_TYPE_HEADER",
+          defaultMessage: "Instruction Type",
+        }),
+      },
+      {
+        key: "instruction",
+        header: intl.formatMessage({
+          id: "CARE_INSTRUCTIONS_INSTRUCTION_HEADER",
+          defaultMessage: "Instruction",
+        }),
+      },
+      {
+        key: "providerName",
+        header: intl.formatMessage({
+          id: "CARE_INSTRUCTIONS_PROVIDER_NAME_HEADER",
+          defaultMessage: "Provider Name",
+        }),
+      },
+      {
+        key: "action",
+        header: intl.formatMessage({
+          id: "CARE_INSTRUCTIONS_ACTION_HEADER",
+          defaultMessage: "Action",
+        }),
+      },
+    ],
+    [intl]
+  );
 
   useEffect(() => {
     const loadInstructions = async () => {
@@ -93,51 +98,40 @@ const CareInstructions = (props) => {
           (form) => configuredFormNames.includes(form.formName)
         );
 
-        const allInstructions = [];
-
         // One fetchEncounterObs request per matching form entry (intentional N+1 —
         // no bulk encounter obs endpoint available; requests run in parallel via Promise.all)
-        await Promise.all(
+        const results = await Promise.all(
           matchingFormEntries.map(async (formEntry) => {
             const formConceptConfig = formConcepts.find(
               (fc) => fc.formName === formEntry.formName
             );
-            if (!formConceptConfig) return;
+            if (!formConceptConfig) return [];
 
             const encounterData = await fetchEncounterObs(
               formEntry.encounterUuid
             );
-            if (!encounterData || !encounterData.observations) return;
+            if (!encounterData || !encounterData.observations) return [];
 
             const extracted = extractInstructionsFromObs(
               encounterData.observations,
               formConceptConfig.concepts
             );
 
-            extracted.forEach((item, idx) => {
-              allInstructions.push({
-                id: `${formEntry.encounterUuid}-${item.conceptName}-${idx}`,
-                dateAndTime: getDateTimeFromEpochTime(
-                  formEntry.encounterDateTime,
-                  enable24HourTime
-                ),
-                encounterDateTime: formEntry.encounterDateTime,
-                form: formEntry.formName,
-                instructionType: item.conceptName,
-                instruction: item.value,
-                providerName:
-                  formEntry.providers && formEntry.providers.length > 0
-                    ? formEntry.providers[0].providerName ?? ""
-                    : "",
-                action: "",
-              });
-            });
+            return extracted.map((item, idx) => ({
+              id: `${formEntry.encounterUuid}-${item.conceptName}-${idx}`,
+              encounterDateTime: formEntry.encounterDateTime,
+              form: formEntry.formName,
+              instructionType: item.conceptName,
+              instruction: item.value,
+              providerName: formEntry.providers?.[0]?.providerName ?? "",
+              action: "",
+            }));
           })
         );
 
-        allInstructions.sort(
-          (a, b) => b.encounterDateTime - a.encounterDateTime
-        );
+        const allInstructions = results
+          .flat()
+          .sort((a, b) => b.encounterDateTime - a.encounterDateTime);
 
         setInstructions(allInstructions);
       } finally {
@@ -157,7 +151,7 @@ const CareInstructions = (props) => {
   const renderNotAcknowledgedContent = () => {
     if (instructions.length === 0) {
       return (
-        <div className={"no-care-instructions"}>
+        <div className={"empty-state-message"}>
           <FormattedMessage
             id={"NO_CARE_INSTRUCTIONS_MESSAGE"}
             defaultMessage={
@@ -172,7 +166,7 @@ const CareInstructions = (props) => {
       <Table useZebraStyles>
         <TableHead>
           <TableRow>
-            {getCareInstructionsHeaders().map((header) => (
+            {careInstructionsHeaders.map((header) => (
               <TableHeader key={header.key}>{header.header}</TableHeader>
             ))}
           </TableRow>
@@ -180,7 +174,12 @@ const CareInstructions = (props) => {
         <TableBody>
           {instructions.map((row) => (
             <TableRow key={row.id}>
-              <TableCell>{row.dateAndTime}</TableCell>
+              <TableCell>
+                {getDateTimeFromEpochTime(
+                  row.encounterDateTime,
+                  enable24HourTime
+                )}
+              </TableCell>
               <TableCell>{row.form}</TableCell>
               <TableCell>{row.instructionType}</TableCell>
               <TableCell>{row.instruction}</TableCell>
@@ -196,7 +195,7 @@ const CareInstructions = (props) => {
   // TODO: Acknowledged tab — not yet implemented; will show acknowledged instructions in a future story
   const renderAcknowledgedContent = () => {
     return (
-      <div className={"no-acknowledged-records"}>
+      <div className={"empty-state-message"}>
         <FormattedMessage
           id={"NO_ACKNOWLEDGED_RECORDS_MESSAGE"}
           defaultMessage={"No records available"}
@@ -206,7 +205,14 @@ const CareInstructions = (props) => {
   };
 
   if (isDataLoading) {
-    return <DataTableSkeleton rowCount={3} columnCount={6} />;
+    return (
+      <div data-testid="care-instructions-loading">
+        <DataTableSkeleton
+          rowCount={SKELETON_ROW_COUNT}
+          columnCount={careInstructionsHeaders.length}
+        />
+      </div>
+    );
   }
 
   return (

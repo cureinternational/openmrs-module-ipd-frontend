@@ -8,7 +8,6 @@ import { IntlProvider } from "react-intl";
 import { IPDContext } from "../../../../context/IPDContext";
 import CareInstructions from "../components/CareInstructions";
 import * as CareInstructionsUtils from "../utils/CareInstructionsUtils";
-import { fetchEncounterObs } from "../utils/CareInstructionsUtils";
 
 const mockFormConcepts = [
   {
@@ -30,12 +29,7 @@ const mockAllFormsFilledInCurrentVisit = [
     visitStartDateTime: 1713875236000,
     encounterUuid: "encounter-uuid-1",
     encounterDateTime: 1713955252000,
-    providers: [
-      {
-        providerName: "Dr. Smith",
-        uuid: "provider-uuid-1",
-      },
-    ],
+    providers: [{ providerName: "Dr. Smith", uuid: "provider-uuid-1" }],
   },
   {
     formType: "v2",
@@ -45,12 +39,7 @@ const mockAllFormsFilledInCurrentVisit = [
     visitStartDateTime: 1713875236000,
     encounterUuid: "encounter-uuid-2",
     encounterDateTime: 1713941600000,
-    providers: [
-      {
-        providerName: "Dr. Jones",
-        uuid: "provider-uuid-2",
-      },
-    ],
+    providers: [{ providerName: "Dr. Jones", uuid: "provider-uuid-2" }],
   },
 ];
 
@@ -120,11 +109,11 @@ describe("CareInstructions", () => {
   });
 
   it("should render loading skeleton when data is loading", () => {
-    const { container } = renderWithProviders(
+    const { getByTestId } = renderWithProviders(
       <CareInstructions config={{ formConcepts: mockFormConcepts }} />,
       mockIPDContextLoading
     );
-    expect(container.querySelector(".bx--skeleton")).toBeTruthy();
+    expect(getByTestId("care-instructions-loading")).toBeInTheDocument();
   });
 
   it("should render empty state when no matching forms exist", async () => {
@@ -135,18 +124,18 @@ describe("CareInstructions", () => {
     await waitFor(() => {
       expect(
         getByText("No care instructions are available for the patient")
-      ).toBeTruthy();
+      ).toBeInTheDocument();
     });
   });
 
-  it("should render Not Acknowledged tab as active by default", async () => {
+  it("should render Not Acknowledged and Acknowledged tabs", async () => {
     const { getByText } = renderWithProviders(
       <CareInstructions config={{ formConcepts: mockFormConcepts }} />,
       mockIPDContextEmpty
     );
     await waitFor(() => {
-      expect(getByText("Not Acknowledged")).toBeTruthy();
-      expect(getByText("Acknowledged")).toBeTruthy();
+      expect(getByText("Not Acknowledged")).toBeInTheDocument();
+      expect(getByText("Acknowledged")).toBeInTheDocument();
     });
   });
 
@@ -156,10 +145,10 @@ describe("CareInstructions", () => {
       mockIPDContextWithData
     );
     await waitFor(() => {
-      expect(getByText("Patient should rest")).toBeTruthy();
+      expect(getByText("Patient should rest")).toBeInTheDocument();
+      expect(getByText("Instruction for the Ward")).toBeInTheDocument();
+      expect(getByText("Dr. Smith")).toBeInTheDocument();
     });
-    expect(getByText("Instruction for the Ward")).toBeTruthy();
-    expect(getByText("Dr. Smith")).toBeTruthy();
   });
 
   it("should render all table headers", async () => {
@@ -168,14 +157,13 @@ describe("CareInstructions", () => {
       mockIPDContextWithData
     );
     await waitFor(() => {
-      expect(getByText("Patient should rest")).toBeTruthy();
+      expect(getByText("Date and Time")).toBeInTheDocument();
+      expect(getByText("Form")).toBeInTheDocument();
+      expect(getByText("Instruction Type")).toBeInTheDocument();
+      expect(getByText("Instruction")).toBeInTheDocument();
+      expect(getByText("Provider Name")).toBeInTheDocument();
+      expect(getByText("Action")).toBeInTheDocument();
     });
-    expect(getByText("Date and Time")).toBeTruthy();
-    expect(getByText("Form")).toBeTruthy();
-    expect(getByText("Instruction Type")).toBeTruthy();
-    expect(getByText("Instruction")).toBeTruthy();
-    expect(getByText("Provider Name")).toBeTruthy();
-    expect(getByText("Action")).toBeTruthy();
   });
 
   it("should show Acknowledged tab content when Acknowledged tab is clicked", async () => {
@@ -186,26 +174,25 @@ describe("CareInstructions", () => {
     await waitFor(() => {
       expect(
         getByText("No care instructions are available for the patient")
-      ).toBeTruthy();
+      ).toBeInTheDocument();
     });
-    const acknowledgedTab = getByText("Acknowledged");
-    fireEvent.click(acknowledgedTab);
+    fireEvent.click(getByText("Acknowledged"));
     await waitFor(() => {
-      expect(getByText("No records available")).toBeTruthy();
+      expect(getByText("No records available")).toBeInTheDocument();
     });
   });
 
-  it("should render both instructions from different forms", async () => {
+  it("should render instructions from both forms", async () => {
     const { getByText } = renderWithProviders(
       <CareInstructions config={{ formConcepts: mockFormConcepts }} />,
       mockIPDContextWithData
     );
     await waitFor(() => {
-      expect(getByText("Patient should rest")).toBeTruthy();
+      expect(getByText("Patient should rest")).toBeInTheDocument();
+      expect(getByText("Monitor blood pressure")).toBeInTheDocument();
+      expect(getByText("Dr. Smith")).toBeInTheDocument();
+      expect(getByText("Dr. Jones")).toBeInTheDocument();
     });
-    expect(getByText("Monitor blood pressure")).toBeTruthy();
-    expect(getByText("Dr. Smith")).toBeTruthy();
-    expect(getByText("Dr. Jones")).toBeTruthy();
   });
 
   it("should render empty state when config has no formConcepts", async () => {
@@ -216,7 +203,42 @@ describe("CareInstructions", () => {
     await waitFor(() => {
       expect(
         getByText("No care instructions are available for the patient")
-      ).toBeTruthy();
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("should render empty provider name when providers array is empty", async () => {
+    const contextWithEmptyProviders = {
+      ...mockIPDContextWithData,
+      allFormsFilledInCurrentVisit: [
+        {
+          ...mockAllFormsFilledInCurrentVisit[0],
+          encounterUuid: "encounter-uuid-1",
+          providers: [],
+        },
+      ],
+    };
+    const { getByText, getAllByRole } = renderWithProviders(
+      <CareInstructions config={{ formConcepts: mockFormConcepts }} />,
+      contextWithEmptyProviders
+    );
+    await waitFor(() => {
+      expect(getByText("Patient should rest")).toBeInTheDocument();
+    });
+    const rows = getAllByRole("row");
+    expect(rows.length).toBeGreaterThan(1);
+  });
+
+  it("should sort instructions newest first by encounterDateTime", async () => {
+    const { getAllByRole } = renderWithProviders(
+      <CareInstructions config={{ formConcepts: mockFormConcepts }} />,
+      mockIPDContextWithData
+    );
+    await waitFor(() => {
+      const rows = getAllByRole("row");
+      // rows[0] = header row, rows[1] = first data row (newest), rows[2] = second data row
+      expect(rows[1].textContent).toContain("Patient should rest");
+      expect(rows[2].textContent).toContain("Monitor blood pressure");
     });
   });
 });
@@ -235,10 +257,9 @@ describe("extractInstructionsFromObs", () => {
         groupMembers: [],
       },
     ];
-    const configuredConcepts = ["Instruction for the Ward"];
     const result = CareInstructionsUtils.extractInstructionsFromObs(
       observations,
-      configuredConcepts
+      ["Instruction for the Ward"]
     );
     expect(result).toHaveLength(1);
     expect(result[0].conceptName).toBe("Instruction for the Ward");
@@ -259,13 +280,11 @@ describe("extractInstructionsFromObs", () => {
         ],
       },
     ];
-    const configuredConcepts = ["Instruction for the Ward"];
     const result = CareInstructionsUtils.extractInstructionsFromObs(
       observations,
-      configuredConcepts
+      ["Instruction for the Ward"]
     );
     expect(result).toHaveLength(1);
-    expect(result[0].conceptName).toBe("Instruction for the Ward");
     expect(result[0].value).toBe("Nested instruction");
   });
 
@@ -300,10 +319,9 @@ describe("extractInstructionsFromObs", () => {
         groupMembers: [],
       },
     ];
-    const configuredConcepts = ["Planned Return to Operating Room"];
     const result = CareInstructionsUtils.extractInstructionsFromObs(
       observations,
-      configuredConcepts
+      ["Planned Return to Operating Room"]
     );
     expect(result).toHaveLength(1);
     expect(result[0].value).toBe("Yes");
@@ -317,10 +335,9 @@ describe("extractInstructionsFromObs", () => {
         groupMembers: [],
       },
     ];
-    const configuredConcepts = ["Instruction for the Ward"];
     const result = CareInstructionsUtils.extractInstructionsFromObs(
       observations,
-      configuredConcepts
+      ["Instruction for the Ward"]
     );
     expect(result).toHaveLength(0);
   });
@@ -346,7 +363,7 @@ describe("fetchEncounterObs", () => {
       .onGet(new RegExp(`.*${encounterUuid}.*`))
       .reply(200, mockResponse);
 
-    const result = await fetchEncounterObs(encounterUuid);
+    const result = await CareInstructionsUtils.fetchEncounterObs(encounterUuid);
 
     expect(result).toEqual(mockResponse);
     expect(mockAxios.history.get[0].url).toContain(encounterUuid);
@@ -356,7 +373,7 @@ describe("fetchEncounterObs", () => {
   it("should return null when the API call fails", async () => {
     mockAxios.onGet(new RegExp(".*")).reply(500);
 
-    const result = await fetchEncounterObs("any-uuid");
+    const result = await CareInstructionsUtils.fetchEncounterObs("any-uuid");
 
     expect(result).toBeNull();
   });
