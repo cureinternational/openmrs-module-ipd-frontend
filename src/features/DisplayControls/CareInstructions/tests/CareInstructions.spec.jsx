@@ -292,6 +292,23 @@ describe("extractInstructionsFromObs", () => {
     expect(result).toHaveLength(0);
   });
 
+  it("should extract display name when obs value is a coded object", () => {
+    const observations = [
+      {
+        concept: { name: "Planned Return to Operating Room" },
+        value: { uuid: "some-uuid", display: "Yes", name: "Yes" },
+        groupMembers: [],
+      },
+    ];
+    const configuredConcepts = ["Planned Return to Operating Room"];
+    const result = CareInstructionsUtils.extractInstructionsFromObs(
+      observations,
+      configuredConcepts
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].value).toBe("Yes");
+  });
+
   it("should return empty array when no concepts match", () => {
     const observations = [
       {

@@ -19,7 +19,12 @@ export const extractInstructionsFromObs = (
       ) {
         results.push({
           conceptName: obs.concept.name,
-          value: obs.value != null ? String(obs.value) : "",
+          value:
+            obs.value != null
+              ? typeof obs.value === "object"
+                ? obs.value.display ?? obs.value.name ?? ""
+                : String(obs.value)
+              : "",
         });
       }
       if (obs.groupMembers && obs.groupMembers.length > 0) {
