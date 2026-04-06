@@ -1,40 +1,59 @@
-import { fetchObservationsForEncounter } from "../../../../utils/CommonUtils";
+import axios from "axios";
+import { BAHMNI_CORE_OBSERVATIONS_BASE_URL } from "../../../../constants";
 
-export const fetchEncounterObs = (encounterUuid) =>
-  fetchObservationsForEncounter(encounterUuid);
+const OBSERVATIONS_URL = BAHMNI_CORE_OBSERVATIONS_BASE_URL.replace(/\?$/, "");
 
-export const extractInstructionsFromObs = (
-  observations,
-  configuredConcepts
-) => {
-  const results = [];
-  if (!observations || !configuredConcepts || configuredConcepts.length === 0) {
-    return results;
+export const fetchCareInstructionsObs = async (visitUuid, conceptNames) => {
+  try {
+    const response = await axios.get(OBSERVATIONS_URL, {
+      params: { visitUuid, concept: conceptNames },
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (e) {
+    return [];
+  }
+};
+
+export const mapObservationsToInstructions = (observations, formConcepts) => {
+  if (!observations || !formConcepts || formConcepts.length === 0) {
+    return [];
   }
 
-  const searchObs = (obsList) => {
-    obsList.forEach((obs) => {
-      if (
+  const formNameToConceptsMap = {};
+  formConcepts.forEach((fc) => {
+    formNameToConceptsMap[fc.formName] = fc.concepts;
+  });
+
+  return observations
+    .filter((obs) => obs.formFieldPath != null)
+    .map((obs) => {
+      const formName = obs.formFieldPath.split(".")[0];
+      return { ...obs, _formName: formName };
+    })
+    .filter((obs) => formNameToConceptsMap[obs._formName] != null)
+    .filter(
+      (obs) =>
         obs.concept &&
         obs.concept.name &&
-        configuredConcepts.includes(obs.concept.name)
-      ) {
-        results.push({
-          conceptName: obs.concept.name,
-          value:
-            obs.value != null
-              ? typeof obs.value === "object"
-                ? obs.value.display ?? obs.value.name ?? ""
-                : String(obs.value)
-              : "",
-        });
-      }
-      if (obs.groupMembers && obs.groupMembers.length > 0) {
-        searchObs(obs.groupMembers);
-      }
-    });
-  };
+        formNameToConceptsMap[obs._formName].includes(obs.concept.name)
+    )
+    .map((obs) => {
+      const value =
+        obs.value != null
+          ? typeof obs.value === "object"
+            ? obs.value.display ?? obs.value.name ?? ""
+            : String(obs.value)
+          : "";
 
-  searchObs(observations);
-  return results;
+      return {
+        encounterUuid: obs.encounterUuid,
+        encounterDateTime: obs.encounterDateTime,
+        form: obs._formName,
+        instructionType: obs.concept.name,
+        instruction: value,
+        providerName: obs.providers?.[0]?.name ?? "",
+        action: "",
+      };
+    });
 };

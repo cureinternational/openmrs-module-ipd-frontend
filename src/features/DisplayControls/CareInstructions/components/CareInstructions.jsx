@@ -14,8 +14,8 @@ import {
 } from "carbon-components-react";
 import { IPDContext } from "../../../../context/IPDContext";
 import {
-  extractInstructionsFromObs,
-  fetchEncounterObs,
+  fetchCareInstructionsObs,
+  mapObservationsToInstructions,
 } from "../utils/CareInstructionsUtils.jsx";
 import { getDateTimeFromEpochTime } from "../../../../utils/DateTimeUtils";
 import "../styles/CareInstructions.scss";
@@ -26,11 +26,7 @@ const CareInstructions = (props) => {
   const { config: { formConcepts = [] } = {} } = props;
   const ipdContext = useContext(IPDContext);
   const intl = useIntl();
-  const {
-    allFormsFilledInCurrentVisit = [],
-    isAllFormsFilledInCurrentVisitLoading,
-    config,
-  } = ipdContext;
+  const { visit, config } = ipdContext;
   const { enable24HourTime = false } = config || {};
 
   const [instructions, setInstructions] = useState([]);
@@ -86,51 +82,31 @@ const CareInstructions = (props) => {
 
   useEffect(() => {
     const loadInstructions = async () => {
-      if (isAllFormsFilledInCurrentVisitLoading) return;
+      if (!visit) return;
       if (formConcepts.length === 0) return;
 
       setIsLoading(true);
 
       try {
-        const configuredFormNames = formConcepts.map((fc) => fc.formName);
+        const allConceptNames = [
+          ...new Set(formConcepts.flatMap((fc) => fc.concepts)),
+        ];
 
-        const matchingFormEntries = allFormsFilledInCurrentVisit.filter(
-          (form) => configuredFormNames.includes(form.formName)
+        const observations = await fetchCareInstructionsObs(
+          visit,
+          allConceptNames
         );
 
-        // One fetchEncounterObs request per matching form entry (intentional N+1 —
-        // no bulk encounter obs endpoint available; requests run in parallel via Promise.all)
-        const results = await Promise.all(
-          matchingFormEntries.map(async (formEntry) => {
-            const formConceptConfig = formConcepts.find(
-              (fc) => fc.formName === formEntry.formName
-            );
-            if (!formConceptConfig) return [];
-
-            const encounterData = await fetchEncounterObs(
-              formEntry.encounterUuid
-            );
-            if (!encounterData || !encounterData.observations) return [];
-
-            const extracted = extractInstructionsFromObs(
-              encounterData.observations,
-              formConceptConfig.concepts
-            );
-
-            return extracted.map((item, idx) => ({
-              id: `${formEntry.encounterUuid}-${item.conceptName}-${idx}`,
-              encounterDateTime: formEntry.encounterDateTime,
-              form: formEntry.formName,
-              instructionType: item.conceptName,
-              instruction: item.value,
-              providerName: formEntry.providers?.[0]?.providerName ?? "",
-              action: "",
-            }));
-          })
+        const mapped = mapObservationsToInstructions(
+          observations,
+          formConcepts
         );
 
-        const allInstructions = results
-          .flat()
+        const allInstructions = mapped
+          .map((obs, idx) => ({
+            id: `${obs.encounterUuid}-${obs.instructionType}-${idx}`,
+            ...obs,
+          }))
           .sort((a, b) => b.encounterDateTime - a.encounterDateTime);
 
         setInstructions(allInstructions);
@@ -140,13 +116,7 @@ const CareInstructions = (props) => {
     };
 
     loadInstructions();
-  }, [
-    allFormsFilledInCurrentVisit,
-    isAllFormsFilledInCurrentVisitLoading,
-    formConcepts,
-  ]);
-
-  const isDataLoading = isAllFormsFilledInCurrentVisitLoading || isLoading;
+  }, [visit, formConcepts]);
 
   const renderNotAcknowledgedContent = () => {
     if (instructions.length === 0) {
@@ -204,7 +174,7 @@ const CareInstructions = (props) => {
     );
   };
 
-  if (isDataLoading) {
+  if (isLoading) {
     return (
       <div data-testid="care-instructions-loading">
         <DataTableSkeleton
