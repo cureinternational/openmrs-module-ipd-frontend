@@ -243,6 +243,74 @@ describe("CareInstructions", () => {
       ]);
     });
   });
+
+  it("should render loading skeleton while data is being fetched", async () => {
+    let resolveObs;
+    jest
+      .spyOn(CareInstructionsUtils, "fetchCareInstructionsObs")
+      .mockReturnValue(
+        new Promise((resolve) => {
+          resolveObs = resolve;
+        })
+      );
+    const { getByTestId } = renderWithProviders(
+      <CareInstructions config={{ formConcepts: mockFormConcepts }} />,
+      mockIPDContextWithData
+    );
+    expect(getByTestId("care-instructions-loading")).toBeInTheDocument();
+    resolveObs([]);
+  });
+
+  it("should render empty state when API call fails", async () => {
+    jest
+      .spyOn(CareInstructionsUtils, "fetchCareInstructionsObs")
+      .mockRejectedValue(new Error("Network error"));
+    const { getByText } = renderWithProviders(
+      <CareInstructions config={{ formConcepts: mockFormConcepts }} />,
+      mockIPDContextWithData
+    );
+    await waitFor(() => {
+      expect(
+        getByText("No care instructions are available for the patient")
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("should render separate rows when same form is filled in different encounters (AC #4)", async () => {
+    jest
+      .spyOn(CareInstructionsUtils, "fetchCareInstructionsObs")
+      .mockResolvedValue([
+        {
+          encounterDateTime: 1713955252000,
+          encounterUuid: "encounter-uuid-1",
+          formFieldPath: "Doctor Patient Progress Notes.1/5-0",
+          concept: { name: "Instruction for the Ward" },
+          value: "First instruction",
+          providers: [{ name: "Dr. Smith" }],
+          groupMembers: [],
+        },
+        {
+          encounterDateTime: 1713941600000,
+          encounterUuid: "encounter-uuid-3",
+          formFieldPath: "Doctor Patient Progress Notes.1/5-0",
+          concept: { name: "Instruction for the Ward" },
+          value: "Second instruction",
+          providers: [{ name: "Dr. Smith" }],
+          groupMembers: [],
+        },
+      ]);
+    const { getByText, getAllByRole } = renderWithProviders(
+      <CareInstructions config={{ formConcepts: mockFormConcepts }} />,
+      mockIPDContextWithData
+    );
+    await waitFor(() => {
+      expect(getByText("First instruction")).toBeInTheDocument();
+      expect(getByText("Second instruction")).toBeInTheDocument();
+      const rows = getAllByRole("row");
+      // header + 2 data rows
+      expect(rows).toHaveLength(3);
+    });
+  });
 });
 
 describe("mapObservationsToInstructions", () => {
@@ -374,6 +442,33 @@ describe("mapObservationsToInstructions", () => {
     expect(result[0].instruction).toBe("Yes");
   });
 
+  it("should return empty string for instruction when obs value is null", () => {
+    const observations = [
+      {
+        encounterDateTime: 1713955252000,
+        encounterUuid: "encounter-uuid-1",
+        formFieldPath: "Doctor Patient Progress Notes.1/5-0",
+        concept: { name: "Instruction for the Ward" },
+        value: null,
+        providers: [{ name: "Dr. Smith" }],
+      },
+    ];
+    const result = CareInstructionsUtils.mapObservationsToInstructions(
+      observations,
+      mockFormConcepts
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].instruction).toBe("");
+  });
+
+  it("should return empty array when observations is null", () => {
+    const result = CareInstructionsUtils.mapObservationsToInstructions(
+      null,
+      mockFormConcepts
+    );
+    expect(result).toHaveLength(0);
+  });
+
   it("should handle empty provider name when providers array is empty", () => {
     const observations = [
       {
@@ -391,6 +486,25 @@ describe("mapObservationsToInstructions", () => {
     );
     expect(result).toHaveLength(1);
     expect(result[0].providerName).toBe("");
+  });
+});
+
+describe("serializeParams", () => {
+  it("should serialize array values as repeated params without brackets", () => {
+    const result = CareInstructionsUtils.serializeParams({
+      visitUuid: "visit-uuid-1",
+      concept: ["Physician Orders Comments", "Instruction for the Ward"],
+    });
+    expect(result).toBe(
+      "visitUuid=visit-uuid-1&concept=Physician%20Orders%20Comments&concept=Instruction%20for%20the%20Ward"
+    );
+  });
+
+  it("should serialize single string values", () => {
+    const result = CareInstructionsUtils.serializeParams({
+      visitUuid: "visit-uuid-1",
+    });
+    expect(result).toBe("visitUuid=visit-uuid-1");
   });
 });
 
@@ -428,6 +542,7 @@ describe("fetchCareInstructionsObs", () => {
       visitUuid: "visit-uuid-1",
       concept: ["Instruction for the Ward"],
     });
+    expect(mockAxios.history.get[0].params).not.toHaveProperty("patientUuid");
     expect(mockAxios.history.get[0].withCredentials).toBe(true);
   });
 

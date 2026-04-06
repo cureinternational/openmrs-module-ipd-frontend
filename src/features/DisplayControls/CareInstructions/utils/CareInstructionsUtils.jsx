@@ -3,16 +3,32 @@ import { BAHMNI_CORE_OBSERVATIONS_BASE_URL } from "../../../../constants";
 
 const OBSERVATIONS_URL = BAHMNI_CORE_OBSERVATIONS_BASE_URL.replace(/\?$/, "");
 
+export const serializeParams = (params) =>
+  Object.entries(params)
+    .flatMap(([key, value]) =>
+      Array.isArray(value)
+        ? value.map((paramValue) => `${key}=${encodeURIComponent(paramValue)}`)
+        : [`${key}=${encodeURIComponent(value)}`]
+    )
+    .join("&");
+
 export const fetchCareInstructionsObs = async (visitUuid, conceptNames) => {
   try {
     const response = await axios.get(OBSERVATIONS_URL, {
       params: { visitUuid, concept: conceptNames },
+      paramsSerializer: serializeParams,
       withCredentials: true,
     });
     return response.data;
-  } catch (e) {
+  } catch (error) {
     return [];
   }
+};
+
+const extractObsValue = (value) => {
+  if (value == null) return "";
+  if (typeof value === "object") return value.display ?? value.name ?? "";
+  return String(value);
 };
 
 export const mapObservationsToInstructions = (observations, formConcepts) => {
@@ -20,40 +36,37 @@ export const mapObservationsToInstructions = (observations, formConcepts) => {
     return [];
   }
 
-  const formNameToConceptsMap = {};
-  formConcepts.forEach((fc) => {
-    formNameToConceptsMap[fc.formName] = fc.concepts;
-  });
+  const formConceptsMap = new Map(
+    formConcepts.map((formConcept) => [
+      formConcept.formName,
+      formConcept.concepts,
+    ])
+  );
 
-  return observations
-    .filter((obs) => obs.formFieldPath != null)
-    .map((obs) => {
-      const formName = obs.formFieldPath.split(".")[0];
-      return { ...obs, _formName: formName };
-    })
-    .filter((obs) => formNameToConceptsMap[obs._formName] != null)
-    .filter(
-      (obs) =>
-        obs.concept &&
-        obs.concept.name &&
-        formNameToConceptsMap[obs._formName].includes(obs.concept.name)
-    )
-    .map((obs) => {
-      const value =
-        obs.value != null
-          ? typeof obs.value === "object"
-            ? obs.value.display ?? obs.value.name ?? ""
-            : String(obs.value)
-          : "";
+  return observations.reduce((result, obs) => {
+    if (!obs.formFieldPath) return result;
 
-      return {
-        encounterUuid: obs.encounterUuid,
-        encounterDateTime: obs.encounterDateTime,
-        form: obs._formName,
-        instructionType: obs.concept.name,
-        instruction: value,
-        providerName: obs.providers?.[0]?.name ?? "",
-        action: "",
-      };
+    const formName = obs.formFieldPath.split(".")[0];
+    const allowedConcepts = formConceptsMap.get(formName);
+
+    if (
+      !allowedConcepts ||
+      !obs.concept?.name ||
+      !allowedConcepts.includes(obs.concept.name)
+    ) {
+      return result;
+    }
+
+    result.push({
+      encounterUuid: obs.encounterUuid,
+      encounterDateTime: obs.encounterDateTime,
+      form: formName,
+      instructionType: obs.concept.name,
+      instruction: extractObsValue(obs.value),
+      providerName: obs.providers?.[0]?.name ?? "",
+      action: "",
     });
+
+    return result;
+  }, []);
 };

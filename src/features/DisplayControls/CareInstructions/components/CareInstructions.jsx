@@ -21,13 +21,21 @@ import { getDateTimeFromEpochTime } from "../../../../utils/DateTimeUtils";
 import "../styles/CareInstructions.scss";
 
 const SKELETON_ROW_COUNT = 3;
+const EMPTY_FORM_CONCEPTS = [];
 
 const CareInstructions = (props) => {
-  const { config: { formConcepts = [] } = {} } = props;
+  const { config: { formConcepts = EMPTY_FORM_CONCEPTS } = {} } = props;
   const ipdContext = useContext(IPDContext);
   const intl = useIntl();
   const { visit, config } = ipdContext;
   const { enable24HourTime = false } = config || {};
+
+  const allConceptNames = useMemo(
+    () => [
+      ...new Set(formConcepts.flatMap((formConcept) => formConcept.concepts)),
+    ],
+    [formConcepts]
+  );
 
   const [instructions, setInstructions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -82,16 +90,11 @@ const CareInstructions = (props) => {
 
   useEffect(() => {
     const loadInstructions = async () => {
-      if (!visit) return;
-      if (formConcepts.length === 0) return;
+      if (!visit || formConcepts.length === 0) return;
 
       setIsLoading(true);
 
       try {
-        const allConceptNames = [
-          ...new Set(formConcepts.flatMap((fc) => fc.concepts)),
-        ];
-
         const observations = await fetchCareInstructionsObs(
           visit,
           allConceptNames
@@ -103,13 +106,18 @@ const CareInstructions = (props) => {
         );
 
         const allInstructions = mapped
-          .map((obs, idx) => ({
-            id: `${obs.encounterUuid}-${obs.instructionType}-${idx}`,
-            ...obs,
+          .map((instruction, index) => ({
+            id: `${instruction.encounterUuid}-${instruction.instructionType}-${index}`,
+            ...instruction,
           }))
-          .sort((a, b) => b.encounterDateTime - a.encounterDateTime);
+          .sort(
+            (instructionA, instructionB) =>
+              instructionB.encounterDateTime - instructionA.encounterDateTime
+          );
 
         setInstructions(allInstructions);
+      } catch (error) {
+        console.error("Failed to load care instructions", error);
       } finally {
         setIsLoading(false);
       }
