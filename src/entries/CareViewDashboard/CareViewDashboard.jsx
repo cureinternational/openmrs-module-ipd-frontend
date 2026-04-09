@@ -7,15 +7,23 @@ import "./CareViewDashboard.scss";
 import { CareViewSummary } from "../../features/CareViewSummary/components/CareViewSummary";
 import { CareViewPatients } from "../../features/CareViewPatients/components/CareViewPatients";
 import { I18nProvider } from "../../features/i18n/I18nProvider";
-import { homePageUrl, WARD_SUMMARY_HEADER, TASK_FILTER_HEADER } from "../../constants";
+import {
+  homePageUrl,
+  WARD_SUMMARY_HEADER,
+  TASK_FILTER_HEADER,
+} from "../../constants";
 import { CareViewContext } from "../../context/CareViewContext";
 import { getConfigForCareViewDashboard } from "./CareViewDashboardUtils";
-import { getDashboardConfig } from "../../utils/CommonUtils";
+import { getDashboardConfig, isUserPrivileged } from "../../utils/CommonUtils";
 import { ProviderActions } from "../../components/ProvideActions/ProviderActions";
+import { DraftIndicator } from "../../components/DraftIndicator/DraftIndicator";
+
+const OBSERVATION_TAB_PRIVILEGE = "app:clinical:observationTab";
 
 const CareViewDashboard = (props) => {
   const { hostApi, hostData } = props;
   const { onHome, onLogOut } = hostApi;
+  const { currentUser } = hostData;
   const [selectedWard, setSelectedWard] = useState({});
   const [headerSelected, setHeaderSelected] = useState(
     WARD_SUMMARY_HEADER.TOTAL_PATIENTS
@@ -32,9 +40,14 @@ const CareViewDashboard = (props) => {
     setCareViewConfig(config);
   };
 
-    const handleAuditEvent = ( eventType ) => {
-        hostApi.handleAuditEvent(undefined, eventType, undefined, "MODULE_LABEL_INPATIENT_KEY");
-    };
+  const handleAuditEvent = (eventType) => {
+    hostApi.handleAuditEvent(
+      undefined,
+      eventType,
+      undefined,
+      "MODULE_LABEL_INPATIENT_KEY"
+    );
+  };
 
   const handleRefreshPatientList = () => {
     setRefreshPatientList(!refreshPatientList);
@@ -66,7 +79,12 @@ const CareViewDashboard = (props) => {
           <Link href={homePageUrl} className={"home"}>
             <Home24 aria-label="home-button" />
           </Link>
-          <ProviderActions onLogOut={onLogOut} />
+          <div className="care-view-right-actions">
+            {isUserPrivileged(currentUser, OBSERVATION_TAB_PRIVILEGE) && (
+              <DraftIndicator />
+            )}
+            <ProviderActions onLogOut={onLogOut} />
+          </div>
         </Header>
 
         <section className="main">
