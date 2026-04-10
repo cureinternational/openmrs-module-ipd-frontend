@@ -201,7 +201,6 @@
   "CONFIRMED": "CONFIRMED",
   "Active": "Active",
   "Inactive": "Inactive",
-
   "VITALS_HEADER_SPO2_KEY": "Arterial Blood Oxygen Saturation (Pulse Oximeter)",
   "VITALS_WEIGHT_KEY": "WEIGHT",
   "VITALS_BMI_KEY": "BMI",
@@ -213,5 +212,7 @@
   "VITALS_HEIGHT_KEY": "HEIGHT",
   "VITALS_MUAC_KEY": "Mid-upper arm circumference",
   "ALL": "All",
-  "NEW": "New"
+  "NEW": "New",
+  "ACKNOWLEDGE_NOTE": "Confirmar nota",
+  "AMEND_NOTE": "Modificar nota"
 }

@@ -221,7 +221,6 @@
   "ENTER_ADT_NOTES": "Entrez les notes ADT",
   "IPD_WARD_SEARCH_PLACEHOLDER_TEXT": "Saisissez au moins 3 caractères pour rechercher un patient par nom, numéro de lit ou identifiant de patient",
   "MUAC_HEADER": "MUAC {{unit}}",
-
   "VITALS_HEADER_SPO2_KEY": "Saturation d'oxygène dans le sang",
   "VITALS_WEIGHT_KEY": "POIDS",
   "VITALS_BMI_KEY": "BMI",
@@ -245,5 +244,7 @@
   "DRUG_CHART_MODAL_ADDITIONAL_INSTRUCTIONS": "Instructions supplémentaires",
   "DRUG_CHART_MODAL_NOTES": "Notes",
   "ALL": "Tous",
-  "NEW": "Nouveau"
+  "NEW": "Nouveau",
+  "ACKNOWLEDGE_NOTE": "Acquitter la note",
+  "AMEND_NOTE": "Modifier la note"
 }
