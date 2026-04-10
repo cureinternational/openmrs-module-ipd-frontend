@@ -11,14 +11,13 @@ import {
   homePageUrl,
   WARD_SUMMARY_HEADER,
   TASK_FILTER_HEADER,
+  PRIVILEGE_CONSTANTS,
 } from "../../constants";
 import { CareViewContext } from "../../context/CareViewContext";
 import { getConfigForCareViewDashboard } from "./CareViewDashboardUtils";
 import { getDashboardConfig, isUserPrivileged } from "../../utils/CommonUtils";
 import { ProviderActions } from "../../components/ProvideActions/ProviderActions";
 import { DraftIndicator } from "../../components/DraftIndicator/DraftIndicator";
-
-const OBSERVATION_TAB_PRIVILEGE = "app:clinical:observationTab";
 
 const CareViewDashboard = (props) => {
   const { hostApi, hostData } = props;
@@ -80,9 +79,10 @@ const CareViewDashboard = (props) => {
             <Home24 aria-label="home-button" />
           </Link>
           <div className="care-view-right-actions">
-            {isUserPrivileged(currentUser, OBSERVATION_TAB_PRIVILEGE) && (
-              <DraftIndicator />
-            )}
+            {isUserPrivileged(
+              currentUser,
+              PRIVILEGE_CONSTANTS.OBSERVATION_TAB
+            ) && <DraftIndicator />}
             <ProviderActions onLogOut={onLogOut} />
           </div>
         </Header>
