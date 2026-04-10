@@ -188,14 +188,23 @@ export const mapDrugOrdersAndSlots = (drugChartData, drugOrders, drugChart) => {
         serviceType,
       } = slot;
       const uuid = order?.uuid || medicationAdministration?.uuid;
-      if (orders[uuid] && serviceType != asNeededPlaceholderConceptName) {
-        let administrationStatus = getAdministrationStatus(
-          medicationAdministration,
-          status,
-          startTime,
-          drugChart,
-          slot
-        );
+      if (
+        orders[uuid] &&
+        (serviceType !== asNeededPlaceholderConceptName ||
+          medicationAdministration)
+      ) {
+        let administrationStatus;
+        if (serviceType === asNeededPlaceholderConceptName) {
+          administrationStatus = "Administered";
+        } else {
+          administrationStatus = getAdministrationStatus(
+            medicationAdministration,
+            status,
+            startTime,
+            drugChart,
+            slot
+          );
+        }
         let performerName = "",
           notes = "",
           hasAmendedNotes = false,

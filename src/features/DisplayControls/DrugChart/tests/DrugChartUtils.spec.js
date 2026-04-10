@@ -5,6 +5,7 @@ import {
   getPreviousShiftDetails,
   getDateTime,
   canAcknowledgeAmendment,
+  mapDrugOrdersAndSlots,
 } from "../utils/DrugChartUtils";
 import axios from "axios";
 import { mockResponse } from "./DrugChartUtilsMockData";
@@ -139,6 +140,121 @@ describe("DrugChartUtils", () => {
     const updatedDateTime = 1704441600000; // 5th Jan 2024 08:00
     expect(getDateTime(date, time)).toEqual(updatedDateTime);
   });
+  describe("mapDrugOrdersAndSlots", () => {
+    const drugChart = {
+      timeInMinutesFromStartTimeToShowAdministeredTaskAsLate: 60,
+      timeInMinutesFromNowToShowPastTaskAsLate: 60,
+    };
+
+    it("should not include AsNeededPlaceholder slot without administration", () => {
+      const orderUuid = "order-uuid-prn";
+      const drugOrders = {
+        [orderUuid]: { slots: [], firstSlotStartTime: 1000 },
+      };
+      const drugChartData = [
+        {
+          slots: [
+            {
+              uuid: "slot-uuid-1",
+              serviceType: "AsNeededPlaceholder",
+              status: "SCHEDULED",
+              startTime: 1000,
+              order: { uuid: orderUuid },
+              medicationAdministration: null,
+            },
+          ],
+        },
+      ];
+      const result = mapDrugOrdersAndSlots(
+        drugChartData,
+        drugOrders,
+        drugChart
+      );
+      expect(result[0].slots).toHaveLength(0);
+    });
+
+    it("should include administered AsNeededPlaceholder slot in drug chart", () => {
+      const orderUuid = "order-uuid-prn";
+      const drugOrders = {
+        [orderUuid]: { slots: [], firstSlotStartTime: 1000 },
+      };
+      const drugChartData = [
+        {
+          slots: [
+            {
+              uuid: "slot-uuid-1",
+              serviceType: "AsNeededPlaceholder",
+              status: "COMPLETED",
+              startTime: 1000,
+              order: { uuid: orderUuid },
+              medicationAdministration: {
+                uuid: "admin-uuid-1",
+                administeredDateTime: 1100000,
+                providers: [
+                  {
+                    provider: { display: "superman - Super Man" },
+                    function: "Performer",
+                  },
+                ],
+                notes: [],
+              },
+            },
+          ],
+        },
+      ];
+      const result = mapDrugOrdersAndSlots(
+        drugChartData,
+        drugOrders,
+        drugChart
+      );
+      expect(result[0].slots).toHaveLength(1);
+      expect(result[0].slots[0].administrationSummary.status).toBe(
+        "Administered"
+      );
+    });
+
+    it("should show Administered (not Administered-Late) for PRN slot even when administered much later than startTime", () => {
+      const orderUuid = "order-uuid-prn";
+      const drugOrders = {
+        [orderUuid]: { slots: [], firstSlotStartTime: 1775716759 },
+      };
+      const drugChartData = [
+        {
+          slots: [
+            {
+              uuid: "slot-uuid-prn",
+              serviceType: "AsNeededPlaceholder",
+              status: "COMPLETED",
+              // startTime is order creation (seconds), administration is 7 hours later
+              startTime: 1775716759,
+              order: { uuid: orderUuid },
+              medicationAdministration: {
+                uuid: "admin-uuid-prn",
+                administeredDateTime: 1775742348000,
+                providers: [
+                  {
+                    provider: { display: "superman - Super Man" },
+                    function: "Performer",
+                  },
+                ],
+                notes: [],
+              },
+            },
+          ],
+        },
+      ];
+      const result = mapDrugOrdersAndSlots(
+        drugChartData,
+        drugOrders,
+        drugChart
+      );
+      expect(result[0].slots).toHaveLength(1);
+      expect(result[0].slots[0].administrationSummary.status).toBe(
+        "Administered"
+      );
+    });
+  });
+
   describe("canAcknowledgeAmendment", () => {
     it("returns true when privileges include ADT_APPROVE_AMEND_NOTE", () => {
       const privileges = [

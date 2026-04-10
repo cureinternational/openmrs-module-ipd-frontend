@@ -15,7 +15,10 @@ import {
 } from "../../../../utils/CommonUtils";
 import MockDate from "mockdate";
 import { IntlProvider } from "react-intl";
-import {mockUserWithAllRequiredPrivileges, mockUserWithoutAnyPrivilege} from '../../../../utils/mockUserData';
+import {
+  mockUserWithAllRequiredPrivileges,
+  mockUserWithoutAnyPrivilege,
+} from "../../../../utils/mockUserData";
 
 const mockSetShowNotification = jest.fn();
 const mockSetNotificationMessage = jest.fn();
@@ -24,6 +27,7 @@ const mockSetShowSuccessNotification = jest.fn();
 const mockSetSuccessMessage = jest.fn();
 const mockUpdateEmergencyTasksSlider = jest.fn();
 const mockUpdateNonMedicationTask = jest.fn();
+const mockSaveAdministeredMedication = jest.fn();
 const mockHandleAuditLogEvent = jest.fn();
 
 jest.mock("../utils/NursingTasksUtils", () => {
@@ -31,34 +35,37 @@ jest.mock("../utils/NursingTasksUtils", () => {
   return {
     ...originalModule,
     updateNonMedicationTask: () => mockUpdateNonMedicationTask(),
+    saveAdministeredMedication: (...args) =>
+      mockSaveAdministeredMedication(...args),
   };
 });
 describe("UpdateNursingTasksSlider", function () {
   afterEach(() => {
     MockDate.reset();
+    jest.clearAllMocks();
   });
 
   it("should render UpdateNursingTasksSlider", function () {
     const { container } = render(
       <IntlProvider locale="en">
-      <IPDContext.Provider
-        value={{
-          config: mockConfig,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={mockMedicationTasks}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockMedicationTasks}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
     expect(container).toMatchSnapshot();
@@ -67,24 +74,24 @@ describe("UpdateNursingTasksSlider", function () {
   it("should enable save Button when atleast one task is selected", function () {
     const { container } = render(
       <IntlProvider locale="en">
-      <IPDContext.Provider
-        value={{
-          config: mockConfig,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={mockMedicationTasks}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockMedicationTasks}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
     const saveButton = screen.getAllByText("Save")[1];
@@ -97,25 +104,24 @@ describe("UpdateNursingTasksSlider", function () {
   it("should show notes and time when toggle switch is On", function () {
     const { container } = render(
       <IntlProvider locale="en">
-
-      <IPDContext.Provider
-        value={{
-          config: mockConfig,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={mockMedicationTasks}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockMedicationTasks}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
     const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
@@ -132,25 +138,24 @@ describe("UpdateNursingTasksSlider", function () {
   it("should show time when toggle switch is On for Non medication tasks", function () {
     const { container } = render(
       <IntlProvider locale="en">
-
-      <IPDContext.Provider
-        value={{
-          config: mockConfig,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={mockNonMedicationTileData}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockNonMedicationTileData}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
     const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
@@ -164,27 +169,26 @@ describe("UpdateNursingTasksSlider", function () {
     mockUpdateNonMedicationTask.mockResolvedValue(mockUpdateResponse);
     const { container } = render(
       <IntlProvider locale="en">
-
-      <IPDContext.Provider
-        value={{
-          config: mockConfig,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={mockNonMedicationTileData}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={mockUpdateEmergencyTasksSlider}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowSuccessNotification={mockSetShowSuccessNotification}
-          setSuccessMessage={mockSetSuccessMessage}
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockNonMedicationTileData}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={mockUpdateEmergencyTasksSlider}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowSuccessNotification={mockSetShowSuccessNotification}
+            setSuccessMessage={mockSetSuccessMessage}
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
     const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
@@ -208,25 +212,24 @@ describe("UpdateNursingTasksSlider", function () {
     MockDate.set("2024-01-01 01:00 PM");
     const { container } = render(
       <IntlProvider locale="en">
-
-      <IPDContext.Provider
-        value={{
-          config: mockConfig,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={mockMedicationTasks}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockMedicationTasks}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
     const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
@@ -244,25 +247,24 @@ describe("UpdateNursingTasksSlider", function () {
     MockDate.set("2024-01-01 01:00 PM");
     const { container } = render(
       <IntlProvider locale="en">
-
-      <IPDContext.Provider
-        value={{
-          config: mockConfigFor12HourFormat,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={mockMedicationTasks}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfigFor12HourFormat,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockMedicationTasks}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
     const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
@@ -279,25 +281,24 @@ describe("UpdateNursingTasksSlider", function () {
   it("should render confirmation modal on click of save button", function () {
     const { container } = render(
       <IntlProvider locale="en">
-
-      <IPDContext.Provider
-        value={{
-          config: mockConfig,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={mockMedicationTasks}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockMedicationTasks}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
     const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
@@ -320,25 +321,24 @@ describe("UpdateNursingTasksSlider", function () {
   it("should render confirmation modal on click of save button when time is in 12 hour format", function () {
     const { container } = render(
       <IntlProvider locale="en">
-
-      <IPDContext.Provider
-        value={{
-          config: mockConfigFor12HourFormat,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={mockMedicationTasks}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfigFor12HourFormat,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockMedicationTasks}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
     const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
@@ -361,25 +361,24 @@ describe("UpdateNursingTasksSlider", function () {
   it("should close the slider on click of cancel button when no changes are made", function () {
     const { container } = render(
       <IntlProvider locale="en">
-
-      <IPDContext.Provider
-        value={{
-          config: mockConfig,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={mockMedicationTasks}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockMedicationTasks}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
     const cancelButton = screen.getAllByText("Cancel")[1];
@@ -391,25 +390,24 @@ describe("UpdateNursingTasksSlider", function () {
     MockDate.set("2024-01-01 13:00");
     const { container } = render(
       <IntlProvider locale="en">
-
-      <IPDContext.Provider
-        value={{
-          config: mockConfig,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={mockMedicationTasks}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockMedicationTasks}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
     const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
@@ -436,25 +434,24 @@ describe("UpdateNursingTasksSlider", function () {
     MockDate.set("2024-01-01 01:00 PM");
     const { container } = render(
       <IntlProvider locale="en">
-
-      <IPDContext.Provider
-        value={{
-          config: mockConfigFor12HourFormat,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={mockMedicationTasks}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfigFor12HourFormat,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockMedicationTasks}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
     const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
@@ -481,26 +478,25 @@ describe("UpdateNursingTasksSlider", function () {
     MockDate.set("2024-01-01 13:00");
     const { container } = render(
       <IntlProvider locale="en">
-
-      <IPDContext.Provider
-        value={{
-          config: mockConfig,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={mockMedicationTasks}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowSuccessNotification={jest.fn()}
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockMedicationTasks}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowSuccessNotification={jest.fn()}
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
 
@@ -524,25 +520,24 @@ describe("UpdateNursingTasksSlider", function () {
   it("should show notes error when time in 12 hour format is greater than administered time window", function () {
     const { container } = render(
       <IntlProvider locale="en">
-
-      <IPDContext.Provider
-        value={{
-          config: mockConfigFor12HourFormat,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={mockMedicationTasks}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfigFor12HourFormat,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockMedicationTasks}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
 
@@ -566,25 +561,24 @@ describe("UpdateNursingTasksSlider", function () {
   it("should show OverflowMenu for a task", () => {
     const { container } = render(
       <IntlProvider locale="en">
-
-      <IPDContext.Provider
-        value={{
-          config: mockConfig,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={mockMedicationTasks}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockMedicationTasks}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
     expect(container.querySelectorAll(".bx--overflow-menu")).toBeTruthy();
@@ -593,25 +587,24 @@ describe("UpdateNursingTasksSlider", function () {
   it("should show Skip Drug option on click of Overflow menu button", () => {
     const { container } = render(
       <IntlProvider locale="en">
-
-      <IPDContext.Provider
-        value={{
-          config: mockConfig,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={mockMedicationTasks}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockMedicationTasks}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
     const overflowMenuButton =
@@ -623,25 +616,24 @@ describe("UpdateNursingTasksSlider", function () {
   it("should hide the Administer Done toggle button on click of Skip Drug button", () => {
     const { container } = render(
       <IntlProvider locale="en">
-
-      <IPDContext.Provider
-        value={{
-          config: mockConfig,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={[mockMedicationTasks[0]]}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={[mockMedicationTasks[0]]}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
     const overflowMenuButton =
@@ -655,25 +647,24 @@ describe("UpdateNursingTasksSlider", function () {
   it("should show notes as mandatory when Skip Drug button is clicked", () => {
     const { container } = render(
       <IntlProvider locale="en">
-
-      <IPDContext.Provider
-        value={{
-          config: mockConfig,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={[mockMedicationTasks[0]]}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={[mockMedicationTasks[0]]}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
     const overflowMenuButton =
@@ -690,25 +681,24 @@ describe("UpdateNursingTasksSlider", function () {
     MockDate.set("2023-11-21 6:00");
     render(
       <IntlProvider locale="en">
-
-      <IPDContext.Provider
-        value={{
-          config: mockConfig,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={mockPRNMedicationTasks}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockPRNMedicationTasks}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
     expect(screen.getByTestId("done-toggle").disabled).toBe(true);
@@ -717,24 +707,24 @@ describe("UpdateNursingTasksSlider", function () {
   it("should not show overflow menu for scheduled for text for PRN Nursing Task", async () => {
     const { container } = render(
       <IntlProvider locale="en">
-      <IPDContext.Provider
-        value={{
-          config: mockConfig,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={mockPRNMedicationTasks}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockPRNMedicationTasks}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
     const scheduledFor = screen.queryByText("Scheduled for");
@@ -747,24 +737,24 @@ describe("UpdateNursingTasksSlider", function () {
   it("should show PRN confirm message while saving PRN task", () => {
     const { container } = render(
       <IntlProvider locale="en">
-      <IPDContext.Provider
-        value={{
-          config: mockConfig,
-          handleAuditEvent: mockHandleAuditLogEvent,
-          currentUser: mockUserWithAllRequiredPrivileges,
-        }}
-      >
-        <UpdateNursingTasks
-          medicationTasks={mockPRNMedicationTasks}
-          groupSlotsByOrderId={mockGroupSlotsByOrderId}
-          updateNursingTasksSlider={jest.fn}
-          patientId="test_patient_uuid"
-          providerId="test_provider_uuid"
-          setShowNotification={mockSetShowNotification}
-          setNotificationMessage={mockSetNotificationMessage}
-          setNotificationStatus={mockSetNotificationStatus}
-        />
-      </IPDContext.Provider>
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockPRNMedicationTasks}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
       </IntlProvider>
     );
     const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
@@ -782,6 +772,59 @@ describe("UpdateNursingTasksSlider", function () {
     fireEvent.click(saveButton);
 
     expect(screen.getByText("Please confirm your PRN task")).toBeTruthy();
+  });
+
+  it("should save PRN task using saveAdministeredMedication endpoint", async () => {
+    MockDate.set("2023-11-22 10:00");
+    mockSaveAdministeredMedication.mockResolvedValue({ status: 200 });
+    const mockUpdateSlider = jest.fn();
+    const { container } = render(
+      <IntlProvider locale="en">
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockPRNMedicationTasks}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={mockUpdateSlider}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
+      </IntlProvider>
+    );
+    const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
+    fireEvent.click(toggleButton);
+
+    const saveButton = screen.getAllByText("Save")[1];
+    fireEvent.click(saveButton);
+
+    expect(screen.getByText("Please confirm your PRN task")).toBeTruthy();
+
+    const modalSaveButton = screen.getAllByText("Save")[0];
+    fireEvent.click(modalSaveButton);
+
+    await waitFor(() => {
+      expect(mockSaveAdministeredMedication).toHaveBeenCalledTimes(1);
+      expect(mockSaveAdministeredMedication).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({
+            patientUuid: "test_patient_uuid",
+            slotUuid: "b9904678-eb07-4eb0-8d03-53fcaa1d20d0",
+            status: "completed",
+          }),
+        ])
+      );
+      expect(mockUpdateSlider).toHaveBeenCalledWith(false);
+      expect(mockSetNotificationStatus).toHaveBeenCalledWith("success");
+    });
   });
 
   it("should show toggle disabled when privileges are not preset", function () {
@@ -811,5 +854,4 @@ describe("UpdateNursingTasksSlider", function () {
     expect(toggleButton.disabled).toBeTruthy();
     expect(container.querySelectorAll(".bx--overflow-menu")).toHaveLength(0);
   });
-
 });
