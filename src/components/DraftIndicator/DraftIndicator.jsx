@@ -3,6 +3,7 @@ import { AlignBoxMiddleLeft24 } from "@carbon/icons-react";
 import "./DraftIndicator.scss";
 import DraftOverlay from "./DraftOverlay";
 import { mockFormDrafts } from "./DraftOverlayMockData";
+import { I18nProvider } from "../../features/i18n/I18nProvider";
 
 const getFormDrafts = async () => {
   return mockFormDrafts;
@@ -43,26 +44,31 @@ export const DraftIndicator = () => {
   const hasDrafts = formDrafts.length > 0;
 
   return (
-    <div className="ipd-draft-indicator" ref={indicatorRef}>
-      <button
-        className="ipd-draft-indicator__button"
-        onClick={toggleOverlay}
-        aria-label="View observation drafts"
-        aria-expanded={isOverlayOpen}
-      >
-        <span className="ipd-draft-indicator__icon-wrapper">
-          <AlignBoxMiddleLeft24 className="ipd-draft-indicator__icon" />
-          {hasDrafts && (
-            <span className="ipd-draft-indicator__red-dot" aria-hidden="true" />
-          )}
-        </span>
-      </button>
-      {isOverlayOpen && (
-        <div className="ipd-draft-indicator__overlay-wrapper">
-          <DraftOverlay formDrafts={formDrafts} onClose={closeOverlay} />
-        </div>
-      )}
-    </div>
+    <I18nProvider>
+      <div className="ipd-draft-indicator" ref={indicatorRef}>
+        <button
+          className="ipd-draft-indicator__button"
+          onClick={toggleOverlay}
+          aria-label="View observation drafts"
+          aria-expanded={isOverlayOpen}
+        >
+          <span className="ipd-draft-indicator__icon-wrapper">
+            <AlignBoxMiddleLeft24 className="ipd-draft-indicator__icon" />
+            {hasDrafts && (
+              <span
+                className="ipd-draft-indicator__red-dot"
+                aria-hidden="true"
+              />
+            )}
+          </span>
+        </button>
+        {isOverlayOpen && (
+          <div className="ipd-draft-indicator__overlay-wrapper">
+            <DraftOverlay formDrafts={formDrafts} onClose={closeOverlay} />
+          </div>
+        )}
+      </div>
+    </I18nProvider>
   );
 };
 
