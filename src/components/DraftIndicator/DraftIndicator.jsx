@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import ReactDOM from "react-dom";
 import { AlignBoxMiddleLeft24 } from "@carbon/icons-react";
 import "./DraftIndicator.scss";
 import DraftOverlay from "./DraftOverlay";
@@ -12,7 +13,9 @@ const getFormDrafts = async () => {
 export const DraftIndicator = () => {
   const [formDrafts, setFormDrafts] = useState([]);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
-  const indicatorRef = useRef(null);
+  const [overlayPosition, setOverlayPosition] = useState({ top: 0, right: 0 });
+  const buttonRef = useRef(null);
+  const overlayRef = useRef(null);
 
   useEffect(() => {
     const initialize = async () => {
@@ -28,10 +31,11 @@ export const DraftIndicator = () => {
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
-      if (
-        indicatorRef.current &&
-        !indicatorRef.current.contains(event.target)
-      ) {
+      const clickedOutsideButton =
+        buttonRef.current && !buttonRef.current.contains(event.target);
+      const clickedOutsideOverlay =
+        overlayRef.current && !overlayRef.current.contains(event.target);
+      if (clickedOutsideButton && clickedOutsideOverlay) {
         setIsOverlayOpen(false);
       }
     };
@@ -39,14 +43,25 @@ export const DraftIndicator = () => {
     return () => document.removeEventListener("click", handleOutsideClick);
   }, []);
 
-  const toggleOverlay = () => setIsOverlayOpen((previous) => !previous);
+  const toggleOverlay = () => {
+    if (!isOverlayOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setOverlayPosition({
+        top: rect.bottom + 4,
+        right: window.innerWidth - rect.right,
+      });
+    }
+    setIsOverlayOpen((previous) => !previous);
+  };
+
   const closeOverlay = () => setIsOverlayOpen(false);
   const hasDrafts = formDrafts.length > 0;
 
   return (
     <I18nProvider>
-      <div className="ipd-draft-indicator" ref={indicatorRef}>
+      <div className="ipd-draft-indicator">
         <button
+          ref={buttonRef}
           className="ipd-draft-indicator__button"
           onClick={toggleOverlay}
           aria-label="View observation drafts"
@@ -62,11 +77,17 @@ export const DraftIndicator = () => {
             )}
           </span>
         </button>
-        {isOverlayOpen && (
-          <div className="ipd-draft-indicator__overlay-wrapper">
-            <DraftOverlay formDrafts={formDrafts} onClose={closeOverlay} />
-          </div>
-        )}
+        {isOverlayOpen &&
+          ReactDOM.createPortal(
+            <div
+              ref={overlayRef}
+              className="ipd-draft-indicator__overlay-wrapper"
+              style={{ top: overlayPosition.top, right: overlayPosition.right }}
+            >
+              <DraftOverlay formDrafts={formDrafts} onClose={closeOverlay} />
+            </div>,
+            document.body
+          )}
       </div>
     </I18nProvider>
   );
