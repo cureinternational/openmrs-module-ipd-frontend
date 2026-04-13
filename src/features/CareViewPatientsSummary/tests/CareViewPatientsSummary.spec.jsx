@@ -329,7 +329,7 @@ describe("CareViewPatientsSummary", () => {
     });
   });
 
-  describe("fetchCareInstructionsCount", () => {
+  describe("fetchCareInstructions", () => {
     const ciFormConcepts = [
       {
         formName: "CI Form",

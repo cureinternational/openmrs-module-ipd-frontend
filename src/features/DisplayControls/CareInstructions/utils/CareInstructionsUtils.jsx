@@ -30,31 +30,17 @@ export const fetchCareInstructionsObs = async (visitUuid, conceptNames) => {
   }
 };
 
-export const fetchBatchObservations = async (
-  visitUuids,
-  concepts,
-  options = {}
-) => {
+export const fetchBatchObservations = async (visitUuids, concepts) => {
   try {
     const request = {
       visitUuids,
       concept: concepts,
     };
 
-    if (options.scope) {
-      request.scope = options.scope;
-    }
-    if (options.obsIgnoreList?.length > 0) {
-      request.obsIgnoreList = options.obsIgnoreList;
-    }
-    if (options.filterObsWithOrders !== undefined) {
-      request.filterObsWithOrders = options.filterObsWithOrders;
-    }
-
     const response = await axios.post(OBSERVATIONS_BATCH_URL, request, {
       withCredentials: true,
     });
-    return response.data; // [{ visitUuid, observations[] }, ...]
+    return response.data;
   } catch (error) {
     console.error("Failed to fetch observations batch", error);
     return [];

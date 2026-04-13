@@ -101,7 +101,7 @@ export const CareViewPatientsSummary = ({
     setPreviousShiftNonMedicationDetails(groupedData);
   };
 
-  const fetchCareInstructionsCount = async (patients) => {
+  const fetchCareInstructions = async (patients) => {
     const ciSection = ipdConfig?.sections?.find((s) => s.componentKey === "CI");
     const formConcepts = ciSection?.config?.formConcepts ?? [];
     if (formConcepts.length === 0) return;
@@ -127,7 +127,7 @@ export const CareViewPatientsSummary = ({
       fetchPreviousShiftTasks(patientsSummary);
       fetchSlots(patientsSummary);
       fetchTasks(patientsSummary);
-      fetchCareInstructionsCount(patientsSummary);
+      fetchCareInstructions(patientsSummary);
     }
   }, [patientsSummary, navHourEpoch]);
 
