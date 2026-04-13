@@ -411,7 +411,7 @@ describe("PatientDetailsCell", () => {
 
     await waitFor(() => {
       expect(queryByTestId("new-care-instructions-notification")).toBeTruthy();
-      expect(queryByText(/3 New Care Instructions\(s\)/)).toBeTruthy();
+      expect(queryByText(/3 New Care Instruction\(s\)/)).toBeTruthy();
       expect(queryByTestId("care-instructions-ipd-dashboard")).toBeTruthy();
     });
   });
@@ -503,7 +503,7 @@ describe("PatientDetailsCell", () => {
       expect(queryByTestId("new-medications-notification")).toBeTruthy();
       expect(queryByTestId("new-care-instructions-notification")).toBeTruthy();
       expect(queryByText(/2 New Medication\(s\)/)).toBeTruthy();
-      expect(queryByText(/3 New Care Instructions\(s\)/)).toBeTruthy();
+      expect(queryByText(/3 New Care Instruction\(s\)/)).toBeTruthy();
     });
   });
 });

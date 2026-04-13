@@ -161,13 +161,13 @@ export const PatientDetailsCell = ({
                     &bull; {careInstructionsCount + " "}
                     <FormattedMessage
                       id={"NEW_CARE_INSTRUCTIONS"}
-                      defaultMessage={"New Care Instructions(s)"}
+                      defaultMessage={"New Care Instruction(s)"}
                     />
                     {": "}
                     <Link
                       href={getIPDPatientDashboardUrl(
                         patientDetails.uuid,
-                        visitDetails.uuid,
+                        visitDetails?.uuid,
                         "careViewDashboard"
                       )}
                       data-testid="care-instructions-ipd-dashboard"
@@ -246,6 +246,6 @@ PatientDetailsCell.propTypes = {
   navHourEpoch: propTypes.object.isRequired,
   visitDetails: propTypes.object.isRequired,
   newTreatments: propTypes.number.isRequired,
-  careInstructions: propTypes.array,
+  careInstructions: propTypes.array.isRequired,
   previousShiftPendingTasks: propTypes.array.isRequired,
 };
