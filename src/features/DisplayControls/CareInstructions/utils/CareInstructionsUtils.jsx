@@ -1,6 +1,7 @@
 import axios from "axios";
 import {
   BAHMNI_CORE_OBSERVATIONS_BASE_URL,
+  OBSERVATIONS_BATCH_URL,
   defaultDateTimeFormat12Hrs,
 } from "../../../../constants";
 import { formatTime } from "../../../../utils/DateTimeUtils";
@@ -25,6 +26,37 @@ export const fetchCareInstructionsObs = async (visitUuid, conceptNames) => {
     });
     return response.data;
   } catch (error) {
+    return [];
+  }
+};
+
+export const fetchBatchObservations = async (
+  visitUuids,
+  concepts,
+  options = {}
+) => {
+  try {
+    const request = {
+      visitUuids,
+      concept: concepts,
+    };
+
+    if (options.scope) {
+      request.scope = options.scope;
+    }
+    if (options.obsIgnoreList?.length > 0) {
+      request.obsIgnoreList = options.obsIgnoreList;
+    }
+    if (options.filterObsWithOrders !== undefined) {
+      request.filterObsWithOrders = options.filterObsWithOrders;
+    }
+
+    const response = await axios.post(OBSERVATIONS_BATCH_URL, request, {
+      withCredentials: true,
+    });
+    return response.data; // [{ visitUuid, observations[] }, ...]
+  } catch (error) {
+    console.error("Failed to fetch observations batch", error);
     return [];
   }
 };

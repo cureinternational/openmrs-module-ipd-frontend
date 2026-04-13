@@ -570,3 +570,137 @@ describe("fetchCareInstructionsObs", () => {
     expect(result).toEqual([]);
   });
 });
+
+describe("fetchBatchObservations", () => {
+  let mockAxios;
+
+  beforeEach(() => {
+    mockAxios = new MockAdapter(axios);
+  });
+
+  afterEach(() => {
+    mockAxios.restore();
+  });
+
+  it("should POST to the batch URL and return grouped observations for multiple visits", async () => {
+    const mockResponse = [
+      {
+        visitUuid: "visit-uuid-1",
+        observations: [
+          {
+            encounterUuid: "encounter-uuid-1",
+            concept: { name: "Instruction for the Ward" },
+            value: "Rest in bed",
+          },
+        ],
+      },
+      {
+        visitUuid: "visit-uuid-2",
+        observations: [
+          {
+            encounterUuid: "encounter-uuid-2",
+            concept: { name: "Instruction for the Ward" },
+            value: "Monitor vitals",
+          },
+        ],
+      },
+    ];
+    mockAxios
+      .onPost(new RegExp(".*observations/batch.*"))
+      .reply(200, mockResponse);
+
+    const result = await CareInstructionsUtils.fetchBatchObservations(
+      ["visit-uuid-1", "visit-uuid-2"],
+      ["Instruction for the Ward"]
+    );
+
+    expect(result).toEqual(mockResponse);
+    expect(result).toHaveLength(2);
+    expect(result[0].visitUuid).toBe("visit-uuid-1");
+    expect(result[1].visitUuid).toBe("visit-uuid-2");
+
+    const requestBody = JSON.parse(mockAxios.history.post[0].data);
+    expect(requestBody).toEqual({
+      visitUuids: ["visit-uuid-1", "visit-uuid-2"],
+      concept: ["Instruction for the Ward"],
+    });
+    expect(mockAxios.history.post[0].withCredentials).toBe(true);
+  });
+
+  it("should include optional scope param when provided", async () => {
+    mockAxios.onPost(new RegExp(".*observations/batch.*")).reply(200, []);
+
+    await CareInstructionsUtils.fetchBatchObservations(
+      ["visit-uuid-1"],
+      ["Instruction for the Ward"],
+      { scope: "latest" }
+    );
+
+    const requestBody = JSON.parse(mockAxios.history.post[0].data);
+    expect(requestBody.scope).toBe("latest");
+  });
+
+  it("should include optional obsIgnoreList when provided with items", async () => {
+    mockAxios.onPost(new RegExp(".*observations/batch.*")).reply(200, []);
+
+    await CareInstructionsUtils.fetchBatchObservations(
+      ["visit-uuid-1"],
+      ["Instruction for the Ward"],
+      { obsIgnoreList: ["obs-uuid-1", "obs-uuid-2"] }
+    );
+
+    const requestBody = JSON.parse(mockAxios.history.post[0].data);
+    expect(requestBody.obsIgnoreList).toEqual(["obs-uuid-1", "obs-uuid-2"]);
+  });
+
+  it("should include optional filterObsWithOrders when explicitly set to false", async () => {
+    mockAxios.onPost(new RegExp(".*observations/batch.*")).reply(200, []);
+
+    await CareInstructionsUtils.fetchBatchObservations(
+      ["visit-uuid-1"],
+      ["Instruction for the Ward"],
+      { filterObsWithOrders: false }
+    );
+
+    const requestBody = JSON.parse(mockAxios.history.post[0].data);
+    expect(requestBody.filterObsWithOrders).toBe(false);
+  });
+
+  it("should NOT include optional params when not provided", async () => {
+    mockAxios.onPost(new RegExp(".*observations/batch.*")).reply(200, []);
+
+    await CareInstructionsUtils.fetchBatchObservations(
+      ["visit-uuid-1"],
+      ["Instruction for the Ward"]
+    );
+
+    const requestBody = JSON.parse(mockAxios.history.post[0].data);
+    expect(requestBody).not.toHaveProperty("scope");
+    expect(requestBody).not.toHaveProperty("obsIgnoreList");
+    expect(requestBody).not.toHaveProperty("filterObsWithOrders");
+  });
+
+  it("should NOT include obsIgnoreList when provided as empty array", async () => {
+    mockAxios.onPost(new RegExp(".*observations/batch.*")).reply(200, []);
+
+    await CareInstructionsUtils.fetchBatchObservations(
+      ["visit-uuid-1"],
+      ["Instruction for the Ward"],
+      { obsIgnoreList: [] }
+    );
+
+    const requestBody = JSON.parse(mockAxios.history.post[0].data);
+    expect(requestBody).not.toHaveProperty("obsIgnoreList");
+  });
+
+  it("should return empty array when the API call fails", async () => {
+    mockAxios.onPost(new RegExp(".*observations/batch.*")).reply(500);
+
+    const result = await CareInstructionsUtils.fetchBatchObservations(
+      ["visit-uuid-1"],
+      ["Instruction for the Ward"]
+    );
+
+    expect(result).toEqual([]);
+  });
+});
