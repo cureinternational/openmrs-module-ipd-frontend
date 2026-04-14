@@ -259,3 +259,101 @@ exports[`DrugListCell should  match snapshot for for drug cell with admin info s
   </div>
 </div>
 `;
+
+exports[`DrugListCell should use administeredDateTime from medicationAdministration for PRN slots 1`] = `
+<div>
+  <div
+    class="drug-order-details"
+  >
+    <div
+      class="order-details"
+    >
+      <div
+        class="drug-name-container"
+      >
+        <span
+          class="bx--tooltip--definition bx--tooltip--a11y name-tooltip"
+        >
+          <button
+            aria-describedby="definition-tooltip-6"
+            class="bx--tooltip__trigger bx--tooltip--a11y bx--tooltip__trigger--definition bx--tooltip--bottom bx--tooltip--align-start"
+            type="button"
+          >
+            <div
+              class="drug-chart-drug-name"
+            >
+              Zinc Oxide 20 mg Tablet
+            </div>
+          </button>
+          <span
+            class="bx--assistive-text"
+            id="definition-tooltip-6"
+            role="tooltip"
+          >
+            Zinc Oxide 20 mg Tablet
+          </span>
+        </span>
+         
+        <div>
+          TooltipCarbon
+        </div>
+      </div>
+      <div>
+        20mg
+         - Oral
+         -  10 Day(s)
+      </div>
+      <div>
+        <div
+          class="administration-details"
+        >
+          <span
+            class="bx--tooltip--definition bx--tooltip--a11y administration-details-tooltip"
+          >
+            <button
+              aria-describedby="definition-tooltip-7"
+              class="bx--tooltip__trigger bx--tooltip--a11y bx--tooltip__trigger--definition bx--tooltip--top bx--tooltip--align-start"
+              type="button"
+            >
+              <div
+                class="administration-time-info"
+              >
+                <test-file-stub
+                  classname="clock-icon"
+                />
+                <span
+                  style="color: rgb(82, 82, 82);"
+                >
+                  09:04
+                </span>
+              </div>
+            </button>
+            <span
+              class="bx--assistive-text"
+              id="definition-tooltip-7"
+              role="tooltip"
+            >
+              09:04
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div
+      class="medication-tags"
+    >
+      <div
+        class="bx--tag bx--tag--sm bx--tag--blue"
+        id="tag-4"
+      >
+        
+        <span
+          title="Rx-PRN"
+        >
+          Rx-PRN
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+`;

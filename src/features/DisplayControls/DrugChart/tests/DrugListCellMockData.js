@@ -1,3 +1,39 @@
+export const testDrugInfoWithPRNSlot = {
+  uuid: "prn-drug-uuid-1",
+  name: "Zinc Oxide 20 mg Tablet",
+  dosingInstructions: {
+    route: "Oral",
+    dosage: "20mg",
+    asNeeded: true,
+    frequency: "As needed",
+    instructions: { instructions: "Take as needed" },
+  },
+  duration: "10 Day(s)",
+  slots: [
+    {
+      id: 100,
+      uuid: "prn-slot-uuid-1",
+      serviceType: "AsNeededPlaceholder",
+      status: "SCHEDULED",
+      startTime: 1707379461,
+      medicationAdministration: {
+        administeredDateTime: 1707383061000,
+        providers: [],
+        notes: [],
+      },
+      notes: "",
+      administrationSummary: {
+        performerName: "Super Man",
+        notes: "",
+        status: "Administered",
+      },
+    },
+  ],
+  dateStopped: null,
+  firstSlotStartTime: null,
+  notes: null,
+};
+
 export const testDrugInfo = {
   uuid: "6a41be7c-7418-41dd-8ac0-5675f252d69b",
   name: "Amoxicillin/Clavulanic Acid  125 mg/31.25 mg/5 mL Powder for Oral Suspension",

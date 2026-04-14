@@ -5,6 +5,8 @@ import {
   getPreviousShiftDetails,
   getDateTime,
   canAcknowledgeAmendment,
+  transformDrugOrders,
+  mapDrugOrdersAndSlots,
 } from "../utils/DrugChartUtils";
 import axios from "axios";
 import { mockResponse } from "./DrugChartUtilsMockData";
@@ -163,6 +165,99 @@ describe("DrugChartUtils", () => {
 
     it("returns false when privileges is undefined", () => {
       expect(canAcknowledgeAmendment(undefined)).toBe(false);
+    });
+  });
+
+  describe("transformDrugOrders", () => {
+    const baseOrder = {
+      drugOrder: {
+        uuid: "order-uuid-1",
+        careSetting: "INPATIENT",
+        drug: { name: "Paracetamol" },
+        duration: 5,
+        durationUnits: "Day(s)",
+        dateStopped: null,
+        orderReasonText: null,
+        dosingInstructions: {
+          dose: 500,
+          doseUnits: "mg",
+          route: "Oral",
+          asNeeded: false,
+          frequency: { display: "Once a day" },
+          administrationInstructions: '{"instructions":"As directed"}',
+        },
+      },
+    };
+
+    it("should include INPATIENT orders that have no drugOrderSchedule (PRN orders)", () => {
+      const orders = {
+        ipdDrugOrders: [{ ...baseOrder, drugOrderSchedule: null }],
+        emergencyMedications: [],
+      };
+      const result = transformDrugOrders(orders);
+      expect(result["order-uuid-1"]).toBeDefined();
+      expect(result["order-uuid-1"].name).toBe("Paracetamol");
+    });
+
+    it("should not set firstSlotStartTime or notes when drugOrderSchedule is absent", () => {
+      const orders = {
+        ipdDrugOrders: [{ ...baseOrder, drugOrderSchedule: null }],
+        emergencyMedications: [],
+      };
+      const result = transformDrugOrders(orders);
+      expect(result["order-uuid-1"].firstSlotStartTime).toBeUndefined();
+      expect(result["order-uuid-1"].notes).toBeUndefined();
+    });
+
+    it("should set firstSlotStartTime and notes when drugOrderSchedule is present", () => {
+      const orders = {
+        ipdDrugOrders: [
+          {
+            ...baseOrder,
+            drugOrderSchedule: {
+              slotStartTime: 1706495400,
+              notes: "Take after food",
+            },
+          },
+        ],
+        emergencyMedications: [],
+      };
+      const result = transformDrugOrders(orders);
+      expect(result["order-uuid-1"].firstSlotStartTime).toBe(1706495400);
+      expect(result["order-uuid-1"].notes).toBe("Take after food");
+    });
+  });
+
+  describe("mapDrugOrdersAndSlots", () => {
+    it("should include PRN slots (serviceType AsNeededPlaceholder) in the mapped orders", () => {
+      const drugOrders = {
+        "order-uuid-1": {
+          name: "Zinc Oxide",
+          slots: [],
+          dosingInstructions: { route: "Oral", dosage: "20mg", asNeeded: true },
+          firstSlotStartTime: null,
+        },
+      };
+      const prnSlot = {
+        id: 1,
+        serviceType: "AsNeededPlaceholder",
+        status: "SCHEDULED",
+        startTime: 1707379461,
+        order: { uuid: "order-uuid-1" },
+        medicationAdministration: null,
+      };
+      const drugChartData = [{ slots: [prnSlot] }];
+      const mockDrugChart = {
+        timeInMinutesFromNowToShowPastTaskAsLate: 15,
+        timeInMinutesFromStartTimeToShowAdministeredTaskAsLate: 60,
+      };
+      const result = mapDrugOrdersAndSlots(
+        drugChartData,
+        drugOrders,
+        mockDrugChart
+      );
+      expect(result[0].slots).toHaveLength(1);
+      expect(result[0].slots[0].serviceType).toBe("AsNeededPlaceholder");
     });
   });
 });

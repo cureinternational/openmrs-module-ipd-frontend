@@ -5,6 +5,7 @@ import {
   testDrugInfo,
   testDrugInfoWithAdministeredLateStatus,
   testDrugInfoWithAdministeredStatus,
+  testDrugInfoWithPRNSlot,
 } from "./DrugListCellMockData";
 import { IPDContext } from "../../../../context/IPDContext";
 import { mockConfig } from "../../../../utils/CommonUtils";
@@ -44,6 +45,15 @@ describe("DrugListCell", () => {
     const { container } = render(
       <IPDContext.Provider value={{ config: mockConfig }}>
         <DrugListCell drugInfo={testDrugInfoWithAdministeredStatus} />
+      </IPDContext.Provider>
+    );
+    expect(container).toMatchSnapshot();
+  });
+
+  it("should use administeredDateTime from medicationAdministration for PRN slots", () => {
+    const { container } = render(
+      <IPDContext.Provider value={{ config: mockConfig }}>
+        <DrugListCell drugInfo={testDrugInfoWithPRNSlot} />
       </IPDContext.Provider>
     );
     expect(container).toMatchSnapshot();
