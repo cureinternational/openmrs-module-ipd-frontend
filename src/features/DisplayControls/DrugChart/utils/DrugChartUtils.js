@@ -34,10 +34,7 @@ export const transformDrugOrders = (orders) => {
   const { ipdDrugOrders, emergencyMedications } = orders;
   const medicationData = {};
   ipdDrugOrders.forEach((order) => {
-    if (
-      order.drugOrder?.careSetting === "INPATIENT" &&
-      order.drugOrderSchedule
-    ) {
+    if (order.drugOrder?.careSetting === "INPATIENT") {
       const {
         dosingInstructions,
         drug,
@@ -73,13 +70,15 @@ export const transformDrugOrders = (orders) => {
         slots: [],
         dateStopped: order.drugOrder.dateStopped,
         orderReasonText: orderReasonText,
-        firstSlotStartTime:
+      };
+      if(order.drugOrderSchedule) {
+        medicationData[order.drugOrder.uuid].firstSlotStartTime =
           order.drugOrderSchedule.slotStartTime ||
           (order.drugOrderSchedule.firstDaySlotsStartTime &&
             order.drugOrderSchedule.firstDaySlotsStartTime[0]) ||
-          order.drugOrderSchedule.dayWiseSlotsStartTime[0],
-        notes: order.drugOrderSchedule?.notes,
-      };
+          order.drugOrderSchedule.dayWiseSlotsStartTime[0]
+        medicationData[order.drugOrder.uuid].notes = order.drugOrderSchedule?.notes
+      }
     }
   });
   emergencyMedications.forEach((medication) => {
@@ -185,10 +184,9 @@ export const mapDrugOrdersAndSlots = (drugChartData, drugOrders, drugChart) => {
         status,
         order,
         medicationAdministration,
-        serviceType,
       } = slot;
       const uuid = order?.uuid || medicationAdministration?.uuid;
-      if (orders[uuid] && serviceType != asNeededPlaceholderConceptName) {
+      if (orders[uuid]) {
         let administrationStatus = getAdministrationStatus(
           medicationAdministration,
           status,

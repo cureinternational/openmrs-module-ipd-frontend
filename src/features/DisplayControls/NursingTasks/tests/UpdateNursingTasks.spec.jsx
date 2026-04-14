@@ -26,11 +26,14 @@ const mockUpdateEmergencyTasksSlider = jest.fn();
 const mockUpdateNonMedicationTask = jest.fn();
 const mockHandleAuditLogEvent = jest.fn();
 
+const mockSaveAdministeredMedication = jest.fn();
+
 jest.mock("../utils/NursingTasksUtils", () => {
   const originalModule = jest.requireActual("../utils/NursingTasksUtils");
   return {
     ...originalModule,
     updateNonMedicationTask: () => mockUpdateNonMedicationTask(),
+    saveAdministeredMedication: () => mockSaveAdministeredMedication(),
   };
 });
 describe("UpdateNursingTasksSlider", function () {
@@ -782,6 +785,44 @@ describe("UpdateNursingTasksSlider", function () {
     fireEvent.click(saveButton);
 
     expect(screen.getByText("Please confirm your PRN task")).toBeTruthy();
+  });
+
+  it("should call saveAdministeredMedication (not saveEmergencyMedication) when saving a PRN task", async () => {
+    mockSaveAdministeredMedication.mockResolvedValue({ status: 200 });
+    const { container } = render(
+      <IntlProvider locale="en">
+      <IPDContext.Provider
+        value={{
+          config: mockConfig,
+          handleAuditEvent: mockHandleAuditLogEvent,
+          currentUser: mockUserWithAllRequiredPrivileges,
+        }}
+      >
+        <UpdateNursingTasks
+          medicationTasks={mockPRNMedicationTasks}
+          groupSlotsByOrderId={mockGroupSlotsByOrderId}
+          updateNursingTasksSlider={mockUpdateEmergencyTasksSlider}
+          patientId="test_patient_uuid"
+          providerId="test_provider_uuid"
+          setShowNotification={mockSetShowNotification}
+          setNotificationMessage={mockSetNotificationMessage}
+          setNotificationStatus={mockSetNotificationStatus}
+        />
+      </IPDContext.Provider>
+      </IntlProvider>
+    );
+    const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
+    fireEvent.click(toggleButton);
+
+    const saveButton = screen.getAllByText("Save")[1];
+    fireEvent.click(saveButton);
+
+    const modalSaveButton = screen.getAllByText("Save")[0];
+    fireEvent.click(modalSaveButton);
+
+    await waitFor(() => {
+      expect(mockSaveAdministeredMedication).toHaveBeenCalledTimes(1);
+    });
   });
 
   it("should show toggle disabled when privileges are not preset", function () {

@@ -9,6 +9,7 @@ import {
   SEARCH_CONCEPT_URL,
   SEARCH_DRUG_URL,
   DAEMON_USER,
+  asNeededPlaceholderConceptName
 } from "../constants";
 import { FormattedMessage } from "react-intl";
 export const getPatientDashboardUrl = (patientUuid) =>
@@ -92,6 +93,9 @@ export const getAdministrationStatus = (
   slot
 ) => {
   let administrationStatus = "Pending";
+  if(slot.serviceType === asNeededPlaceholderConceptName){
+    return "Administered";
+  }
   if (medicationAdministration) {
     const { administeredDateTime } = medicationAdministration;
     if (status === "COMPLETED") {

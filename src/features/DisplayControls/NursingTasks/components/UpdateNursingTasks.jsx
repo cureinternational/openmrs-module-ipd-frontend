@@ -21,7 +21,6 @@ import {
   disableDoneTogglePostNextTaskTime,
   updateNonMedicationTask,
 } from "../utils/NursingTasksUtils";
-import { saveEmergencyMedication } from "../utils/EmergencyTasksUtils";
 import { SideBarPanelClose } from "../../../SideBarPanel/components/SideBarPanelClose";
 import {
   performerFunction,
@@ -127,9 +126,7 @@ const UpdateNursingTasks = (props) => {
   const handlePrimaryButtonClick = async () => {
     setIsSavingConfirmation(true);
     const administeredTasks = createAdministeredTasksPayload();
-    const response = isPRNMedication
-      ? await saveEmergencyMedication(administeredTasks[0])
-      : await saveAdministeredMedication(administeredTasks);
+    const response = await saveAdministeredMedication(administeredTasks);
     if (response.status === 200) {
       Object.keys(tasks).forEach((key) => {
         if (tasks[key].status === "not-done") {
