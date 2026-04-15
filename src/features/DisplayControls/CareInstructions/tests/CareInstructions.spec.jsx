@@ -12,11 +12,31 @@ import * as CareInstructionsUtils from "../utils/CareInstructionsUtils.jsx";
 
 jest.mock(
   "../../NursingTasks/components/AddEmergencyTasks",
-  () => () => <div data-testid="add-emergency-tasks-slider" />
+  () =>
+    ({ updateEmergencyTasksSlider, setShowNotification }) =>
+      (
+        <div data-testid="add-emergency-tasks-slider">
+          <button
+            data-testid="close-slider"
+            onClick={() => updateEmergencyTasksSlider(false)}
+          >
+            Close
+          </button>
+          <button
+            data-testid="save-task"
+            onClick={() => {
+              setShowNotification(true);
+              updateEmergencyTasksSlider(false);
+            }}
+          >
+            Save
+          </button>
+        </div>
+      )
 );
 jest.mock(
   "../../../../components/Notification/Notification",
-  () => () => null
+  () => () => <div data-testid="task-notification" />
 );
 
 const mockFormConcepts = [
@@ -348,11 +368,10 @@ describe("CareInstructions", () => {
       sliderContextClosed
     );
     await waitFor(() => {
-      const addTaskButtons = getAllByText("Add Task");
-      expect(addTaskButtons.length).toBeGreaterThan(0);
-      fireEvent.click(addTaskButtons[0]);
-      expect(mockUpdateSliderOpen).toHaveBeenCalled();
+      expect(getAllByText("Add Task").length).toBeGreaterThan(0);
     });
+    fireEvent.click(getAllByText("Add Task")[0]);
+    expect(mockUpdateSliderOpen).toHaveBeenCalled();
   });
 
   it("should render AddEmergencyTasks slider when careInstructionsTasks is open", async () => {
@@ -371,6 +390,51 @@ describe("CareInstructions", () => {
     );
     await waitFor(() => {
       expect(getByTestId("add-emergency-tasks-slider")).toBeInTheDocument();
+    });
+  });
+
+  it("should close the slider when updateEmergencyTasksSlider is called with false", async () => {
+    const mockUpdateSliderOpen = jest.fn();
+    const sliderContextOpen = {
+      isSliderOpen: { careInstructionsTasks: true },
+      updateSliderOpen: mockUpdateSliderOpen,
+      provider: { uuid: "provider-uuid-1" },
+    };
+    const { getByTestId } = renderWithProviders(
+      <CareInstructions
+        patientId="patient-uuid-1"
+        config={{ formConcepts: mockFormConcepts }}
+      />,
+      mockIPDContextWithData,
+      sliderContextOpen
+    );
+    await waitFor(() => {
+      expect(getByTestId("add-emergency-tasks-slider")).toBeInTheDocument();
+    });
+    fireEvent.click(getByTestId("close-slider"));
+    expect(mockUpdateSliderOpen).toHaveBeenCalledWith(expect.any(Function));
+  });
+
+  it("should show notification after task is saved", async () => {
+    const sliderContextOpen = {
+      isSliderOpen: { careInstructionsTasks: true },
+      updateSliderOpen: jest.fn(),
+      provider: { uuid: "provider-uuid-1" },
+    };
+    const { getByTestId } = renderWithProviders(
+      <CareInstructions
+        patientId="patient-uuid-1"
+        config={{ formConcepts: mockFormConcepts }}
+      />,
+      mockIPDContextWithData,
+      sliderContextOpen
+    );
+    await waitFor(() => {
+      expect(getByTestId("add-emergency-tasks-slider")).toBeInTheDocument();
+    });
+    fireEvent.click(getByTestId("save-task"));
+    await waitFor(() => {
+      expect(getByTestId("task-notification")).toBeInTheDocument();
     });
   });
 

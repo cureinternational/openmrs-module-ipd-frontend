@@ -243,7 +243,7 @@ const CareInstructions = (props) => {
           {renderAcknowledgedContent()}
         </Tab>
       </Tabs>
-      {isSliderOpen && isSliderOpen.careInstructionsTasks && (
+      {isSliderOpen.careInstructionsTasks && (
         <AddEmergencyTasks
           patientId={patientId}
           providerId={provider?.uuid}
@@ -263,7 +263,7 @@ const CareInstructions = (props) => {
           hostApi={{
             onClose: () => {
               setShowNotification(false);
-              refreshDisplayControl([componentKeys.NURSING_TASKS]);
+              refreshDisplayControl([componentKeys.NURSING_TASKS, componentKeys.CARE_INSTRUCTIONS]);
             },
           }}
         />
