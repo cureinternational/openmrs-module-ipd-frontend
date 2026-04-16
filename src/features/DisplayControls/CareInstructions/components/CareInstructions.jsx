@@ -31,12 +31,14 @@ const SKELETON_ROW_COUNT = 3;
 const EMPTY_FORM_CONCEPTS = [];
 
 const CareInstructions = (props) => {
-  const { patientId, config: { formConcepts = EMPTY_FORM_CONCEPTS } = {} } = props;
+  const { patientId, config: { formConcepts = EMPTY_FORM_CONCEPTS } = {} } =
+    props;
   const ipdContext = useContext(IPDContext);
   const intl = useIntl();
   const { visit, config, currentUser } = ipdContext;
   const { enable24HourTime = false } = config || {};
-  const { isSliderOpen, updateSliderOpen, provider } = useContext(SliderContext);
+  const { isSliderOpen, updateSliderOpen, provider } =
+    useContext(SliderContext);
   const refreshDisplayControl = useContext(RefreshDisplayControl);
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
@@ -176,10 +178,15 @@ const CareInstructions = (props) => {
               </TableCell>
               <TableCell>{row.form}</TableCell>
               <TableCell>{row.instructionType}</TableCell>
-              <TableCell className="instruction-cell">{row.instruction}</TableCell>
+              <TableCell className="instruction-cell">
+                {row.instruction}
+              </TableCell>
               <TableCell>{row.providerName}</TableCell>
-              <TableCell>
-                {isUserPrivileged(currentUser, PRIVILEGE_CONSTANTS.ADD_TASKS) && (
+              <TableCell className="action-cell">
+                {isUserPrivileged(
+                  currentUser,
+                  PRIVILEGE_CONSTANTS.ADD_TASKS
+                ) && (
                   <Link
                     onClick={() => {
                       if (!isSliderOpen.careInstructionsTasks) {
@@ -263,7 +270,10 @@ const CareInstructions = (props) => {
           hostApi={{
             onClose: () => {
               setShowNotification(false);
-              refreshDisplayControl([componentKeys.NURSING_TASKS, componentKeys.CARE_INSTRUCTIONS]);
+              refreshDisplayControl([
+                componentKeys.NURSING_TASKS,
+                componentKeys.CARE_INSTRUCTIONS,
+              ]);
             },
           }}
         />
