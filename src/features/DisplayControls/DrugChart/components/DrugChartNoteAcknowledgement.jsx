@@ -24,8 +24,14 @@ const DrugChartNoteAcknowledgement = (props) => {
             id="acknowledge-toggle"
             data-testId="acknowledge-toggle"
             size={"sm"}
-            labelA="Acknowledge"
-            labelB="Acknowledge"
+            labelA={intl.formatMessage({
+              id: "ACKNOWLEDGEMENT",
+              defaultMessage: "Acknowledge",
+            })}
+            labelB={intl.formatMessage({
+              id: "ACKNOWLEDGEMENT",
+              defaultMessage: "Acknowledge",
+            })}
             toggled={isAcknowledged}
             onToggle={onToggleChange}
           />
