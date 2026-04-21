@@ -92,7 +92,8 @@ export const transformDrugOrders = (orders) => {
       doseUnits;
     if (
       medication.doseUnits?.display?.toLowerCase() === "ml" ||
-      medication.doseUnits?.display?.toLowerCase() === "mg"
+      medication.doseUnits?.display?.toLowerCase() === "mg" ||
+      medication.doseUnits?.display?.toLowerCase() === "mcg"
     ) {
       dosage = medication.dose + medication.doseUnits.display;
     } else {
