@@ -22,6 +22,7 @@ import {
   isDrugOrderStoppedWithoutAdministration,
   getStopReason,
   getSlotsForAnOrderAndServiceType,
+  isPRNEligibleForNextDose,
 } from "../utils/TreatmentsUtils";
 import {
   isIPDrugOrder,
@@ -63,10 +64,10 @@ const Treatments = (props) => {
   } = useContext(SliderContext);
   const { config, handleAuditEvent, currentUser } = useContext(IPDContext);
   const {
-    enable24HourTime = {}, addDispensedMedicationToDrugChart = false,
+    enable24HourTime = {},
+    addDispensedMedicationToDrugChart = false,
     allMedicinesInPrescriptionAvailableForIPD = true,
-  } =
-    config;
+  } = config;
   const refreshDisplayControl = useContext(RefreshDisplayControl);
   const [treatments, setTreatments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -85,6 +86,8 @@ const Treatments = (props) => {
   const [showStopDrugSuccessNotification, setShowStopDrugSuccessNotification] =
     useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [prnFrequencyIntervalInMinutes, setPrnFrequencyIntervalInMinutes] =
+    useState({});
   const updateTreatmentsSlider = (value) => {
     updateSliderOpen((prev) => {
       return {
@@ -216,7 +219,8 @@ const Treatments = (props) => {
     showStopDrugChartLink,
     drugOrder,
     drugOrderSchedule,
-    drugOrderAttributes
+    drugOrderAttributes,
+    drugOrderObject
   ) => {
     const isOrderDispensed =
       drugOrderAttributes != null &&
@@ -230,22 +234,21 @@ const Treatments = (props) => {
       return {};
     }
     if (!showEditDrugChartLink && !showStopDrugChartLink) {
+      const isPRNDisabled =
+        drugOrder.dosingInstructions?.asNeeded &&
+        (drugOrderObject?.prnHasPendingPlaceholder ||
+          !drugOrderObject?.prnEligible);
+      const isButtonDisabled =
+        isAddToDrugChartDisabled ||
+        moment().valueOf() <= drugOrder.effectiveStartDate ||
+        (!isOrderDispensed && addDispensedMedicationToDrugChart) ||
+        isPRNDisabled;
       return {
         link: (
           <Link
-            disabled={
-              isAddToDrugChartDisabled ||
-              moment().valueOf() <= drugOrder.effectiveStartDate ||
-              (!isOrderDispensed && addDispensedMedicationToDrugChart)
-            }
+            disabled={isButtonDisabled}
             onClick={() => {
-              if (
-                !(
-                  isAddToDrugChartDisabled ||
-                  (!isOrderDispensed && addDispensedMedicationToDrugChart) ||
-                  moment().valueOf() <= drugOrder.effectiveStartDate
-                )
-              ) {
+              if (!isButtonDisabled) {
                 handleEditAndAddToDrugChartClick(
                   drugOrder.uuid,
                   showEditDrugChartLink,
@@ -310,15 +313,32 @@ const Treatments = (props) => {
           let showEditDrugChartLink;
           let showStopDrugChartLink;
           if (drugOrderObject.drugOrder.dosingInstructions.asNeeded) {
-            const placeholderSlot = await getSlotsForAnOrderAndServiceType(
-              patientId,
-              drugOrderObject.drugOrder.uuid,
-              serviceType.AS_NEEDED_PLACEHOLDER
+            const [placeholderSlots, adminSlots] = await Promise.all([
+              getSlotsForAnOrderAndServiceType(
+                patientId,
+                drugOrderObject.drugOrder.uuid,
+                serviceType.AS_NEEDED_PLACEHOLDER
+              ),
+              getSlotsForAnOrderAndServiceType(
+                patientId,
+                drugOrderObject.drugOrder.uuid,
+                serviceType.AS_NEEDED_MEDICATION_REQUEST
+              ),
+            ]);
+            const lastAdminTime =
+              adminSlots.length > 0
+                ? Math.max(...adminSlots.map((s) => s.startTime))
+                : null;
+            const frequency =
+              drugOrderObject.drugOrder.dosingInstructions.frequency;
+            drugOrderObject.prnHasPendingPlaceholder = placeholderSlots.some(
+              (s) => s.status === "SCHEDULED" && !s.medicationAdministration
             );
-            if (placeholderSlot.length > 0) {
-              showEditDrugChartLink = false;
-              showStopDrugChartLink = true;
-            }
+            drugOrderObject.prnEligible = isPRNEligibleForNextDose(
+              lastAdminTime,
+              frequency,
+              prnFrequencyIntervalInMinutes
+            );
           } else if (drugOrderObject.drugOrderSchedule != null) {
             showStopDrugChartLink =
               !!drugOrderObject.drugOrderSchedule
@@ -336,7 +356,8 @@ const Treatments = (props) => {
               showStopDrugChartLink,
               drugOrder,
               drugOrderObject.drugOrderSchedule,
-              drugOrderObject.drugOrderAttributes
+              drugOrderObject.drugOrderAttributes,
+              drugOrderObject
             );
           const getStatus = () => {
             if (drugOrder.dateStopped) {
@@ -345,6 +366,18 @@ const Treatments = (props) => {
                   <FormattedMessage id="STOPPED" defaultMessage="Stopped" />
                 </span>
               );
+            } else if (drugOrder.dosingInstructions?.asNeeded) {
+              if (
+                drugOrder.autoExpireDate &&
+                new Date() > new Date(drugOrder.autoExpireDate)
+              ) {
+                return (
+                  <FormattedMessage
+                    id={"COMPLETED"}
+                    defaultMessage={"Completed"}
+                  />
+                );
+              }
             } else if (drugOrderObject.drugOrderSchedule?.allSlotsAttended) {
               return (
                 <FormattedMessage
@@ -407,6 +440,9 @@ const Treatments = (props) => {
 
   const getTreatmentConfigs = async () => {
     const treatmentConfigs = await getConfigsForTreatments();
+    setPrnFrequencyIntervalInMinutes(
+      treatmentConfigs.prnFrequencyIntervalInMinutes || {}
+    );
     setSelectedDrugOrder({
       patientId: patientId,
       scheduleFrequencies: treatmentConfigs.scheduleFrequencies,
