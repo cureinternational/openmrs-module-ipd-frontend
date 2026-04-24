@@ -86,8 +86,6 @@ const Treatments = (props) => {
   const [showStopDrugSuccessNotification, setShowStopDrugSuccessNotification] =
     useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [prnFrequencyIntervalInMinutes, setPrnFrequencyIntervalInMinutes] =
-    useState({});
   const updateTreatmentsSlider = (value) => {
     updateSliderOpen((prev) => {
       return {
@@ -297,7 +295,7 @@ const Treatments = (props) => {
     }
   };
 
-  const modifyPrescribedTreatmentData = async (drugOrders) => {
+  const modifyPrescribedTreatmentData = async (drugOrders, prnInterval) => {
     if (!allMedicinesInPrescriptionAvailableForIPD) {
       drugOrders = drugOrders.filter((drugOrderObject) =>
         isIPDrugOrder(drugOrderObject.drugOrder)
@@ -337,7 +335,7 @@ const Treatments = (props) => {
             drugOrderObject.prnEligible = isPRNEligibleForNextDose(
               lastAdminTime,
               frequency,
-              prnFrequencyIntervalInMinutes
+              prnInterval
             );
           } else if (drugOrderObject.drugOrderSchedule != null) {
             showStopDrugChartLink =
@@ -438,30 +436,26 @@ const Treatments = (props) => {
     allMedications.getAllDrugOrders(visitUuid);
   }, []);
 
-  const getTreatmentConfigs = async () => {
-    const treatmentConfigs = await getConfigsForTreatments();
-    setPrnFrequencyIntervalInMinutes(
-      treatmentConfigs.prnFrequencyIntervalInMinutes || {}
-    );
-    setSelectedDrugOrder({
-      patientId: patientId,
-      scheduleFrequencies: treatmentConfigs.scheduleFrequencies,
-      startTimeFrequencies: treatmentConfigs.startTimeFrequencies,
-      enable24HourTimers: enable24HourTime,
-      drugOrder: null,
-    });
-    setIsLoading(false);
-  };
-
   useEffect(() => {
     const setMedicationsData = async () => {
       if (allMedications.data) {
+        const treatmentConfigs = await getConfigsForTreatments();
+        const prnInterval =
+          treatmentConfigs.prnFrequencyIntervalInMinutes || {};
+        setSelectedDrugOrder({
+          patientId: patientId,
+          scheduleFrequencies: treatmentConfigs.scheduleFrequencies,
+          startTimeFrequencies: treatmentConfigs.startTimeFrequencies,
+          enable24HourTimers: enable24HourTime,
+          drugOrder: null,
+        });
+
         let allTreatments = [];
         const allMedicationsList = { ...allMedications.data };
         if (allMedicationsList.ipdDrugOrders.length > 0) {
           drugOrderList = updateDrugOrderList(allMedicationsList.ipdDrugOrders);
           const allPrescribedTreatmentData =
-            await modifyPrescribedTreatmentData(drugOrderList);
+            await modifyPrescribedTreatmentData(drugOrderList, prnInterval);
           allTreatments = [...allPrescribedTreatmentData];
         }
         if (
@@ -483,7 +477,7 @@ const Treatments = (props) => {
             b.additionalData.startTimeForSort
         );
         setTreatments(allTreatments);
-        getTreatmentConfigs();
+        setIsLoading(false);
       } else if (
         allMedications.error.response.status === errorCodes.FORBIDDEN
       ) {
