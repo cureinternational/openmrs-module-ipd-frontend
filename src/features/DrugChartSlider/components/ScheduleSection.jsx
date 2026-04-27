@@ -26,6 +26,8 @@ export const ScheduleSection = ({
   showEmptyFinalDayScheduleWarning,
   showSchedulePassedWarning,
   enable24HourTimers,
+  showScheduleNextDayWarning = [],
+  showFirstDayScheduleNextDayWarning = [],
 }) => {
   const intl = useIntl();
   return (
@@ -35,8 +37,12 @@ export const ScheduleSection = ({
           <div className="schedule-section">
             <Title
               text={
-                intl.formatMessage({ id: "DRUG_CHART_MODAL_SCHEDULE_START_DATE", defaultMessage: "Schedule time (start date, " }) +
-                (enable24HourTimers ? timeText24 : timeText12) + ")"
+                intl.formatMessage({
+                  id: "DRUG_CHART_MODAL_SCHEDULE_START_DATE",
+                  defaultMessage: "Schedule time (start date, ",
+                }) +
+                (enable24HourTimers ? timeText24 : timeText12) +
+                ")"
               }
               isRequired={true}
             />
@@ -58,6 +64,14 @@ export const ScheduleSection = ({
                         invalidText={invalidTimeText24Hour}
                         isDisabled={firstDaySchedules[index] == "hh:mm"}
                       />
+                      {showFirstDayScheduleNextDayWarning[index] && (
+                        <p className="time-warning">
+                          <FormattedMessage
+                            id="DRUG_CHART_MODAL_SCHEDULE_NEXT_DAY_WARNING"
+                            defaultMessage="This dose extends to the next day"
+                          />
+                        </p>
+                      )}
                     </div>
                   ) : (
                     <div className="schedule-time" key={index}>
@@ -72,6 +86,14 @@ export const ScheduleSection = ({
                         isDisabled={firstDaySchedules[index] == "hh:mm"}
                         invalidText={invalidTimeText12Hour}
                       />
+                      {showFirstDayScheduleNextDayWarning[index] && (
+                        <p className="time-warning">
+                          <FormattedMessage
+                            id="DRUG_CHART_MODAL_SCHEDULE_NEXT_DAY_WARNING"
+                            defaultMessage="This dose extends to the next day"
+                          />
+                        </p>
+                      )}
                     </div>
                   )
               )}
@@ -98,8 +120,12 @@ export const ScheduleSection = ({
             <div className="schedule-section">
               <Title
                 text={
-                  intl.formatMessage({ id: "DRUG_CHART_MODAL_SCHEDULE_SUBSEQUENT", defaultMessage: "Schedule time (subsequent, " }) +
-                  (enable24HourTimers ? timeText24 : timeText12) + ")"
+                  intl.formatMessage({
+                    id: "DRUG_CHART_MODAL_SCHEDULE_SUBSEQUENT",
+                    defaultMessage: "Schedule time (subsequent, ",
+                  }) +
+                  (enable24HourTimers ? timeText24 : timeText12) +
+                  ")"
                 }
                 isRequired={true}
               />
@@ -120,6 +146,14 @@ export const ScheduleSection = ({
                           width="70%"
                           invalidText={invalidTimeText24Hour}
                         />
+                        {showScheduleNextDayWarning[index] && (
+                          <p className="time-warning">
+                            <FormattedMessage
+                              id="DRUG_CHART_MODAL_SCHEDULE_NEXT_DAY_WARNING"
+                              defaultMessage="This dose extends to the next day"
+                            />
+                          </p>
+                        )}
                       </div>
                     ) : (
                       <div className="schedule-time" key={index}>
@@ -133,6 +167,14 @@ export const ScheduleSection = ({
                           id={`schedule-${index}`}
                           invalidText={invalidTimeText12Hour}
                         />
+                        {showScheduleNextDayWarning[index] && (
+                          <p className="time-warning">
+                            <FormattedMessage
+                              id="DRUG_CHART_MODAL_SCHEDULE_NEXT_DAY_WARNING"
+                              defaultMessage="This dose extends to the next day"
+                            />
+                          </p>
+                        )}
                       </div>
                     )
                 )}
@@ -152,8 +194,12 @@ export const ScheduleSection = ({
           <div className="schedule-section">
             <Title
               text={
-                intl.formatMessage({ id: "DRUG_CHART_MODAL_SCHEDULE_REMAINDER", defaultMessage: "Schedule time (remainder, " }) +
-                (enable24HourTimers ? timeText24 : timeText12) + ")"
+                intl.formatMessage({
+                  id: "DRUG_CHART_MODAL_SCHEDULE_REMAINDER",
+                  defaultMessage: "Schedule time (remainder, ",
+                }) +
+                (enable24HourTimers ? timeText24 : timeText12) +
+                ")"
               }
               isRequired={true}
             />
@@ -225,8 +271,13 @@ export const ScheduleSection = ({
           <div className="schedule-section">
             <Title
               text={
-                intl.formatMessage({ id: "DRUG_CHART_MODAL_SCHEDULES", defaultMessage: "Schedule(s)" }) + " ("+
-                (enable24HourTimers ? timeText24 : timeText12) + ")"
+                intl.formatMessage({
+                  id: "DRUG_CHART_MODAL_SCHEDULES",
+                  defaultMessage: "Schedule(s)",
+                }) +
+                " (" +
+                (enable24HourTimers ? timeText24 : timeText12) +
+                ")"
               }
               isRequired={true}
             />
@@ -247,6 +298,14 @@ export const ScheduleSection = ({
                         width="70%"
                         invalidText={invalidTimeText24Hour}
                       />
+                      {showScheduleNextDayWarning[index] && (
+                        <p className="time-warning">
+                          <FormattedMessage
+                            id="DRUG_CHART_MODAL_SCHEDULE_NEXT_DAY_WARNING"
+                            defaultMessage="This dose extends to the next day"
+                          />
+                        </p>
+                      )}
                     </div>
                   ) : (
                     <div className="schedule-time" key={index}>
@@ -260,6 +319,14 @@ export const ScheduleSection = ({
                         id={`schedule-${index}`}
                         invalidText={invalidTimeText12Hour}
                       />
+                      {showScheduleNextDayWarning[index] && (
+                        <p className="time-warning">
+                          <FormattedMessage
+                            id="DRUG_CHART_MODAL_SCHEDULE_NEXT_DAY_WARNING"
+                            defaultMessage="This dose extends to the next day"
+                          />
+                        </p>
+                      )}
                     </div>
                   )
               )}
@@ -308,4 +375,6 @@ ScheduleSection.propTypes = {
   showEmptyFinalDayScheduleWarning: PropTypes.bool.isRequired,
   showSchedulePassedWarning: PropTypes.array.isRequired,
   enable24HourTimers: PropTypes.bool.isRequired,
+  showScheduleNextDayWarning: PropTypes.array,
+  showFirstDayScheduleNextDayWarning: PropTypes.array,
 };

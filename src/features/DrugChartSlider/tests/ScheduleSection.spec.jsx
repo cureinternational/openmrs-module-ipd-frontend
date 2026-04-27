@@ -46,4 +46,39 @@ describe("ScheduleSection", () => {
       expect(container).toMatchSnapshot();
     });
   });
+
+  it("shows next-day warning when showScheduleNextDayWarning has true value", async () => {
+    const { getByText } = render(
+      <IntlProvider locale="en">
+        <ScheduleSection
+          {...props}
+          firstDaySlotsMissed={0}
+          schedules={["09:00", "21:00", "00:00"]}
+          showScheduleNextDayWarning={[false, false, true]}
+        />
+      </IntlProvider>
+    );
+    await waitFor(() => {
+      expect(
+        getByText("This dose extends to the next day")
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("shows next-day warning in firstDay section when showFirstDayScheduleNextDayWarning has true value", async () => {
+    const { getByText } = render(
+      <IntlProvider locale="en">
+        <ScheduleSection
+          {...props}
+          firstDaySlotsMissed={1}
+          showFirstDayScheduleNextDayWarning={[false, false, true]}
+        />
+      </IntlProvider>
+    );
+    await waitFor(() => {
+      expect(
+        getByText("This dose extends to the next day")
+      ).toBeInTheDocument();
+    });
+  });
 });

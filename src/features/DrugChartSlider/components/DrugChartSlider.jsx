@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { TextArea } from "carbon-components-react";
 import moment from "moment";
 import PropTypes from "prop-types";
-import { FormattedMessage ,useIntl} from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { I18nProvider } from "../../i18n/I18nProvider";
 import SideBarPanel from "../../SideBarPanel/components/SideBarPanel";
 import "../styles/DrugChartSlider.scss";
@@ -25,6 +25,8 @@ import {
   getUTCTimeEpoch,
   setDrugOrderScheduleIn24HourFormat,
   setDrugOrderScheduleIn12HourFormat,
+  calculateShiftedSchedules,
+  detectNextDayCrossings,
 } from "../utils/DrugChartSliderUtils";
 import {
   epochTo24HourTimeFormat,
@@ -117,8 +119,78 @@ const DrugChartSlider = (props) => {
   ] = useState(false);
   const [isSaveDisabled, updateIsSaveDisabled] = useState(false);
 
+  const [showScheduleNextDayWarning, setShowScheduleNextDayWarning] = useState(
+    []
+  );
+  const [
+    showFirstDayScheduleNextDayWarning,
+    setShowFirstDayScheduleNextDayWarning,
+  ] = useState([]);
+
   const handleFirstDaySchedule = (newSchedule, index) => {
     updateSliderContentModified(true);
+    const editableCount = firstDaySchedules.length - firstDaySlotsMissed;
+
+    // Cascade: only when editing first editable slot and original is valid
+    if (
+      index === firstDaySlotsMissed &&
+      editableCount > 1 &&
+      !isInvalidTimeTextPresent(enable24HourTimers) &&
+      newSchedule !== ""
+    ) {
+      const firstDoseOriginal = firstDaySchedules[firstDaySlotsMissed];
+      const isOriginalValid = enable24HourTimers
+        ? typeof firstDoseOriginal === "string" &&
+          firstDoseOriginal !== "" &&
+          firstDoseOriginal !== "hh:mm" &&
+          moment(firstDoseOriginal, "HH:mm", true).isValid()
+        : moment.isMoment(firstDoseOriginal) && firstDoseOriginal.isValid();
+
+      if (isOriginalValid) {
+        const editablePortion = firstDaySchedules.slice(firstDaySlotsMissed);
+        const shiftedEditable = calculateShiftedSchedules(
+          editablePortion,
+          firstDoseOriginal,
+          newSchedule,
+          enable24HourTimers
+        );
+        const newScheduleArray = [...firstDaySchedules];
+        shiftedEditable.forEach((val, i) => {
+          newScheduleArray[firstDaySlotsMissed + i] = val;
+        });
+        setFirstDaySchedules(newScheduleArray);
+
+        const origM = enable24HourTimers
+          ? moment(firstDoseOriginal, "HH:mm")
+          : firstDoseOriginal.clone();
+        const newM = enable24HourTimers
+          ? moment(newSchedule, "HH:mm")
+          : moment(newSchedule, "hh:mm A");
+        const offsetMinutes = newM.diff(origM, "minutes");
+        const editableWarnings = detectNextDayCrossings(
+          editablePortion.slice(1),
+          offsetMinutes,
+          enable24HourTimers
+        );
+        const fullWarnings = Array(firstDaySlotsMissed)
+          .fill(false)
+          .concat([false, ...editableWarnings]);
+        setShowFirstDayScheduleNextDayWarning(fullWarnings);
+
+        setShowFirstDaySchedulePassedWarning((prev) => {
+          const updated = [...prev];
+          updated[index] = isTimePassed(
+            newSchedule,
+            timeWindowToDisableSlots,
+            enable24HourTimers
+          );
+          return updated;
+        });
+        return;
+      }
+    }
+
+    // Non-cascade: update only the triggered index
     const newScheduleArray = [...firstDaySchedules];
     newScheduleArray[index] = enable24HourTimers
       ? newSchedule
@@ -139,6 +211,58 @@ const DrugChartSlider = (props) => {
 
   const handleSubsequentDaySchedule = (newSchedule, index) => {
     updateSliderContentModified(true);
+
+    // Cascade: only when editing first dose and original first dose is valid
+    if (
+      index === 0 &&
+      schedules.length > 1 &&
+      !isInvalidTimeTextPresent(enable24HourTimers) &&
+      newSchedule !== ""
+    ) {
+      const firstDoseOriginal = schedules[0];
+      const isOriginalValid = enable24HourTimers
+        ? typeof firstDoseOriginal === "string" &&
+          firstDoseOriginal !== "" &&
+          moment(firstDoseOriginal, "HH:mm", true).isValid()
+        : moment.isMoment(firstDoseOriginal) && firstDoseOriginal.isValid();
+
+      if (isOriginalValid) {
+        const shifted = calculateShiftedSchedules(
+          schedules,
+          firstDoseOriginal,
+          newSchedule,
+          enable24HourTimers
+        );
+        setSchedules(shifted);
+
+        const origM = enable24HourTimers
+          ? moment(firstDoseOriginal, "HH:mm")
+          : firstDoseOriginal.clone();
+        const newM = enable24HourTimers
+          ? moment(newSchedule, "HH:mm")
+          : moment(newSchedule, "hh:mm A");
+        const offsetMinutes = newM.diff(origM, "minutes");
+        const warnings = detectNextDayCrossings(
+          schedules.slice(1),
+          offsetMinutes,
+          enable24HourTimers
+        );
+        setShowScheduleNextDayWarning([false, ...warnings]);
+
+        setShowSchedulePassedWarning((prev) => {
+          const updated = [...prev];
+          updated[0] = isTimePassed(
+            newSchedule,
+            timeWindowToDisableSlots,
+            enable24HourTimers
+          );
+          return updated;
+        });
+        return;
+      }
+    }
+
+    // Non-cascade: update only the triggered index
     const newScheduleArray = [...schedules];
     newScheduleArray[index] = enable24HourTimers
       ? newSchedule
@@ -592,6 +716,10 @@ const DrugChartSlider = (props) => {
                 }
                 showSchedulePassedWarning={showSchedulePassedWarning}
                 enable24HourTimers={enable24HourTimers}
+                showScheduleNextDayWarning={showScheduleNextDayWarning}
+                showFirstDayScheduleNextDayWarning={
+                  showFirstDayScheduleNextDayWarning
+                }
               />
               {enableStartTime && (
                 <StartTimeSection
@@ -616,7 +744,10 @@ const DrugChartSlider = (props) => {
               rows={3}
               value={drugChartNotes}
               onChange={(e) => handleNotes(e)}
-              labelText={intl.formatMessage({ id: "DRUG_CHART_MODAL_NOTES", defaultMessage: "Notes" })}
+              labelText={intl.formatMessage({
+                id: "DRUG_CHART_MODAL_NOTES",
+                defaultMessage: "Notes",
+              })}
             />
           </div>
         </div>

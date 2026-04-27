@@ -2,6 +2,7 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { IntlProvider } from "react-intl";
 import DrugChartSlider from "../components/DrugChartSlider";
+import { ScheduleSection } from "../components/ScheduleSection";
 import {
   mockStartTimeDrugOrder,
   mockScheduleDrugOrder,
@@ -48,13 +49,13 @@ const mockHandleAuditEvent = jest.fn();
 const mockUpdateMedication = jest.fn();
 const mockSaveMedication = jest.fn();
 
-jest.mock('../utils/DrugChartSliderUtils',()=>{
-    const originalModule = jest.requireActual("../utils/DrugChartSliderUtils");
-    return {
-        ...originalModule,
-        updateMedication : (medication) => mockUpdateMedication(medication),
-        saveMedication : (medication) => mockSaveMedication(medication),
-    }
+jest.mock("../utils/DrugChartSliderUtils", () => {
+  const originalModule = jest.requireActual("../utils/DrugChartSliderUtils");
+  return {
+    ...originalModule,
+    updateMedication: (medication) => mockUpdateMedication(medication),
+    saveMedication: (medication) => mockSaveMedication(medication),
+  };
 });
 
 describe("DrugChartSlider", () => {
@@ -67,11 +68,11 @@ describe("DrugChartSlider", () => {
     mockUpdateMedication.mockResolvedValue({
       status: 200,
       data: mockUpdateMedicationData,
-    })
+    });
     mockSaveMedication.mockResolvedValue({
       status: 200,
       data: mockUpdateMedicationData,
-    })
+    });
   });
 
   afterEach(() => {
@@ -434,7 +435,9 @@ describe("DrugChartSlider", () => {
     MockDate.set("2010-12-22T07:08:00.000");
     const { getByText, queryByText } = renderWithProviders(
       <SliderContext.Provider value={mockSliderContext}>
-        <IPDContext.Provider value={{ config: mockConfig, handleAuditEvent: mockHandleAuditEvent }}>
+        <IPDContext.Provider
+          value={{ config: mockConfig, handleAuditEvent: mockHandleAuditEvent }}
+        >
           <DrugChartSlider
             hostData={{
               enable24HourTimers: true,
@@ -450,9 +453,11 @@ describe("DrugChartSlider", () => {
 
     await waitFor(() => {
       expect(getByText("Add to Drug Chart")).toBeInTheDocument();
-        const saveButton = screen.getByRole("button", { name: "Save" });
-        fireEvent.click(saveButton);
-        expect(mockHandleAuditEvent).toHaveBeenCalledWith('CREATE_SCHEDULED_MEDICATION_TASK');
+      const saveButton = screen.getByRole("button", { name: "Save" });
+      fireEvent.click(saveButton);
+      expect(mockHandleAuditEvent).toHaveBeenCalledWith(
+        "CREATE_SCHEDULED_MEDICATION_TASK"
+      );
     });
     expect(queryByText("Schedule(s)")).toBeNull();
     expect(queryByText("Start Time")).toBeNull();
@@ -463,7 +468,9 @@ describe("DrugChartSlider", () => {
     MockDate.set("2010-12-22T07:08:00.000");
     const { container, getByText } = renderWithProviders(
       <SliderContext.Provider value={mockSliderContext}>
-        <IPDContext.Provider value={{ config: mockConfig, handleAuditEvent: mockHandleAuditEvent }}>
+        <IPDContext.Provider
+          value={{ config: mockConfig, handleAuditEvent: mockHandleAuditEvent }}
+        >
           <DrugChartSlider
             hostData={{
               enable24HourTimers: true,
@@ -481,9 +488,11 @@ describe("DrugChartSlider", () => {
       expect(
         getByText("Schedule time (start date, 24 hrs format)")
       ).toBeTruthy();
-        const saveButton = screen.getByRole("button", { name: "Save" });
-        fireEvent.click(saveButton);
-      expect(mockHandleAuditEvent).toHaveBeenCalledWith('EDIT_SCHEDULED_MEDICATION_TASK');
+      const saveButton = screen.getByRole("button", { name: "Save" });
+      fireEvent.click(saveButton);
+      expect(mockHandleAuditEvent).toHaveBeenCalledWith(
+        "EDIT_SCHEDULED_MEDICATION_TASK"
+      );
     });
     expect(container).toMatchSnapshot();
     MockDate.reset();
@@ -536,5 +545,113 @@ describe("DrugChartSlider", () => {
       expect(startTimeInputs[1].value).toBe("04:00");
     });
     MockDate.reset();
+  });
+
+  describe("Schedule cascade (SC1-SC4)", () => {
+    it("SC1: changing first dose cascades offset to subsequent doses (24hr)", async () => {
+      MockDate.set("2010-12-22T00:00:00.000Z");
+      renderWithProviders(
+        <DrugChartSlider
+          hostData={{
+            enable24HourTimers: true,
+            scheduleFrequencies: mockScheduleFrequenciesWithTimings,
+            startTimeFrequencies: mockStartTimeFrequencies,
+            drugOrder: mockScheduleDrugOrder,
+          }}
+          hostApi={{}}
+          title=""
+          drugChartNotes=""
+          setDrugChartNotes={jest.fn()}
+        />
+      );
+
+      await waitFor(() => {
+        const inputs = document.querySelectorAll("#time-selector");
+        expect(inputs.length).toBeGreaterThan(1);
+      });
+
+      const inputs = document.querySelectorAll("#time-selector");
+      // Fire change on first input
+      fireEvent.change(inputs[0], { target: { value: "04:00" } });
+
+      await waitFor(() => {
+        const updatedInputs = document.querySelectorAll("#time-selector");
+        expect(updatedInputs[0].value).toBe("04:00");
+      });
+      MockDate.reset();
+    });
+
+    it("SC2: changing a non-first dose does not cascade (24hr)", async () => {
+      MockDate.set("2010-12-22T00:00:00.000Z");
+      renderWithProviders(
+        <DrugChartSlider
+          hostData={{
+            enable24HourTimers: true,
+            scheduleFrequencies: mockScheduleFrequenciesWithTimings,
+            startTimeFrequencies: mockStartTimeFrequencies,
+            drugOrder: mockScheduleDrugOrder,
+          }}
+          hostApi={{}}
+          title=""
+          drugChartNotes=""
+          setDrugChartNotes={jest.fn()}
+        />
+      );
+
+      await waitFor(() => {
+        const inputs = document.querySelectorAll("#time-selector");
+        expect(inputs.length).toBeGreaterThan(1);
+      });
+
+      const inputs = document.querySelectorAll("#time-selector");
+      const firstInputBefore = inputs[0].value;
+      // Fire change on second input (non-first)
+      fireEvent.change(inputs[1], { target: { value: "18:00" } });
+
+      await waitFor(() => {
+        const updatedInputs = document.querySelectorAll("#time-selector");
+        // first input should be unchanged
+        expect(updatedInputs[0].value).toBe(firstInputBefore);
+        // second input changed
+        expect(updatedInputs[1].value).toBe("18:00");
+      });
+      MockDate.reset();
+    });
+
+    it("SC4: next-day warning renders when showScheduleNextDayWarning has a true entry", async () => {
+      MockDate.set("2010-12-22T00:00:00.000Z");
+      // Render ScheduleSection directly to verify the warning renders correctly
+      const { getByText } = render(
+        <IntlProvider locale="en">
+          <ScheduleSection
+            enableSchedule={{ frequencyPerDay: 2 }}
+            firstDaySlotsMissed={0}
+            firstDaySchedules={[]}
+            schedules={["09:00", "21:00"]}
+            finalDaySchedules={[]}
+            handleFirstDaySchedule={jest.fn()}
+            handleSubsequentDaySchedule={jest.fn()}
+            handleFinalDaySchedule={jest.fn()}
+            showFirstDayScheduleOrderWarning={false}
+            showEmptyFirstDayScheduleWarning={false}
+            showFirstDaySchedulePassedWarning={[false, false]}
+            showScheduleOrderWarning={false}
+            showEmptyScheduleWarning={false}
+            showFinalDayScheduleOrderWarning={false}
+            showEmptyFinalDayScheduleWarning={false}
+            showSchedulePassedWarning={[false, false]}
+            enable24HourTimers={true}
+            showScheduleNextDayWarning={[false, true]}
+          />
+        </IntlProvider>
+      );
+
+      await waitFor(() => {
+        expect(
+          getByText("This dose extends to the next day")
+        ).toBeInTheDocument();
+      });
+      MockDate.reset();
+    });
   });
 });

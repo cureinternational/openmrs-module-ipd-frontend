@@ -6,6 +6,8 @@ import {
   updateStartTimeBasedOnFrequency,
   getUTCTimeEpoch,
   saveMedication,
+  calculateShiftedSchedules,
+  detectNextDayCrossings,
 } from "../utils/DrugChartSliderUtils";
 import { timeFormatFor24Hr } from "../../../constants";
 import MockDate from "mockdate";
@@ -175,6 +177,75 @@ describe("DrugChartSliderUtils", () => {
       const response = await saveMedication(medication);
 
       expect(response).toBeUndefined();
+    });
+  });
+
+  describe("calculateShiftedSchedules", () => {
+    it("shifts subsequent doses by the same offset as first dose change (24hr)", () => {
+      const schedules = ["06:00", "16:00", "23:00"];
+      const result = calculateShiftedSchedules(
+        schedules,
+        "06:00",
+        "04:00",
+        true
+      );
+      expect(result[0]).toBe("04:00");
+      expect(result[1]).toBe("14:00");
+      expect(result[2]).toBe("21:00");
+    });
+
+    it("only changes index 0 when there is one dose (24hr)", () => {
+      const schedules = ["06:00"];
+      const result = calculateShiftedSchedules(
+        schedules,
+        "06:00",
+        "04:00",
+        true
+      );
+      expect(result[0]).toBe("04:00");
+      expect(result.length).toBe(1);
+    });
+
+    it("shifts subsequent doses by offset for 12hr mode", () => {
+      const orig0 = moment("06:00 AM", "hh:mm A");
+      const orig1 = moment("04:00 PM", "hh:mm A");
+      const schedules = [orig0, orig1];
+      const result = calculateShiftedSchedules(
+        schedules,
+        orig0,
+        "04:00 AM",
+        false
+      );
+      expect(moment.isMoment(result[0])).toBe(true);
+      expect(result[0].format("HH:mm")).toBe("04:00");
+      expect(result[1].format("HH:mm")).toBe("14:00");
+    });
+  });
+
+  describe("detectNextDayCrossings", () => {
+    it("detects when a shifted dose crosses midnight (24hr)", () => {
+      // 21:00 + 240 min = 25:00 → crosses midnight
+      const result = detectNextDayCrossings(["21:00"], 240, true);
+      expect(result[0]).toBe(true);
+    });
+
+    it("returns false when dose does not cross midnight (24hr)", () => {
+      // 09:00 + 240 min = 13:00 → no crossing
+      const result = detectNextDayCrossings(["09:00"], 240, true);
+      expect(result[0]).toBe(false);
+    });
+
+    it("detects backward crossing (negative offset, goes before midnight)", () => {
+      // 00:30 - 60 min = -30 → crosses midnight into previous day
+      const result = detectNextDayCrossings(["00:30"], -60, true);
+      expect(result[0]).toBe(true);
+    });
+
+    it("returns an array matching the length of subsequentSchedules", () => {
+      const result = detectNextDayCrossings(["09:00", "21:00"], 240, true);
+      expect(result.length).toBe(2);
+      expect(result[0]).toBe(false);
+      expect(result[1]).toBe(true);
     });
   });
 });

@@ -170,3 +170,52 @@ export const setDrugOrderScheduleIn12HourFormat = (schedule) => {
   });
   return drugOrderSchduleIn12HourFormat;
 };
+
+export const calculateShiftedSchedules = (
+  schedules,
+  firstDoseOriginal,
+  firstDoseNew,
+  enable24HourTimers
+) => {
+  const origMoment = enable24HourTimers
+    ? moment(firstDoseOriginal, "HH:mm")
+    : moment.isMoment(firstDoseOriginal)
+    ? firstDoseOriginal.clone()
+    : moment(firstDoseOriginal, "hh:mm A");
+  const newMoment = enable24HourTimers
+    ? moment(firstDoseNew, "HH:mm")
+    : moment(firstDoseNew, "hh:mm A");
+  const offsetMinutes = newMoment.diff(origMoment, "minutes");
+
+  return schedules.map((schedule, index) => {
+    if (index === 0) {
+      return enable24HourTimers
+        ? firstDoseNew
+        : moment(firstDoseNew, "hh:mm A");
+    }
+    const scheduleMoment = enable24HourTimers
+      ? moment(schedule, "HH:mm")
+      : moment.isMoment(schedule)
+      ? schedule.clone()
+      : moment(schedule, "hh:mm A");
+    const shifted = scheduleMoment.add(offsetMinutes, "minutes");
+    return enable24HourTimers ? shifted.format("HH:mm") : shifted;
+  });
+};
+
+export const detectNextDayCrossings = (
+  subsequentSchedules,
+  offsetMinutes,
+  enable24HourTimers
+) => {
+  return subsequentSchedules.map((schedule) => {
+    const m = enable24HourTimers
+      ? moment(schedule, "HH:mm")
+      : moment.isMoment(schedule)
+      ? schedule.clone()
+      : moment(schedule, "hh:mm A");
+    const originalMinutes = m.hours() * 60 + m.minutes();
+    const shiftedMinutes = originalMinutes + offsetMinutes;
+    return shiftedMinutes >= 24 * 60 || shiftedMinutes < 0;
+  });
+};
