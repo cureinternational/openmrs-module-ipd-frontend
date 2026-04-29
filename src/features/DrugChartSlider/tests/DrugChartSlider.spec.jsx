@@ -618,6 +618,64 @@ describe("DrugChartSlider", () => {
       MockDate.reset();
     });
 
+    it("SC5: save payload uses next-day epoch for dose that crosses midnight after cascade (AC4)", async () => {
+      MockDate.set("2010-12-22T00:00:00.000Z");
+      mockSaveMedication.mockClear();
+      const midnightFrequencies = [
+        {
+          name: "Twice a day",
+          frequencyPerDay: 2,
+          scheduleTiming: ["09:00", "21:00"],
+        },
+      ];
+
+      render(
+        <IntlProvider locale="en">
+          <SliderContext.Provider value={mockSliderContext}>
+            <IPDContext.Provider
+              value={{ config: mockConfig, handleAuditEvent: jest.fn() }}
+            >
+              <DrugChartSlider
+                hostData={{
+                  enable24HourTimers: true,
+                  scheduleFrequencies: midnightFrequencies,
+                  startTimeFrequencies: mockStartTimeFrequencies,
+                  drugOrder: mockScheduleDrugOrder,
+                }}
+                hostApi={{}}
+                title=""
+                drugChartNotes=""
+                setDrugChartNotes={jest.fn()}
+              />
+            </IPDContext.Provider>
+          </SliderContext.Provider>
+        </IntlProvider>
+      );
+
+      await waitFor(() => {
+        const inputs = document.querySelectorAll("#time-selector");
+        expect(inputs.length).toBeGreaterThan(1);
+      });
+
+      // Change first dose from 09:00 to 13:00 (+4hr offset)
+      // → cascade shifts second dose: 21:00 + 4hr = 01:00 (crosses midnight)
+      const inputs = document.querySelectorAll("#time-selector");
+      fireEvent.change(inputs[0], { target: { value: "13:00" } });
+
+      const saveButton = screen.getByRole("button", { name: "Save" });
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        expect(mockSaveMedication).toHaveBeenCalled();
+      });
+
+      const savedPayload = mockSaveMedication.mock.calls[0][0];
+      const slots = savedPayload.dayWiseSlotsStartTime;
+      // Second dose at 01:00 next day is 12 hours after first dose at 13:00 same day
+      expect(slots[1] - slots[0]).toBe(12 * 3600);
+      MockDate.reset();
+    });
+
     it("SC4: next-day warning renders when showScheduleNextDayWarning has a true entry", async () => {
       MockDate.set("2010-12-22T00:00:00.000Z");
       // Render ScheduleSection directly to verify the warning renders correctly

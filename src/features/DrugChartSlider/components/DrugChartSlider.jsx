@@ -301,7 +301,12 @@ const DrugChartSlider = (props) => {
 
   const isValidSchedule = async () => {
     const { isValid, warningType } = await handleScheduleWarnings();
-    if (!isValid && (warningType === "empty" || warningType === "passed"))
+    if (!isValid && warningType === "empty") return false;
+    if (
+      !isValid &&
+      warningType === "passed" &&
+      !showScheduleNextDayWarning.some(Boolean)
+    )
       return false;
     return true;
   };
@@ -320,9 +325,12 @@ const DrugChartSlider = (props) => {
 
   const isValidFirstDaySchedule = async () => {
     const { isValid, warningType } = await handleFirstDayScheduleWarnings();
-    if (!isValid && (warningType === "empty" || warningType === "passed"))
-      return false;
-    return true;
+    if (!isValid && warningType === "empty") return false;
+    return !(
+      !isValid &&
+      warningType === "passed" &&
+      !showFirstDayScheduleNextDayWarning.some(Boolean)
+    );
   };
 
   const handleFinalDayScheduleWarnings = async () => {
@@ -417,14 +425,17 @@ const DrugChartSlider = (props) => {
           nextScheduleDate * hostData?.drugOrder?.drugOrder?.duration;
 
         const firstDaySchedulesUTCTimeEpoch = firstDaySchedules.reduce(
-          (result, schedule) => {
+          (result, schedule, i) => {
             if (schedule !== "hh:mm") {
+              const epoch = getUTCTimeEpoch(
+                schedule,
+                enable24HourTimers,
+                hostData?.drugOrder?.drugOrder?.scheduledDate
+              );
               result.push(
-                getUTCTimeEpoch(
-                  schedule,
-                  enable24HourTimers,
-                  hostData?.drugOrder?.drugOrder?.scheduledDate
-                )
+                showFirstDayScheduleNextDayWarning[i]
+                  ? epoch + nextScheduleDate
+                  : epoch
               );
             }
             return result;
@@ -432,13 +443,16 @@ const DrugChartSlider = (props) => {
           []
         );
 
-        const schedulesUTCTimeEpoch = schedules?.map((schedule) =>
-          getUTCTimeEpoch(
+        const schedulesUTCTimeEpoch = schedules?.map((schedule, i) => {
+          const epoch = getUTCTimeEpoch(
             schedule,
             enable24HourTimers,
             hostData?.drugOrder?.drugOrder?.scheduledDate
-          )
-        );
+          );
+          return showScheduleNextDayWarning[i]
+            ? epoch + nextScheduleDate
+            : epoch;
+        });
 
         const finalDaySchedulesUTCTimeEpoch = finalDaySchedules?.map(
           (schedule) =>
