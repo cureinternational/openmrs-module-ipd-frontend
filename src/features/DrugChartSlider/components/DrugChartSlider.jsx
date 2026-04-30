@@ -144,7 +144,12 @@ const DrugChartSlider = (props) => {
           firstDoseOriginal !== "" &&
           firstDoseOriginal !== "hh:mm" &&
           moment(firstDoseOriginal, "HH:mm", true).isValid()
-        : moment.isMoment(firstDoseOriginal) && firstDoseOriginal.isValid();
+        : moment.isMoment(firstDoseOriginal)
+        ? firstDoseOriginal.isValid()
+        : typeof firstDoseOriginal === "string" &&
+          firstDoseOriginal !== "" &&
+          firstDoseOriginal !== "hh:mm" &&
+          moment(firstDoseOriginal, timeFormatFor12Hr, true).isValid();
 
       if (isOriginalValid) {
         const editablePortion = firstDaySchedules.slice(firstDaySlotsMissed);
@@ -162,7 +167,9 @@ const DrugChartSlider = (props) => {
 
         const origM = enable24HourTimers
           ? moment(firstDoseOriginal, "HH:mm")
-          : firstDoseOriginal.clone();
+          : moment.isMoment(firstDoseOriginal)
+          ? firstDoseOriginal.clone()
+          : moment(firstDoseOriginal, timeFormatFor12Hr);
         const newM = enable24HourTimers
           ? moment(newSchedule, "HH:mm")
           : moment(newSchedule, "hh:mm A");
@@ -170,7 +177,8 @@ const DrugChartSlider = (props) => {
         const editableWarnings = detectNextDayCrossings(
           editablePortion.slice(1),
           offsetMinutes,
-          enable24HourTimers
+          enable24HourTimers,
+          showFirstDayScheduleNextDayWarning.slice(firstDaySlotsMissed + 1)
         );
         const fullWarnings = Array(firstDaySlotsMissed)
           .fill(false)
@@ -224,7 +232,11 @@ const DrugChartSlider = (props) => {
         ? typeof firstDoseOriginal === "string" &&
           firstDoseOriginal !== "" &&
           moment(firstDoseOriginal, "HH:mm", true).isValid()
-        : moment.isMoment(firstDoseOriginal) && firstDoseOriginal.isValid();
+        : moment.isMoment(firstDoseOriginal)
+        ? firstDoseOriginal.isValid()
+        : typeof firstDoseOriginal === "string" &&
+          firstDoseOriginal !== "" &&
+          moment(firstDoseOriginal, timeFormatFor12Hr, true).isValid();
 
       if (isOriginalValid) {
         const shifted = calculateShiftedSchedules(
@@ -237,7 +249,9 @@ const DrugChartSlider = (props) => {
 
         const origM = enable24HourTimers
           ? moment(firstDoseOriginal, "HH:mm")
-          : firstDoseOriginal.clone();
+          : moment.isMoment(firstDoseOriginal)
+          ? firstDoseOriginal.clone()
+          : moment(firstDoseOriginal, timeFormatFor12Hr);
         const newM = enable24HourTimers
           ? moment(newSchedule, "HH:mm")
           : moment(newSchedule, "hh:mm A");
@@ -245,7 +259,8 @@ const DrugChartSlider = (props) => {
         const warnings = detectNextDayCrossings(
           schedules.slice(1),
           offsetMinutes,
-          enable24HourTimers
+          enable24HourTimers,
+          showScheduleNextDayWarning.slice(1)
         );
         setShowScheduleNextDayWarning([false, ...warnings]);
 

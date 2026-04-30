@@ -206,15 +206,18 @@ export const calculateShiftedSchedules = (
 export const detectNextDayCrossings = (
   subsequentSchedules,
   offsetMinutes,
-  enable24HourTimers
+  enable24HourTimers,
+  currentNextDayFlags = []
 ) => {
-  return subsequentSchedules.map((schedule) => {
+  return subsequentSchedules.map((schedule, i) => {
     const m = enable24HourTimers
       ? moment(schedule, "HH:mm")
       : moment.isMoment(schedule)
       ? schedule.clone()
       : moment(schedule, "hh:mm A");
-    const originalMinutes = m.hours() * 60 + m.minutes();
+    const isAlreadyNextDay = currentNextDayFlags[i] === true;
+    const originalMinutes =
+      (isAlreadyNextDay ? 24 * 60 : 0) + m.hours() * 60 + m.minutes();
     const shiftedMinutes = originalMinutes + offsetMinutes;
     return shiftedMinutes >= 24 * 60 || shiftedMinutes < 0;
   });
