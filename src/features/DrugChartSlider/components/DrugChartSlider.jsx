@@ -187,11 +187,18 @@ const DrugChartSlider = (props) => {
 
         setShowFirstDaySchedulePassedWarning((prev) => {
           const updated = [...prev];
-          updated[index] = isTimePassed(
-            newSchedule,
-            timeWindowToDisableSlots,
-            enable24HourTimers
-          );
+          shiftedEditable.forEach((val, i) => {
+            const arrayIndex = firstDaySlotsMissed + i;
+            if (fullWarnings[arrayIndex]) {
+              updated[arrayIndex] = false;
+            } else {
+              updated[arrayIndex] = isTimePassed(
+                val,
+                timeWindowToDisableSlots,
+                enable24HourTimers
+              );
+            }
+          });
           return updated;
         });
         return;
@@ -207,11 +214,9 @@ const DrugChartSlider = (props) => {
     if (!isInvalidTimeTextPresent(enable24HourTimers)) {
       setShowFirstDaySchedulePassedWarning((prevScheduleWarnings) => {
         const newSchedulePassedWarnings = [...prevScheduleWarnings];
-        newSchedulePassedWarnings[index] = isTimePassed(
-          newSchedule,
-          timeWindowToDisableSlots,
-          enable24HourTimers
-        );
+        newSchedulePassedWarnings[index] = showFirstDayScheduleNextDayWarning[index]
+          ? false
+          : isTimePassed(newSchedule, timeWindowToDisableSlots, enable24HourTimers);
         return newSchedulePassedWarnings;
       });
     }
@@ -264,13 +269,20 @@ const DrugChartSlider = (props) => {
         );
         setShowScheduleNextDayWarning([false, ...warnings]);
 
+        const fullWarnings = [false, ...warnings];
         setShowSchedulePassedWarning((prev) => {
           const updated = [...prev];
-          updated[0] = isTimePassed(
-            newSchedule,
-            timeWindowToDisableSlots,
-            enable24HourTimers
-          );
+          shifted.forEach((val, i) => {
+            if (fullWarnings[i]) {
+              updated[i] = false;
+            } else {
+              updated[i] = isTimePassed(
+                val,
+                timeWindowToDisableSlots,
+                enable24HourTimers
+              );
+            }
+          });
           return updated;
         });
         return;
@@ -286,10 +298,9 @@ const DrugChartSlider = (props) => {
     if (!isInvalidTimeTextPresent(enable24HourTimers)) {
       setShowSchedulePassedWarning((prevScheduleWarnings) => {
         const newSchedulePassedWarnings = [...prevScheduleWarnings];
-        newSchedulePassedWarnings[index] = isTimePassed(
-          newSchedule,
-          timeWindowToDisableSlots
-        );
+        newSchedulePassedWarnings[index] = showScheduleNextDayWarning[index]
+          ? false
+          : isTimePassed(newSchedule, timeWindowToDisableSlots, enable24HourTimers);
         return newSchedulePassedWarnings;
       });
     }
