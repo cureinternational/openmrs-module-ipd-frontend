@@ -27,6 +27,7 @@ import {
   setDrugOrderScheduleIn12HourFormat,
   calculateShiftedSchedules,
   detectNextDayCrossings,
+  isNextDayCrossing,
 } from "../utils/DrugChartSliderUtils";
 import {
   epochTo24HourTimeFormat,
@@ -211,12 +212,26 @@ const DrugChartSlider = (props) => {
       ? newSchedule
       : moment(newSchedule, timeFormatFor12Hr);
     setFirstDaySchedules(newScheduleArray);
+    const prevFirstDaySlot = index > 0 ? firstDaySchedules[index - 1] : null;
+    const isManualNextDay =
+      prevFirstDaySlot !== null &&
+      prevFirstDaySlot !== "hh:mm" &&
+      isNextDayCrossing(newSchedule, prevFirstDaySlot, enable24HourTimers);
+    setShowFirstDayScheduleNextDayWarning((prev) => {
+      const updated = [...prev];
+      updated[index] = isManualNextDay;
+      return updated;
+    });
     if (!isInvalidTimeTextPresent(enable24HourTimers)) {
       setShowFirstDaySchedulePassedWarning((prevScheduleWarnings) => {
         const newSchedulePassedWarnings = [...prevScheduleWarnings];
-        newSchedulePassedWarnings[index] = showFirstDayScheduleNextDayWarning[index]
+        newSchedulePassedWarnings[index] = isManualNextDay
           ? false
-          : isTimePassed(newSchedule, timeWindowToDisableSlots, enable24HourTimers);
+          : isTimePassed(
+              newSchedule,
+              timeWindowToDisableSlots,
+              enable24HourTimers
+            );
         return newSchedulePassedWarnings;
       });
     }
@@ -295,12 +310,25 @@ const DrugChartSlider = (props) => {
       ? newSchedule
       : moment(newSchedule, timeFormatFor12Hr);
     setSchedules(newScheduleArray);
+    const prevScheduleSlot = index > 0 ? schedules[index - 1] : null;
+    const isManualNextDay =
+      prevScheduleSlot !== null &&
+      isNextDayCrossing(newSchedule, prevScheduleSlot, enable24HourTimers);
+    setShowScheduleNextDayWarning((prev) => {
+      const updated = [...prev];
+      updated[index] = isManualNextDay;
+      return updated;
+    });
     if (!isInvalidTimeTextPresent(enable24HourTimers)) {
       setShowSchedulePassedWarning((prevScheduleWarnings) => {
         const newSchedulePassedWarnings = [...prevScheduleWarnings];
-        newSchedulePassedWarnings[index] = showScheduleNextDayWarning[index]
+        newSchedulePassedWarnings[index] = isManualNextDay
           ? false
-          : isTimePassed(newSchedule, timeWindowToDisableSlots, enable24HourTimers);
+          : isTimePassed(
+              newSchedule,
+              timeWindowToDisableSlots,
+              enable24HourTimers
+            );
         return newSchedulePassedWarnings;
       });
     }

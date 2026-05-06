@@ -203,6 +203,21 @@ export const calculateShiftedSchedules = (
   });
 };
 
+export const isNextDayCrossing = (newTime, prevTime, enable24HourTimers) => {
+  const newM = enable24HourTimers
+    ? moment(newTime, "HH:mm", true)
+    : moment(newTime, "hh:mm A", true);
+  const prevM = enable24HourTimers
+    ? moment(prevTime, "HH:mm", true)
+    : moment.isMoment(prevTime)
+    ? prevTime.clone()
+    : moment(prevTime, "hh:mm A", true);
+  if (!newM.isValid() || !prevM.isValid()) return false;
+  const newMinutes = newM.hours() * 60 + newM.minutes();
+  const prevMinutes = prevM.hours() * 60 + prevM.minutes();
+  return newMinutes < prevMinutes;
+};
+
 export const detectNextDayCrossings = (
   subsequentSchedules,
   offsetMinutes,

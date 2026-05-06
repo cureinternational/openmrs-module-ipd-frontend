@@ -711,5 +711,105 @@ describe("DrugChartSlider", () => {
       });
       MockDate.reset();
     });
+
+    it("Manual override: next-day warning clears when cascade-pushed dose is changed to same-day time", async () => {
+      MockDate.set("2010-12-22T00:00:00.000Z");
+      const midnightFrequencies = [
+        {
+          name: "Twice a day",
+          frequencyPerDay: 2,
+          scheduleTiming: ["18:00", "23:45"],
+        },
+      ];
+
+      renderWithProviders(
+        <DrugChartSlider
+          hostData={{
+            enable24HourTimers: true,
+            scheduleFrequencies: midnightFrequencies,
+            startTimeFrequencies: mockStartTimeFrequencies,
+            drugOrder: mockScheduleDrugOrder,
+          }}
+          hostApi={{}}
+          title=""
+          drugChartNotes=""
+          setDrugChartNotes={jest.fn()}
+        />
+      );
+
+      await waitFor(() => {
+        expect(
+          document.querySelectorAll("#time-selector").length
+        ).toBeGreaterThan(1);
+      });
+
+      // Step 1: cascade — first dose 18:00 → 19:00 (+1h), second dose 23:45 → 00:45 (next day)
+      // TimePicker24Hour fires onChange on blur, so change sets the value, blur triggers the handler
+      const inputs = document.querySelectorAll("#time-selector");
+      fireEvent.change(inputs[0], { target: { value: "19:00" } });
+      fireEvent.blur(inputs[0]);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("This dose extends to the next day")
+        ).toBeInTheDocument();
+      });
+
+      // Step 2: manual override — second dose 00:45 → 23:45 (same day, before midnight)
+      const updatedInputs = document.querySelectorAll("#time-selector");
+      fireEvent.change(updatedInputs[1], { target: { value: "23:45" } });
+      fireEvent.blur(updatedInputs[1]);
+
+      await waitFor(() => {
+        expect(
+          screen.queryByText("This dose extends to the next day")
+        ).not.toBeInTheDocument();
+      });
+      MockDate.reset();
+    });
+
+    it("Manual entry: next-day warning shows when dose is entered before previous slot time (crosses midnight)", async () => {
+      MockDate.set("2010-12-22T00:00:00.000Z");
+      const eveningFrequencies = [
+        {
+          name: "Twice a day",
+          frequencyPerDay: 2,
+          scheduleTiming: ["20:00", "20:30"],
+        },
+      ];
+
+      renderWithProviders(
+        <DrugChartSlider
+          hostData={{
+            enable24HourTimers: true,
+            scheduleFrequencies: eveningFrequencies,
+            startTimeFrequencies: mockStartTimeFrequencies,
+            drugOrder: mockScheduleDrugOrder,
+          }}
+          hostApi={{}}
+          title=""
+          drugChartNotes=""
+          setDrugChartNotes={jest.fn()}
+        />
+      );
+
+      await waitFor(() => {
+        expect(
+          document.querySelectorAll("#time-selector").length
+        ).toBeGreaterThan(1);
+      });
+
+      // Manually change second dose to 02:45 — earlier clock time than previous slot 20:00 → next day
+      const inputs = document.querySelectorAll("#time-selector");
+      fireEvent.change(inputs[1], { target: { value: "02:45" } });
+      fireEvent.blur(inputs[1]);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("This dose extends to the next day")
+        ).toBeInTheDocument();
+      });
+      MockDate.reset();
+    });
   });
 });

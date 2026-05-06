@@ -8,6 +8,7 @@ import {
   saveMedication,
   calculateShiftedSchedules,
   detectNextDayCrossings,
+  isNextDayCrossing,
 } from "../utils/DrugChartSliderUtils";
 import { timeFormatFor24Hr } from "../../../constants";
 import MockDate from "mockdate";
@@ -246,6 +247,36 @@ describe("DrugChartSliderUtils", () => {
       expect(result.length).toBe(2);
       expect(result[0]).toBe(false);
       expect(result[1]).toBe(true);
+    });
+  });
+
+  describe("isNextDayCrossing", () => {
+    it("returns true when 24hr new time is earlier than previous (crosses midnight)", () => {
+      // 02:45 after 20:00 → next day
+      expect(isNextDayCrossing("02:45", "20:00", true)).toBe(true);
+    });
+
+    it("returns false when 24hr new time is later than previous (same day)", () => {
+      // 23:45 after 19:00 → same day
+      expect(isNextDayCrossing("23:45", "19:00", true)).toBe(false);
+    });
+
+    it("returns true when 12hr new time is earlier than previous moment (crosses midnight)", () => {
+      const prevMoment = moment("08:00 PM", "hh:mm A");
+      expect(isNextDayCrossing("02:45 AM", prevMoment, false)).toBe(true);
+    });
+
+    it("returns false when 12hr new time is later than previous moment (same day)", () => {
+      const prevMoment = moment("07:00 PM", "hh:mm A");
+      expect(isNextDayCrossing("11:45 PM", prevMoment, false)).toBe(false);
+    });
+
+    it("returns false when prevTime is invalid (hh:mm placeholder)", () => {
+      expect(isNextDayCrossing("02:45", "hh:mm", true)).toBe(false);
+    });
+
+    it("returns false when newTime is invalid", () => {
+      expect(isNextDayCrossing("", "20:00", true)).toBe(false);
     });
   });
 });
