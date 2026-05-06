@@ -59,7 +59,7 @@ const PatientMovementModal = (props) => {
             if (
               visitSummaryData.admissionDetails === null &&
               visitSummaryData.dischargeDetails === null &&
-              item.name.name === intl.formatMessage({ id: "ADMIT_PATIENT" })
+              item.name.name === intl.formatMessage({ id: "ADMIT_PATIENT", defaultMessage: "Admit Patient" })
             ) {
               const translatedDropdownItem = intl.formatMessage({
                 id: "ADMIT_PATIENT",
@@ -69,7 +69,7 @@ const PatientMovementModal = (props) => {
             } else if (
               visitSummaryData.admissionDetails !== null &&
               visitSummaryData.dischargeDetails !== null &&
-              item.name.name === intl.formatMessage({ id: "UNDO_DISCHARGE" })
+              item.name.name === intl.formatMessage({ id: "UNDO_DISCHARGE", defaultMessage: "Undo Discharge" })
             ) {
               const translatedDropdownItem = intl.formatMessage({
                 id: "UNDO_DISCHARGE",
@@ -79,7 +79,7 @@ const PatientMovementModal = (props) => {
             } else if (
               visitSummaryData.admissionDetails !== null &&
               visitSummaryData.dischargeDetails === null &&
-              item.name.name === intl.formatMessage({ id: "DISCHARGE_PATIENT" })
+              item.name.name === intl.formatMessage({ id: "DISCHARGE_PATIENT", defaultMessage: "Discharge Patient" })
             ) {
               const translatedDropdownItem = intl.formatMessage({
                 id: "DISCHARGE_PATIENT",
@@ -89,7 +89,7 @@ const PatientMovementModal = (props) => {
             } else if (
               visitSummaryData.admissionDetails !== null &&
               visitSummaryData.dischargeDetails === null &&
-              item.name.name === intl.formatMessage({ id: "TRANSFER_PATIENT" })
+              item.name.name === intl.formatMessage({ id: "TRANSFER_PATIENT", defaultMessage: "Transfer Patient" })
             ) {
               const translatedDropdownItem = intl.formatMessage({
                 id: "TRANSFER_PATIENT",
@@ -167,7 +167,7 @@ const PatientMovementModal = (props) => {
   const handleOnSave = async () => {
     if (selectedDropDownItem) {
       setSaveEnable(false);
-      if (selectedDropDownItem.name === intl.formatMessage({ id: "ADMIT_PATIENT" })) {
+      if (selectedDropDownItem.name === intl.formatMessage({ id: "ADMIT_PATIENT", defaultMessage: "Admit Patient" })) {
         const response = await updatePatientMovement(createPayload());
         if (response.status === 200) {
           window.location.href = getADTDashboardUrl(
@@ -176,12 +176,12 @@ const PatientMovementModal = (props) => {
             response.data.encounterUuid
           );
         }
-      } else if (selectedDropDownItem.name === intl.formatMessage({ id: "DISCHARGE_PATIENT" })) {
+      } else if (selectedDropDownItem.name === intl.formatMessage({ id: "DISCHARGE_PATIENT", defaultMessage: "Discharge Patient" })) {
         const response = await dischargePatient(createPayload());
         if (response.status === 200) {
           updatePatientMovementModal(false);
         }
-      } else if (selectedDropDownItem.name === intl.formatMessage({ id: "UNDO_DISCHARGE" })) {
+      } else if (selectedDropDownItem.name === intl.formatMessage({ id: "UNDO_DISCHARGE", defaultMessage: "Undo Discharge" })) {
         const response = await undoDischargePatient(
           visitSummary.dischargeDetails.uuid,
           selectedDropDownItem.name
@@ -193,7 +193,7 @@ const PatientMovementModal = (props) => {
             visitSummary.dischargeDetails.uuid
           );
         }
-      } else if (selectedDropDownItem.name === intl.formatMessage({ id: "TRANSFER_PATIENT" })) {
+      } else if (selectedDropDownItem.name === intl.formatMessage({ id: "TRANSFER_PATIENT", defaultMessage: "Transfer Patient" })) {
         const response = await updatePatientMovement(createPayload());
         if (response.status === 200) {
           window.location.href = getADTDashboardUrl(
@@ -208,7 +208,7 @@ const PatientMovementModal = (props) => {
 
   const handleSelectOnChange = (e) => {
     var item = {};
-    if (e.label === intl.formatMessage({ id: "ADMIT_PATIENT" })) {
+    if (e.label === intl.formatMessage({ id: "ADMIT_PATIENT", defaultMessage: "Admit Patient" })) {
       item = {
         name: intl.formatMessage({
                 id: "ADMIT_PATIENT",
@@ -218,14 +218,14 @@ const PatientMovementModal = (props) => {
       };
       setShowAdtNotes(true);
       setSaveEnable(true);
-    } else if (e.label === intl.formatMessage({ id: "UNDO_DISCHARGE" })) {
+    } else if (e.label === intl.formatMessage({ id: "UNDO_DISCHARGE", defaultMessage: "Undo Discharge" })) {
       item = { name: intl.formatMessage({
                 id: "UNDO_DISCHARGE",
                 defaultMessage: "Undo Discharge",
               }), encounterType: null };
       setShowAdtNotes(false);
       setSaveEnable(true);
-    } else if (e.label === intl.formatMessage({ id: "DISCHARGE_PATIENT" })) {
+    } else if (e.label === intl.formatMessage({ id: "DISCHARGE_PATIENT", defaultMessage: "Discharge Patient" })) {
       item = {
         name: intl.formatMessage({
           id: "DISCHARGE_PATIENT",
@@ -235,7 +235,7 @@ const PatientMovementModal = (props) => {
       };
       setShowAdtNotes(true);
       setSaveEnable(true);
-    } else if (e.label === intl.formatMessage({ id: "TRANSFER_PATIENT" })) {
+    } else if (e.label === intl.formatMessage({ id: "TRANSFER_PATIENT", defaultMessage: "Transfer Patient" })) {
       item = {
         name: intl.formatMessage({
           id: "TRANSFER_PATIENT",
