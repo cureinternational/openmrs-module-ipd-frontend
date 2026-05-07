@@ -84,6 +84,40 @@
   }
 }
 
+.apply-to-all-days-toggle {
+  display: flex;
+  align-items: center;
+  padding: 10px 0 10px 0;
+
+  .bx--form-item {
+    flex: 0 0 auto;
+    margin-bottom: 0;
+  }
+
+  .bx--label {
+    display: none;
+  }
+
+  .bx--toggle-input__label {
+    margin-top: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bx--toggle-input--small + .bx--toggle-input__label > .bx--toggle__switch {
+    margin-top: 0;
+  }
+
+  .toggle-label-text {
+    margin-left: 8px;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: #161616;
+    line-height: 18px;
+    align-self: center;
+  }
+}
+
 .route {
   width: 45%;
   margin-right: 0px;

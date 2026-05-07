@@ -6,6 +6,7 @@ import {
 } from "../utils/DrugChartSliderUtils";
 import { FormattedMessage, useIntl } from "react-intl";
 import { TimePicker, TimePicker24Hour, Title } from "bahmni-carbon-ui";
+import { Toggle } from "carbon-components-react";
 import { timeText12, timeText24 } from "../../../constants";
 
 export const ScheduleSection = ({
@@ -28,6 +29,10 @@ export const ScheduleSection = ({
   enable24HourTimers,
   showScheduleNextDayWarning = [],
   showFirstDayScheduleNextDayWarning = [],
+  applyToAllDays = false,
+  onApplyToAllDaysToggle,
+  isToggleEnabled = false,
+  duration,
 }) => {
   const intl = useIntl();
   return (
@@ -116,6 +121,26 @@ export const ScheduleSection = ({
               </p>
             )}
           </div>
+          {duration > 1 && (
+            <div className="apply-to-all-days-toggle">
+              <Toggle
+                id="apply-to-all-days-toggle"
+                size="sm"
+                toggled={applyToAllDays}
+                disabled={!isToggleEnabled}
+                onToggle={(checked) => onApplyToAllDaysToggle(checked)}
+                labelA=""
+                labelB=""
+                labelText=""
+              />
+              <span className="toggle-label-text">
+                <FormattedMessage
+                  id="DRUG_CHART_UPDATE_COMPLETE_SCHEDULE"
+                  defaultMessage="Update Complete Schedule"
+                />
+              </span>
+            </div>
+          )}
           {schedules.length != 0 && (
             <div className="schedule-section">
               <Title
@@ -377,4 +402,8 @@ ScheduleSection.propTypes = {
   enable24HourTimers: PropTypes.bool.isRequired,
   showScheduleNextDayWarning: PropTypes.array,
   showFirstDayScheduleNextDayWarning: PropTypes.array,
+  applyToAllDays: PropTypes.bool,
+  onApplyToAllDaysToggle: PropTypes.func,
+  isToggleEnabled: PropTypes.bool,
+  duration: PropTypes.number,
 };

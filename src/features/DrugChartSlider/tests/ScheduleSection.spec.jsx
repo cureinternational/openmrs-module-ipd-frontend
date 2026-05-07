@@ -1,5 +1,5 @@
 import React from "react";
-import { render, waitFor } from "@testing-library/react";
+import { render, waitFor, fireEvent } from "@testing-library/react";
 import { IntlProvider } from "react-intl";
 import { ScheduleSection } from "../components/ScheduleSection";
 
@@ -62,6 +62,71 @@ describe("ScheduleSection", () => {
       expect(
         getByText("This dose extends to the next day")
       ).toBeInTheDocument();
+    });
+  });
+
+  it("renders toggle when firstDaySlotsMissed > 0 and duration > 1", async () => {
+    const { getByText } = render(
+      <IntlProvider locale="en">
+        <ScheduleSection
+          {...props}
+          duration={5}
+          onApplyToAllDaysToggle={jest.fn()}
+        />
+      </IntlProvider>
+    );
+    await waitFor(() => {
+      expect(getByText("Update Complete Schedule")).toBeInTheDocument();
+    });
+  });
+
+  it("does not render toggle when duration is 1", async () => {
+    const { queryByText } = render(
+      <IntlProvider locale="en">
+        <ScheduleSection
+          {...props}
+          duration={1}
+          onApplyToAllDaysToggle={jest.fn()}
+        />
+      </IntlProvider>
+    );
+    await waitFor(() => {
+      expect(queryByText("Update Complete Schedule")).not.toBeInTheDocument();
+    });
+  });
+
+  it("calls onApplyToAllDaysToggle when toggle is clicked", async () => {
+    const mockToggle = jest.fn();
+    const { getByRole } = render(
+      <IntlProvider locale="en">
+        <ScheduleSection
+          {...props}
+          duration={5}
+          isToggleEnabled={true}
+          onApplyToAllDaysToggle={mockToggle}
+        />
+      </IntlProvider>
+    );
+    await waitFor(() => {
+      const toggle = getByRole("checkbox");
+      fireEvent.click(toggle);
+      expect(mockToggle).toHaveBeenCalledWith(true);
+    });
+  });
+
+  it("does not render toggle when firstDaySlotsMissed is 0", async () => {
+    const { queryByText } = render(
+      <IntlProvider locale="en">
+        <ScheduleSection
+          {...props}
+          firstDaySlotsMissed={0}
+          duration={5}
+          onApplyToAllDaysToggle={jest.fn()}
+        />
+      </IntlProvider>
+    );
+    await waitFor(() => {
+      expect(queryByText("Update Complete Schedule")).not.toBeInTheDocument();
     });
   });
 

@@ -237,3 +237,17 @@ export const detectNextDayCrossings = (
     return shiftedMinutes >= 24 * 60 || shiftedMinutes < 0;
   });
 };
+
+// Shifts all scheduleTimings (24-hr strings) by offsetMinutes.
+// Returns strings for 24-hr mode or moment objects for 12-hr mode,
+// matching the format expected by the `schedules` state.
+export const computeShiftedScheduleTimings = (
+  scheduleTimings,
+  offsetMinutes,
+  enable24HourTimers
+) => {
+  return scheduleTimings.map((time) => {
+    const m = moment(time, "HH:mm").add(offsetMinutes, "minutes");
+    return enable24HourTimers ? m.format("HH:mm") : m;
+  });
+};

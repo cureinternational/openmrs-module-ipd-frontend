@@ -812,4 +812,197 @@ describe("DrugChartSlider", () => {
       MockDate.reset();
     });
   });
+
+  describe("HIVE-108755: Apply-to-all-days toggle", () => {
+    // Schedule timings: 06:00, 14:00, 22:00 (3x/day, 8h apart)
+    // MockDate at 20:00 UTC → first two slots passed, 22:00 editable
+    // firstDaySlotsMissed = 2
+    const mockThriceDayFrequencies = [
+      {
+        name: "Thrice a day",
+        frequencyPerDay: 3,
+        scheduleTiming: ["06:00", "14:00", "22:00"],
+      },
+    ];
+
+    const mockMultiDayDrugOrder = {
+      ...mockScheduleDrugOrder,
+      uniformDosingType: {
+        ...mockScheduleDrugOrder.uniformDosingType,
+        frequency: "Thrice a day",
+      },
+      drugOrder: {
+        ...mockScheduleDrugOrder.drugOrder,
+        duration: 5,
+      },
+    };
+
+    beforeEach(() => {
+      MockDate.set("2010-12-22T20:00:00.000Z");
+      mockSaveMedication.mockClear();
+    });
+
+    afterEach(() => {
+      MockDate.reset();
+    });
+
+    const renderMultiDay = () =>
+      render(
+        <IntlProvider locale="en">
+          <SliderContext.Provider value={mockSliderContext}>
+            <IPDContext.Provider
+              value={{ config: mockConfig, handleAuditEvent: jest.fn() }}
+            >
+              <DrugChartSlider
+                hostData={{
+                  enable24HourTimers: true,
+                  scheduleFrequencies: mockThriceDayFrequencies,
+                  startTimeFrequencies: mockStartTimeFrequencies,
+                  drugOrder: mockMultiDayDrugOrder,
+                }}
+                hostApi={{}}
+                title=""
+                drugChartNotes=""
+                setDrugChartNotes={jest.fn()}
+              />
+            </IPDContext.Provider>
+          </SliderContext.Provider>
+        </IntlProvider>
+      );
+
+    it("AC0: toggle renders when firstDaySlotsMissed > 0 and duration > 1", async () => {
+      renderMultiDay();
+      await waitFor(() => {
+        expect(
+          screen.getByText("Update Complete Schedule")
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("AC1: toggle ON propagates Day 1 offset to subsequent days (Scenario 1)", async () => {
+      renderMultiDay();
+
+      await waitFor(() => {
+        expect(
+          document.querySelectorAll("#time-selector").length
+        ).toBeGreaterThan(0);
+      });
+
+      // TimePicker24Hour uses onBlur (not onChange) to call its onChange prop.
+      // Disabled inputs still render #time-selector elements.
+      // inputs[2] = start-date[2] = first editable Day 1 slot ("22:00")
+      // Change 22:00 → 20:00 (offset = -120 min): fire change then blur
+      const inputs = document.querySelectorAll("#time-selector");
+      fireEvent.change(inputs[2], { target: { value: "20:00" } });
+      fireEvent.blur(inputs[2]);
+
+      // Enable toggle → subsequent days shift by -120 min
+      // Schedule timings ["06:00","14:00","22:00"] → ["04:00","12:00","20:00"]
+      const toggle = document.querySelector("#apply-to-all-days-toggle");
+      fireEvent.click(toggle);
+
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      await waitFor(() => {
+        expect(mockSaveMedication).toHaveBeenCalled();
+      });
+
+      const payload = mockSaveMedication.mock.calls[0][0];
+      // With toggle ON: subsequent first slot = 04:00 next day
+      // firstDay first slot = 20:00 same day → diff = 8h
+      expect(
+        payload.dayWiseSlotsStartTime[0] - payload.firstDaySlotsStartTime[0]
+      ).toBe(8 * 3600);
+    });
+
+    it("AC2: toggle OFF (default) leaves subsequent days on original schedule timings (Scenario 2)", async () => {
+      renderMultiDay();
+
+      await waitFor(() => {
+        expect(
+          document.querySelectorAll("#time-selector").length
+        ).toBeGreaterThan(0);
+      });
+
+      // Change Day 1 first editable slot but do NOT enable toggle
+      const inputs = document.querySelectorAll("#time-selector");
+      fireEvent.change(inputs[2], { target: { value: "20:00" } });
+      fireEvent.blur(inputs[2]);
+
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      await waitFor(() => {
+        expect(mockSaveMedication).toHaveBeenCalled();
+      });
+
+      const payload = mockSaveMedication.mock.calls[0][0];
+      // With toggle OFF: subsequent first slot = original 06:00 next day
+      // firstDay first slot = 20:00 same day → diff = 10h
+      expect(
+        payload.dayWiseSlotsStartTime[0] - payload.firstDaySlotsStartTime[0]
+      ).toBe(10 * 3600);
+    });
+
+    it("AC3: Day 1 first-slot edit while toggle ON re-propagates to subsequent days (Scenario 3)", async () => {
+      renderMultiDay();
+
+      await waitFor(() => {
+        expect(
+          document.querySelectorAll("#time-selector").length
+        ).toBeGreaterThan(0);
+      });
+
+      // Enable toggle first (initial value "22:00" → offset=0, no shift)
+      const toggleEl = document.querySelector("#apply-to-all-days-toggle");
+      fireEvent.click(toggleEl);
+
+      // Then change Day 1 slot: 22:00 → 20:00 → re-propagation triggers (-120 min)
+      const inputs = document.querySelectorAll("#time-selector");
+      fireEvent.change(inputs[2], { target: { value: "20:00" } });
+      fireEvent.blur(inputs[2]);
+
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      await waitFor(() => {
+        expect(mockSaveMedication).toHaveBeenCalled();
+      });
+
+      const payload = mockSaveMedication.mock.calls[0][0];
+      // Re-propagated: subsequent first slot = 04:00 next day → diff = 8h
+      expect(
+        payload.dayWiseSlotsStartTime[0] - payload.firstDaySlotsStartTime[0]
+      ).toBe(8 * 3600);
+    });
+
+    it("AC4: toggle ON then OFF reverts subsequent days to original schedule timings (Scenario 2 revert)", async () => {
+      renderMultiDay();
+
+      await waitFor(() => {
+        expect(
+          document.querySelectorAll("#time-selector").length
+        ).toBeGreaterThan(0);
+      });
+
+      const inputs = document.querySelectorAll("#time-selector");
+      fireEvent.change(inputs[2], { target: { value: "20:00" } });
+      fireEvent.blur(inputs[2]);
+
+      // Toggle ON then OFF
+      const toggle = document.querySelector("#apply-to-all-days-toggle");
+      fireEvent.click(toggle);
+      fireEvent.click(toggle);
+
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      await waitFor(() => {
+        expect(mockSaveMedication).toHaveBeenCalled();
+      });
+
+      const payload = mockSaveMedication.mock.calls[0][0];
+      // After toggle OFF: subsequent reverts to original schedule 06:00 next day → diff = 10h
+      expect(
+        payload.dayWiseSlotsStartTime[0] - payload.firstDaySlotsStartTime[0]
+      ).toBe(10 * 3600);
+    });
+  });
 });

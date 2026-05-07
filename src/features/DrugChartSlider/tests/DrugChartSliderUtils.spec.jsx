@@ -9,6 +9,7 @@ import {
   calculateShiftedSchedules,
   detectNextDayCrossings,
   isNextDayCrossing,
+  computeShiftedScheduleTimings,
 } from "../utils/DrugChartSliderUtils";
 import { timeFormatFor24Hr } from "../../../constants";
 import MockDate from "mockdate";
@@ -247,6 +248,51 @@ describe("DrugChartSliderUtils", () => {
       expect(result.length).toBe(2);
       expect(result[0]).toBe(false);
       expect(result[1]).toBe(true);
+    });
+  });
+
+  describe("computeShiftedScheduleTimings", () => {
+    it("shifts all 24hr schedule timings forward by offset (Scenario 1)", () => {
+      // Schedule: 06:00, 14:00, 22:00 → +120 min → 08:00, 16:00, 00:00
+      const result = computeShiftedScheduleTimings(
+        ["06:00", "14:00", "22:00"],
+        120,
+        true
+      );
+      expect(result).toEqual(["08:00", "16:00", "00:00"]);
+    });
+
+    it("shifts all 24hr schedule timings backward by offset (Scenario 3: -120 min)", () => {
+      // Schedule: 06:00, 14:00, 22:00 → -120 min → 04:00, 12:00, 20:00
+      const result = computeShiftedScheduleTimings(
+        ["06:00", "14:00", "22:00"],
+        -120,
+        true
+      );
+      expect(result).toEqual(["04:00", "12:00", "20:00"]);
+    });
+
+    it("handles day wrap-around (forward past midnight)", () => {
+      // 22:00 + 180 min = 01:00
+      const result = computeShiftedScheduleTimings(["22:00"], 180, true);
+      expect(result).toEqual(["01:00"]);
+    });
+
+    it("handles day wrap-around (backward past midnight)", () => {
+      // 01:00 - 120 min = 23:00
+      const result = computeShiftedScheduleTimings(["01:00"], -120, true);
+      expect(result).toEqual(["23:00"]);
+    });
+
+    it("returns moment objects for 12hr mode", () => {
+      const result = computeShiftedScheduleTimings(
+        ["06:00", "14:00"],
+        60,
+        false
+      );
+      result.forEach((item) => expect(moment.isMoment(item)).toBe(true));
+      expect(result[0].hours()).toBe(7);
+      expect(result[1].hours()).toBe(15);
     });
   });
 

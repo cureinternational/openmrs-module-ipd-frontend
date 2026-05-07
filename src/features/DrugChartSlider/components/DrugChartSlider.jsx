@@ -28,6 +28,7 @@ import {
   calculateShiftedSchedules,
   detectNextDayCrossings,
   isNextDayCrossing,
+  computeShiftedScheduleTimings,
 } from "../utils/DrugChartSliderUtils";
 import {
   epochTo24HourTimeFormat,
@@ -119,6 +120,8 @@ const DrugChartSlider = (props) => {
     setShowEmptyFinalDayScheduleWarning,
   ] = useState(false);
   const [isSaveDisabled, updateIsSaveDisabled] = useState(false);
+  const [applyToAllDays, setApplyToAllDays] = useState(false);
+  const [isToggleEnabled, setIsToggleEnabled] = useState(false);
 
   const [showScheduleNextDayWarning, setShowScheduleNextDayWarning] = useState(
     []
@@ -127,6 +130,63 @@ const DrugChartSlider = (props) => {
     showFirstDayScheduleNextDayWarning,
     setShowFirstDayScheduleNextDayWarning,
   ] = useState([]);
+
+  const propagateToSubsequentDays = (newTime, referenceSlot = null) => {
+    const base =
+      referenceSlot !== null
+        ? referenceSlot
+        : enableSchedule.scheduleTiming[firstDaySlotsMissed];
+    const scheduleM = enable24HourTimers
+      ? moment(typeof base === "string" ? base : base.format("HH:mm"), "HH:mm")
+      : moment.isMoment(base)
+      ? base.clone()
+      : moment(base, timeFormatFor12Hr);
+    const userM = enable24HourTimers
+      ? moment(newTime, "HH:mm")
+      : moment(newTime, timeFormatFor12Hr);
+    const offsetMinutes = userM.diff(scheduleM, "minutes");
+    const shifted = computeShiftedScheduleTimings(
+      enableSchedule.scheduleTiming,
+      offsetMinutes,
+      enable24HourTimers
+    );
+    setSchedules(shifted);
+    if (firstDaySlotsMissed > 0) {
+      setFinalDaySchedules(shifted.slice(0, firstDaySlotsMissed));
+    }
+  };
+
+  const handleApplyToAllDaysToggle = (checked) => {
+    setApplyToAllDays(checked);
+    if (checked) {
+      const currentFirstSlot = firstDaySchedules[firstDaySlotsMissed];
+      if (
+        !currentFirstSlot ||
+        currentFirstSlot === "hh:mm" ||
+        currentFirstSlot === ""
+      )
+        return;
+      const timeStr = enable24HourTimers
+        ? currentFirstSlot
+        : moment.isMoment(currentFirstSlot)
+        ? currentFirstSlot.format(timeFormatFor12Hr)
+        : currentFirstSlot;
+      const isValid = enable24HourTimers
+        ? moment(timeStr, "HH:mm", true).isValid()
+        : moment(timeStr, timeFormatFor12Hr, true).isValid();
+      if (isValid) propagateToSubsequentDays(timeStr);
+    } else {
+      const scheduleTimings = enable24HourTimers
+        ? enableSchedule.scheduleTiming
+        : enableSchedule.scheduleTiming.map((time) =>
+            moment(time, timeFormatFor12Hr)
+          );
+      setSchedules(scheduleTimings);
+      if (firstDaySlotsMissed > 0) {
+        setFinalDaySchedules(scheduleTimings.slice(0, firstDaySlotsMissed));
+      }
+    }
+  };
 
   const handleFirstDaySchedule = (newSchedule, index) => {
     updateSliderContentModified(true);
@@ -202,6 +262,9 @@ const DrugChartSlider = (props) => {
           });
           return updated;
         });
+        setIsToggleEnabled(true);
+        if (applyToAllDays)
+          propagateToSubsequentDays(newSchedule, firstDoseOriginal);
         return;
       }
     }
@@ -234,6 +297,13 @@ const DrugChartSlider = (props) => {
             );
         return newSchedulePassedWarnings;
       });
+    }
+    if (index === firstDaySlotsMissed) setIsToggleEnabled(true);
+    if (applyToAllDays && index === firstDaySlotsMissed) {
+      propagateToSubsequentDays(
+        newSchedule,
+        firstDaySchedules[firstDaySlotsMissed]
+      );
     }
   };
 
@@ -788,6 +858,10 @@ const DrugChartSlider = (props) => {
                 showFirstDayScheduleNextDayWarning={
                   showFirstDayScheduleNextDayWarning
                 }
+                applyToAllDays={applyToAllDays}
+                onApplyToAllDaysToggle={handleApplyToAllDaysToggle}
+                isToggleEnabled={isToggleEnabled}
+                duration={hostData?.drugOrder?.drugOrder?.duration}
               />
               {enableStartTime && (
                 <StartTimeSection

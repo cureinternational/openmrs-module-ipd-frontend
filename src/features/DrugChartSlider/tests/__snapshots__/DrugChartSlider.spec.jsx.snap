@@ -1598,6 +1598,53 @@ exports[`DrugChartSlider Should render Drug Chart Slider for schedules with star
             </div>
           </div>
           <div
+            class="apply-to-all-days-toggle"
+          >
+            <div
+              class="bx--form-item"
+            >
+              <input
+                class="bx--toggle-input bx--toggle-input--small"
+                disabled=""
+                id="apply-to-all-days-toggle"
+                type="checkbox"
+              />
+              <label
+                class="bx--toggle-input__label"
+                for="apply-to-all-days-toggle"
+              >
+                
+                <span
+                  class="bx--toggle__switch"
+                >
+                  <svg
+                    class="bx--toggle__check"
+                    height="5px"
+                    viewBox="0 0 6 5"
+                    width="6px"
+                  >
+                    <path
+                      d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z"
+                    />
+                  </svg>
+                  <span
+                    aria-hidden="true"
+                    class="bx--toggle__text--off"
+                  />
+                  <span
+                    aria-hidden="true"
+                    class="bx--toggle__text--on"
+                  />
+                </span>
+              </label>
+            </div>
+            <span
+              class="toggle-label-text"
+            >
+              Update Complete Schedule
+            </span>
+          </div>
+          <div
             class="schedule-section"
           >
             <div
@@ -2611,6 +2658,53 @@ exports[`DrugChartSlider should render with previous time on click of edit drug 
                 </div>
               </div>
             </div>
+          </div>
+          <div
+            class="apply-to-all-days-toggle"
+          >
+            <div
+              class="bx--form-item"
+            >
+              <input
+                class="bx--toggle-input bx--toggle-input--small"
+                disabled=""
+                id="apply-to-all-days-toggle"
+                type="checkbox"
+              />
+              <label
+                class="bx--toggle-input__label"
+                for="apply-to-all-days-toggle"
+              >
+                
+                <span
+                  class="bx--toggle__switch"
+                >
+                  <svg
+                    class="bx--toggle__check"
+                    height="5px"
+                    viewBox="0 0 6 5"
+                    width="6px"
+                  >
+                    <path
+                      d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z"
+                    />
+                  </svg>
+                  <span
+                    aria-hidden="true"
+                    class="bx--toggle__text--off"
+                  />
+                  <span
+                    aria-hidden="true"
+                    class="bx--toggle__text--on"
+                  />
+                </span>
+              </label>
+            </div>
+            <span
+              class="toggle-label-text"
+            >
+              Update Complete Schedule
+            </span>
           </div>
           <div
             class="schedule-section"
