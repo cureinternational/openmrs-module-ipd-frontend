@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React from "react";
 import { render, waitFor, fireEvent } from "@testing-library/react";
 import axios from "axios";
@@ -11,10 +12,16 @@ import CareInstructions from "../components/CareInstructions";
 import * as CareInstructionsUtils from "../utils/CareInstructionsUtils.jsx";
 
 jest.mock("../../NursingTasks/components/AddEmergencyTasks", () => {
-  function MockAddEmergencyTasks({ updateEmergencyTasksSlider, setShowNotification }) {
+  function MockAddEmergencyTasks({
+    updateEmergencyTasksSlider,
+    setShowNotification,
+  }) {
     return (
       <div data-testid="add-emergency-tasks-slider">
-        <button data-testid="close-slider" onClick={() => updateEmergencyTasksSlider(false)}>
+        <button
+          data-testid="close-slider"
+          onClick={() => updateEmergencyTasksSlider(false)}
+        >
           Close
         </button>
         <button
@@ -104,7 +111,11 @@ const mockSliderContext = {
   provider: { uuid: "provider-uuid-1" },
 };
 
-const renderWithProviders = (component, ipdContextValue, sliderContextValue = mockSliderContext) => {
+const renderWithProviders = (
+  component,
+  ipdContextValue,
+  sliderContextValue = mockSliderContext
+) => {
   return render(
     <IPDContext.Provider value={ipdContextValue}>
       <SliderContext.Provider value={sliderContextValue}>
