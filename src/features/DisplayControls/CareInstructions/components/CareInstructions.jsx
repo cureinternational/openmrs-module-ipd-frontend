@@ -18,6 +18,7 @@ import { SliderContext } from "../../../../context/SliderContext";
 import RefreshDisplayControl from "../../../../context/RefreshDisplayControl";
 import {
   fetchCareInstructionsObs,
+  fetchTasksByVisit,
   mapObservationsToInstructions,
 } from "../utils/CareInstructionsUtils.jsx";
 import { getDateTimeFromEpochTime } from "../../../../utils/DateTimeUtils";
@@ -56,6 +57,8 @@ const CareInstructions = (props) => {
   );
 
   const [instructions, setInstructions] = useState([]);
+  const [acknowledgedObsUuids, setAcknowledgedObsUuids] = useState(new Set());
+  const [selectedObservationUuid, setSelectedObservationUuid] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const careInstructionsHeaders = useMemo(
@@ -144,77 +147,88 @@ const CareInstructions = (props) => {
     loadInstructions();
   }, [visit, formConcepts]);
 
+  useEffect(() => {
+    if (!visit) return;
+    fetchTasksByVisit(visit).then((tasks) => {
+      const uuids = new Set(
+        tasks.map((t) => t.observationUuid).filter(Boolean)
+      );
+      setAcknowledgedObsUuids(uuids);
+    });
+  }, [visit]);
+
+  const notAcknowledgedInstructions = instructions.filter(
+    (row) => !acknowledgedObsUuids.has(row.observationUuid)
+  );
+  const acknowledgedInstructions = instructions.filter((row) =>
+    acknowledgedObsUuids.has(row.observationUuid)
+  );
+
+  const renderInstructionRows = (rows) => (
+    <Table useZebraStyles>
+      <TableHead>
+        <TableRow>
+          {careInstructionsHeaders.map((header) => (
+            <TableHeader key={header.key}>{header.header}</TableHeader>
+          ))}
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {rows.map((row) => (
+          <TableRow key={row.id}>
+            <TableCell>
+              {getDateTimeFromEpochTime(row.encounterDateTime, enable24HourTime)}
+            </TableCell>
+            <TableCell>{row.form}</TableCell>
+            <TableCell>{row.instructionType}</TableCell>
+            <TableCell className="instruction-cell">{row.instruction}</TableCell>
+            <TableCell>{row.providerName}</TableCell>
+            <TableCell className="action-cell">
+              {isUserPrivileged(currentUser, PRIVILEGE_CONSTANTS.ADD_TASKS) && (
+                <Link
+                  onClick={() => {
+                    if (!isSliderOpen.careInstructionsTasks) {
+                      setSelectedObservationUuid(row.observationUuid);
+                      updateCareInstructionsTasksSlider(true);
+                    }
+                  }}
+                >
+                  <FormattedMessage id="ADD_TASK" defaultMessage="Add Task" />
+                </Link>
+              )}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+
   const renderNotAcknowledgedContent = () => {
-    if (instructions.length === 0) {
+    if (notAcknowledgedInstructions.length === 0) {
       return (
         <div className={"empty-state-message"}>
           <FormattedMessage
             id={"NO_CARE_INSTRUCTIONS_MESSAGE"}
-            defaultMessage={
-              "No care instructions are available for the patient"
-            }
+            defaultMessage={"No care instructions are available for the patient"}
           />
         </div>
       );
     }
-
-    return (
-      <Table useZebraStyles>
-        <TableHead>
-          <TableRow>
-            {careInstructionsHeaders.map((header) => (
-              <TableHeader key={header.key}>{header.header}</TableHeader>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {instructions.map((row) => (
-            <TableRow key={row.id}>
-              <TableCell>
-                {getDateTimeFromEpochTime(
-                  row.encounterDateTime,
-                  enable24HourTime
-                )}
-              </TableCell>
-              <TableCell>{row.form}</TableCell>
-              <TableCell>{row.instructionType}</TableCell>
-              <TableCell className="instruction-cell">
-                {row.instruction}
-              </TableCell>
-              <TableCell>{row.providerName}</TableCell>
-              <TableCell className="action-cell">
-                {isUserPrivileged(
-                  currentUser,
-                  PRIVILEGE_CONSTANTS.ADD_TASKS
-                ) && (
-                  <Link
-                    onClick={() => {
-                      if (!isSliderOpen.careInstructionsTasks) {
-                        updateCareInstructionsTasksSlider(true);
-                      }
-                    }}
-                  >
-                    <FormattedMessage id="ADD_TASK" defaultMessage="Add Task" />
-                  </Link>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    );
+    return renderInstructionRows(notAcknowledgedInstructions);
   };
 
-  // TODO: Acknowledged tab — not yet implemented; will show acknowledged instructions in a future story
   const renderAcknowledgedContent = () => {
-    return (
-      <div className={"empty-state-message"}>
-        <FormattedMessage
-          id={"NO_CARE_INSTRUCTIONS_MESSAGE"}
-          defaultMessage={"No care instructions are available for the patient"}
-        />
-      </div>
-    );
+    if (acknowledgedInstructions.length === 0) {
+      return (
+        <div className={"empty-state-message"}>
+          <FormattedMessage
+            id={"NO_CARE_INSTRUCTIONS_MESSAGE"}
+            defaultMessage={"No care instructions are available for the patient"}
+          />
+        </div>
+      );
+    }
+    return renderInstructionRows(acknowledgedInstructions);
   };
 
   if (isLoading) {
@@ -259,6 +273,7 @@ const CareInstructions = (props) => {
           setNotificationMessage={setNotificationMessage}
           setNotificationStatus={setNotificationStatus}
           hideMedicationTab={true}
+          observationUuid={selectedObservationUuid}
         />
       )}
       {showNotification && (

@@ -56,6 +56,7 @@ const AddEmergencyTasks = (props) => {
     setNotificationMessage,
     setNotificationStatus,
     hideMedicationTab = false,
+    observationUuid,
   } = props;
 
   const [isSaveDisabled, setIsSaveDisabled] = useState(true);
@@ -300,6 +301,7 @@ const AddEmergencyTasks = (props) => {
       intent: "ORDER",
       taskType: nonMedicationTaskType ? nonMedicationTaskType : null,
       status: "REQUESTED",
+      ...(observationUuid && { observationUuid }),
     };
     return nonMedicationPayload;
   };
@@ -773,5 +775,6 @@ AddEmergencyTasks.propTypes = {
   setNotificationMessage: PropTypes.func.isRequired,
   setNotificationStatus: PropTypes.func.isRequired,
   hideMedicationTab: PropTypes.bool,
+  observationUuid: PropTypes.string,
 };
 export default AddEmergencyTasks;

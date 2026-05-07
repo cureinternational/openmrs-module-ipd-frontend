@@ -2,6 +2,7 @@ import axios from "axios";
 import {
   BAHMNI_CORE_OBSERVATIONS_BASE_URL,
   OBSERVATIONS_BATCH_URL,
+  GET_TASKS_FOR_PATIENTS_URL,
   defaultDateTimeFormat12Hrs,
 } from "../../../../constants";
 import { formatTime } from "../../../../utils/DateTimeUtils";
@@ -25,6 +26,18 @@ export const fetchCareInstructionsObs = async (visitUuid, conceptNames) => {
       withCredentials: true,
     });
     return response.data;
+  } catch (error) {
+    return [];
+  }
+};
+
+export const fetchTasksByVisit = async (visitUuid) => {
+  try {
+    const response = await axios.get(GET_TASKS_FOR_PATIENTS_URL, {
+      params: { visitUuid, startTime: 0, endTime: Date.now() },
+      withCredentials: true,
+    });
+    return response.data || [];
   } catch (error) {
     return [];
   }
@@ -89,6 +102,7 @@ export const mapObservationsToInstructions = (observations, formConcepts) => {
     }
 
     result.push({
+      observationUuid: obs.uuid,
       encounterUuid: obs.encounterUuid,
       encounterDateTime: obs.encounterDateTime,
       form: formName,
