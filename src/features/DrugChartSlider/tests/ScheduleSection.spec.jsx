@@ -60,7 +60,9 @@ describe("ScheduleSection", () => {
     );
     await waitFor(() => {
       expect(
-        getByText("This dose extends to the next day")
+        getByText(
+          "Updated timing causes highlighted doses to cross midnight and appear on the next day."
+        )
       ).toBeInTheDocument();
     });
   });
@@ -142,7 +144,9 @@ describe("ScheduleSection", () => {
     );
     await waitFor(() => {
       expect(
-        getByText("This dose extends to the next day")
+        getByText(
+          "Updated timing causes highlighted doses to cross midnight and appear on the next day."
+        )
       ).toBeInTheDocument();
     });
   });

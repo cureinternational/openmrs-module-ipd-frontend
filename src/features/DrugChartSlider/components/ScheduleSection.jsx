@@ -7,6 +7,7 @@ import {
 import { FormattedMessage, useIntl } from "react-intl";
 import { TimePicker, TimePicker24Hour, Title } from "bahmni-carbon-ui";
 import { Toggle } from "carbon-components-react";
+import { Information20 } from "@carbon/icons-react";
 import { timeText12, timeText24 } from "../../../constants";
 
 export const ScheduleSection = ({
@@ -35,10 +36,23 @@ export const ScheduleSection = ({
   duration,
 }) => {
   const intl = useIntl();
+  const hasAnyNextDay =
+    showFirstDayScheduleNextDayWarning.some((v) => v === true) ||
+    showScheduleNextDayWarning.some((v) => v === true);
+
   return (
     <>
       {enableSchedule && firstDaySlotsMissed > 0 && (
         <div>
+          <div className="schedule-info-notification">
+            <Information20 />
+            <span>
+              <FormattedMessage
+                id="DRUG_CHART_SCHEDULE_MODIFICATION_INFO"
+                defaultMessage="Any modifications in the timings will automatically update the remaining schedule for today."
+              />
+            </span>
+          </div>
           <div className="schedule-section">
             <Title
               text={
@@ -56,7 +70,14 @@ export const ScheduleSection = ({
                 { length: enableSchedule?.frequencyPerDay },
                 (_, index) =>
                   enable24HourTimers ? (
-                    <div className="schedule-time" key={index}>
+                    <div
+                      className={`schedule-time${
+                        showFirstDayScheduleNextDayWarning[index]
+                          ? " schedule-time-next-day"
+                          : ""
+                      }`}
+                      key={index}
+                    >
                       <TimePicker24Hour
                         key={index}
                         id={`schedule-${index}`}
@@ -69,17 +90,16 @@ export const ScheduleSection = ({
                         invalidText={invalidTimeText24Hour}
                         isDisabled={firstDaySchedules[index] == "hh:mm"}
                       />
-                      {showFirstDayScheduleNextDayWarning[index] && (
-                        <p className="time-warning">
-                          <FormattedMessage
-                            id="DRUG_CHART_MODAL_SCHEDULE_NEXT_DAY_WARNING"
-                            defaultMessage="This dose extends to the next day"
-                          />
-                        </p>
-                      )}
                     </div>
                   ) : (
-                    <div className="schedule-time" key={index}>
+                    <div
+                      className={`schedule-time${
+                        showFirstDayScheduleNextDayWarning[index]
+                          ? " schedule-time-next-day"
+                          : ""
+                      }`}
+                      key={index}
+                    >
                       <TimePicker
                         key={index}
                         labelText=" "
@@ -91,14 +111,6 @@ export const ScheduleSection = ({
                         isDisabled={firstDaySchedules[index] == "hh:mm"}
                         invalidText={invalidTimeText12Hour}
                       />
-                      {showFirstDayScheduleNextDayWarning[index] && (
-                        <p className="time-warning">
-                          <FormattedMessage
-                            id="DRUG_CHART_MODAL_SCHEDULE_NEXT_DAY_WARNING"
-                            defaultMessage="This dose extends to the next day"
-                          />
-                        </p>
-                      )}
                     </div>
                   )
               )}
@@ -121,6 +133,17 @@ export const ScheduleSection = ({
               </p>
             )}
           </div>
+          {hasAnyNextDay && (
+            <div className="schedule-info-notification schedule-next-day-notification">
+              <Information20 />
+              <span>
+                <FormattedMessage
+                  id="DRUG_CHART_MODAL_SCHEDULE_NEXT_DAY_WARNING"
+                  defaultMessage="Updated timing causes highlighted doses to cross midnight and appear on the next day."
+                />
+              </span>
+            </div>
+          )}
           {duration > 1 && (
             <div className="apply-to-all-days-toggle">
               <Toggle
@@ -159,7 +182,14 @@ export const ScheduleSection = ({
                   { length: enableSchedule?.frequencyPerDay },
                   (_, index) =>
                     enable24HourTimers ? (
-                      <div className="schedule-time" key={index}>
+                      <div
+                        className={`schedule-time${
+                          showScheduleNextDayWarning[index]
+                            ? " schedule-time-next-day"
+                            : ""
+                        }`}
+                        key={index}
+                      >
                         <TimePicker24Hour
                           key={index}
                           id={`schedule-${index}`}
@@ -171,17 +201,16 @@ export const ScheduleSection = ({
                           width="70%"
                           invalidText={invalidTimeText24Hour}
                         />
-                        {showScheduleNextDayWarning[index] && (
-                          <p className="time-warning">
-                            <FormattedMessage
-                              id="DRUG_CHART_MODAL_SCHEDULE_NEXT_DAY_WARNING"
-                              defaultMessage="This dose extends to the next day"
-                            />
-                          </p>
-                        )}
                       </div>
                     ) : (
-                      <div className="schedule-time" key={index}>
+                      <div
+                        className={`schedule-time${
+                          showScheduleNextDayWarning[index]
+                            ? " schedule-time-next-day"
+                            : ""
+                        }`}
+                        key={index}
+                      >
                         <TimePicker
                           key={index}
                           labelText=" "
@@ -192,14 +221,6 @@ export const ScheduleSection = ({
                           id={`schedule-${index}`}
                           invalidText={invalidTimeText12Hour}
                         />
-                        {showScheduleNextDayWarning[index] && (
-                          <p className="time-warning">
-                            <FormattedMessage
-                              id="DRUG_CHART_MODAL_SCHEDULE_NEXT_DAY_WARNING"
-                              defaultMessage="This dose extends to the next day"
-                            />
-                          </p>
-                        )}
                       </div>
                     )
                 )}
@@ -311,7 +332,14 @@ export const ScheduleSection = ({
                 { length: enableSchedule?.frequencyPerDay },
                 (_, index) =>
                   enable24HourTimers ? (
-                    <div className="schedule-time" key={index}>
+                    <div
+                      className={`schedule-time${
+                        showScheduleNextDayWarning[index]
+                          ? " schedule-time-next-day"
+                          : ""
+                      }`}
+                      key={index}
+                    >
                       <TimePicker24Hour
                         key={index}
                         id={`schedule-${index}`}
@@ -323,17 +351,16 @@ export const ScheduleSection = ({
                         width="70%"
                         invalidText={invalidTimeText24Hour}
                       />
-                      {showScheduleNextDayWarning[index] && (
-                        <p className="time-warning">
-                          <FormattedMessage
-                            id="DRUG_CHART_MODAL_SCHEDULE_NEXT_DAY_WARNING"
-                            defaultMessage="This dose extends to the next day"
-                          />
-                        </p>
-                      )}
                     </div>
                   ) : (
-                    <div className="schedule-time" key={index}>
+                    <div
+                      className={`schedule-time${
+                        showScheduleNextDayWarning[index]
+                          ? " schedule-time-next-day"
+                          : ""
+                      }`}
+                      key={index}
+                    >
                       <TimePicker
                         key={index}
                         labelText=" "
@@ -344,14 +371,6 @@ export const ScheduleSection = ({
                         id={`schedule-${index}`}
                         invalidText={invalidTimeText12Hour}
                       />
-                      {showScheduleNextDayWarning[index] && (
-                        <p className="time-warning">
-                          <FormattedMessage
-                            id="DRUG_CHART_MODAL_SCHEDULE_NEXT_DAY_WARNING"
-                            defaultMessage="This dose extends to the next day"
-                          />
-                        </p>
-                      )}
                     </div>
                   )
               )}
@@ -374,6 +393,17 @@ export const ScheduleSection = ({
               </p>
             )}
           </div>
+          {hasAnyNextDay && (
+            <div className="schedule-info-notification schedule-next-day-notification">
+              <Information20 />
+              <span>
+                <FormattedMessage
+                  id="DRUG_CHART_MODAL_SCHEDULE_NEXT_DAY_WARNING"
+                  defaultMessage="Updated timing causes highlighted doses to cross midnight and appear on the next day."
+                />
+              </span>
+            </div>
+          )}
         </div>
       )}
     </>

@@ -706,7 +706,9 @@ describe("DrugChartSlider", () => {
 
       await waitFor(() => {
         expect(
-          getByText("This dose extends to the next day")
+          getByText(
+            "Updated timing causes highlighted doses to cross midnight and appear on the next day."
+          )
         ).toBeInTheDocument();
       });
       MockDate.reset();
@@ -751,7 +753,9 @@ describe("DrugChartSlider", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText("This dose extends to the next day")
+          screen.getByText(
+            "Updated timing causes highlighted doses to cross midnight and appear on the next day."
+          )
         ).toBeInTheDocument();
       });
 
@@ -762,7 +766,9 @@ describe("DrugChartSlider", () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByText("This dose extends to the next day")
+          screen.queryByText(
+            "Updated timing causes highlighted doses to cross midnight and appear on the next day."
+          )
         ).not.toBeInTheDocument();
       });
       MockDate.reset();
@@ -806,7 +812,9 @@ describe("DrugChartSlider", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText("This dose extends to the next day")
+          screen.getByText(
+            "Updated timing causes highlighted doses to cross midnight and appear on the next day."
+          )
         ).toBeInTheDocument();
       });
       MockDate.reset();
