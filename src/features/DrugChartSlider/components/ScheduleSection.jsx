@@ -44,6 +44,12 @@ export const ScheduleSection = ({
     <>
       {enableSchedule && firstDaySlotsMissed > 0 && (
         <div>
+          <p className="medication-schedule-heading">
+            <FormattedMessage
+              id="DRUG_CHART_MEDICATION_SCHEDULE"
+              defaultMessage="Medication Schedule"
+            />
+          </p>
           <div className="schedule-info-notification">
             <Information20 />
             <span>
@@ -314,6 +320,12 @@ export const ScheduleSection = ({
       )}
       {enableSchedule && firstDaySlotsMissed == 0 && (
         <div>
+          <p className="medication-schedule-heading">
+            <FormattedMessage
+              id="DRUG_CHART_MEDICATION_SCHEDULE"
+              defaultMessage="Medication Schedule"
+            />
+          </p>
           <div className="schedule-section">
             <Title
               text={

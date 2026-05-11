@@ -154,6 +154,12 @@ const DrugChartSlider = (props) => {
     if (firstDaySlotsMissed > 0) {
       setFinalDaySchedules(shifted.slice(0, firstDaySlotsMissed));
     }
+    const crossings = detectNextDayCrossings(
+      enableSchedule.scheduleTiming,
+      offsetMinutes,
+      enable24HourTimers
+    );
+    setShowScheduleNextDayWarning(crossings);
   };
 
   const handleApplyToAllDaysToggle = (checked) => {
@@ -174,7 +180,39 @@ const DrugChartSlider = (props) => {
       const isValid = enable24HourTimers
         ? moment(timeStr, "HH:mm", true).isValid()
         : moment(timeStr, timeFormatFor12Hr, true).isValid();
-      if (isValid) propagateToSubsequentDays(timeStr);
+      if (isValid) {
+        propagateToSubsequentDays(timeStr);
+        const editableCount = firstDaySchedules.length - firstDaySlotsMissed;
+        if (editableCount > 1) {
+          const wardBase = enableSchedule.scheduleTiming[firstDaySlotsMissed];
+          const scheduleM = moment(wardBase, "HH:mm");
+          const userM = enable24HourTimers
+            ? moment(
+                typeof timeStr === "string" ? timeStr : timeStr.format("HH:mm"),
+                "HH:mm"
+              )
+            : moment.isMoment(timeStr)
+            ? timeStr.clone()
+            : moment(timeStr, timeFormatFor12Hr);
+          const offsetMinutes = userM.diff(scheduleM, "minutes");
+          setFirstDaySchedules((prev) => {
+            const updated = [...prev];
+            for (let i = firstDaySlotsMissed + 1; i < prev.length; i++) {
+              const wardTime = enableSchedule.scheduleTiming[i];
+              if (wardTime) {
+                const shifted = moment(wardTime, "HH:mm").add(
+                  offsetMinutes,
+                  "minutes"
+                );
+                updated[i] = enable24HourTimers
+                  ? shifted.format("HH:mm")
+                  : shifted;
+              }
+            }
+            return updated;
+          });
+        }
+      }
     } else {
       const scheduleTimings = enable24HourTimers
         ? enableSchedule.scheduleTiming
@@ -185,6 +223,9 @@ const DrugChartSlider = (props) => {
       if (firstDaySlotsMissed > 0) {
         setFinalDaySchedules(scheduleTimings.slice(0, firstDaySlotsMissed));
       }
+      setShowScheduleNextDayWarning(
+        Array(enableSchedule.frequencyPerDay).fill(false)
+      );
     }
   };
 
@@ -263,8 +304,7 @@ const DrugChartSlider = (props) => {
           return updated;
         });
         setIsToggleEnabled(true);
-        if (applyToAllDays)
-          propagateToSubsequentDays(newSchedule, firstDoseOriginal);
+        if (applyToAllDays) propagateToSubsequentDays(newSchedule);
         return;
       }
     }
@@ -300,10 +340,7 @@ const DrugChartSlider = (props) => {
     }
     if (index === firstDaySlotsMissed) setIsToggleEnabled(true);
     if (applyToAllDays && index === firstDaySlotsMissed) {
-      propagateToSubsequentDays(
-        newSchedule,
-        firstDaySchedules[firstDaySlotsMissed]
-      );
+      propagateToSubsequentDays(newSchedule);
     }
   };
 
@@ -644,10 +681,7 @@ const DrugChartSlider = (props) => {
         : enableSchedule?.scheduleTiming.map((time) =>
             moment(time, timeFormatFor12Hr)
           );
-      const currentTimeMomentObject = moment(
-        moment(),
-        enable24HourTimers ? timeFormatFor24Hr : timeFormatFor12Hr
-      );
+      const currentTimeMomentObject = moment().startOf("minute");
       let finalScheduleCount = 0;
       scheduleTimings.forEach((schedule) => {
         if (isTimePassed(schedule, timeWindowToDisableSlots)) {
