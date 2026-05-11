@@ -407,6 +407,22 @@ const DrugChartSlider = (props) => {
           });
           return updated;
         });
+
+        if (applyToAllDays && firstDaySlotsMissed > 0) {
+          setFinalDaySchedules((prev) =>
+            prev.map((slot) => {
+              const m = enable24HourTimers
+                ? moment(slot, "HH:mm")
+                : moment.isMoment(slot)
+                ? slot.clone()
+                : moment(slot, timeFormatFor12Hr);
+              const shiftedSlot = m.add(offsetMinutes, "minutes");
+              return enable24HourTimers
+                ? shiftedSlot.format("HH:mm")
+                : shiftedSlot;
+            })
+          );
+        }
         return;
       }
     }
