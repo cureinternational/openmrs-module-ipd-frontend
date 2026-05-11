@@ -149,7 +149,7 @@ const CareInstructions = (props) => {
 
   useEffect(() => {
     const obsUuids = instructions.map((i) => i.observationUuid).filter(Boolean);
-    if (obsUuids.length === 0) return;
+    if (obsUuids.length === 0 || !visitSummary) return;
     const visitStartTime = new Date(visitSummary.startDateTime).getTime();
     const visitEndTime = visitSummary.stopDateTime
       ? new Date(visitSummary.stopDateTime).getTime()
@@ -161,7 +161,7 @@ const CareInstructions = (props) => {
         );
       }
     );
-  }, [instructions]);
+  }, [instructions, visitSummary]);
 
   const notAcknowledgedInstructions = instructions.filter(
     (row) => !acknowledgedObsUuids.has(row.observationUuid)
