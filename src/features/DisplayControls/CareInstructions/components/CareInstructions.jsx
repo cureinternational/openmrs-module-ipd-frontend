@@ -18,7 +18,7 @@ import { SliderContext } from "../../../../context/SliderContext";
 import RefreshDisplayControl from "../../../../context/RefreshDisplayControl";
 import {
   fetchCareInstructionsObs,
-  fetchTasksByVisit,
+  fetchTasksByObservationUuids,
   mapObservationsToInstructions,
 } from "../utils/CareInstructionsUtils.jsx";
 import { getDateTimeFromEpochTime } from "../../../../utils/DateTimeUtils";
@@ -148,14 +148,14 @@ const CareInstructions = (props) => {
   }, [visit, formConcepts]);
 
   useEffect(() => {
-    if (!visit) return;
-    fetchTasksByVisit(visit).then((tasks) => {
-      const uuids = new Set(
-        tasks.map((t) => t.observationUuid).filter(Boolean)
+    const obsUuids = instructions.map((i) => i.observationUuid).filter(Boolean);
+    if (obsUuids.length === 0) return;
+    fetchTasksByObservationUuids(obsUuids).then((tasks) => {
+      setAcknowledgedObsUuids(
+        new Set(tasks.map((t) => t.observationUuid).filter(Boolean))
       );
-      setAcknowledgedObsUuids(uuids);
     });
-  }, [visit]);
+  }, [instructions]);
 
   const notAcknowledgedInstructions = instructions.filter(
     (row) => !acknowledgedObsUuids.has(row.observationUuid)
@@ -177,11 +177,16 @@ const CareInstructions = (props) => {
         {rows.map((row) => (
           <TableRow key={row.id}>
             <TableCell>
-              {getDateTimeFromEpochTime(row.encounterDateTime, enable24HourTime)}
+              {getDateTimeFromEpochTime(
+                row.encounterDateTime,
+                enable24HourTime
+              )}
             </TableCell>
             <TableCell>{row.form}</TableCell>
             <TableCell>{row.instructionType}</TableCell>
-            <TableCell className="instruction-cell">{row.instruction}</TableCell>
+            <TableCell className="instruction-cell">
+              {row.instruction}
+            </TableCell>
             <TableCell>{row.providerName}</TableCell>
             <TableCell className="action-cell">
               {isUserPrivileged(currentUser, PRIVILEGE_CONSTANTS.ADD_TASKS) && (
@@ -209,7 +214,9 @@ const CareInstructions = (props) => {
         <div className={"empty-state-message"}>
           <FormattedMessage
             id={"NO_CARE_INSTRUCTIONS_MESSAGE"}
-            defaultMessage={"No care instructions are available for the patient"}
+            defaultMessage={
+              "No care instructions are available for the patient"
+            }
           />
         </div>
       );
@@ -223,7 +230,9 @@ const CareInstructions = (props) => {
         <div className={"empty-state-message"}>
           <FormattedMessage
             id={"NO_CARE_INSTRUCTIONS_MESSAGE"}
-            defaultMessage={"No care instructions are available for the patient"}
+            defaultMessage={
+              "No care instructions are available for the patient"
+            }
           />
         </div>
       );

@@ -31,10 +31,12 @@ export const fetchCareInstructionsObs = async (visitUuid, conceptNames) => {
   }
 };
 
-export const fetchTasksByVisit = async (visitUuid) => {
+export const fetchTasksByObservationUuids = async (observationUuids) => {
+  if (!observationUuids || observationUuids.length === 0) return [];
   try {
     const response = await axios.get(GET_TASKS_FOR_PATIENTS_URL, {
-      params: { visitUuid, startTime: 0, endTime: Date.now() },
+      params: { observationUuids, startTime: 0, endTime: Date.now() },
+      paramsSerializer: serializeParams,
       withCredentials: true,
     });
     return response.data || [];
