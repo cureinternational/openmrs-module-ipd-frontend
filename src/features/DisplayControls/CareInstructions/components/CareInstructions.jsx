@@ -36,7 +36,7 @@ const CareInstructions = (props) => {
     props;
   const ipdContext = useContext(IPDContext);
   const intl = useIntl();
-  const { visit, config, currentUser } = ipdContext;
+  const { visit, visitSummary, config, currentUser } = ipdContext;
   const { enable24HourTime = false } = config || {};
   const { isSliderOpen, updateSliderOpen, provider } =
     useContext(SliderContext);
@@ -150,11 +150,17 @@ const CareInstructions = (props) => {
   useEffect(() => {
     const obsUuids = instructions.map((i) => i.observationUuid).filter(Boolean);
     if (obsUuids.length === 0) return;
-    fetchTasksByObservationUuids(obsUuids).then((tasks) => {
-      setAcknowledgedObsUuids(
-        new Set(tasks.map((t) => t.observationUuid).filter(Boolean))
-      );
-    });
+    const visitStartTime = new Date(visitSummary.startDateTime).getTime();
+    const visitEndTime = visitSummary.stopDateTime
+      ? new Date(visitSummary.stopDateTime).getTime()
+      : Date.now();
+    fetchTasksByObservationUuids(obsUuids, visitStartTime, visitEndTime).then(
+      (tasks) => {
+        setAcknowledgedObsUuids(
+          new Set(tasks.map((t) => t.observationUuid).filter(Boolean))
+        );
+      }
+    );
   }, [instructions]);
 
   const notAcknowledgedInstructions = instructions.filter(
