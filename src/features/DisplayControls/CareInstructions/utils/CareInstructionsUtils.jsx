@@ -2,7 +2,7 @@ import axios from "axios";
 import {
   BAHMNI_CORE_OBSERVATIONS_BASE_URL,
   OBSERVATIONS_BATCH_URL,
-  GET_TASKS_FOR_PATIENTS_URL,
+  FHIR_TASK_URL,
   defaultDateTimeFormat12Hrs,
 } from "../../../../constants";
 import { formatTime } from "../../../../utils/DateTimeUtils";
@@ -31,20 +31,24 @@ export const fetchCareInstructionsObs = async (visitUuid, conceptNames) => {
   }
 };
 
-export const fetchTasksByObservationUuids = async (
-  observationUuids,
-  startTime = 0,
-  endTime = Date.now()
-) => {
+export const fetchTasksByObservationUuids = async (observationUuids) => {
   if (!observationUuids || observationUuids.length === 0) return [];
   try {
-    const response = await axios.get(GET_TASKS_FOR_PATIENTS_URL, {
-      params: { observationUuids, startTime, endTime },
-      paramsSerializer: serializeParams,
-      withCredentials: true,
-    });
-    return response.data || [];
+    const focusParams = observationUuids
+      .map((uuid) => `focus=Observation/${uuid}`)
+      .join("&");
+    const url = `${FHIR_TASK_URL}?${focusParams}`;
+    console.log("[111216] FHIR Task GET request:", url);
+    const response = await axios.get(url, { withCredentials: true });
+    const entries = response.data?.entry || [];
+    const tasks = entries.map((e) => ({
+      observationUuid: e.resource?.focus?.reference?.split("/")[1],
+      uuid: e.resource?.id,
+    }));
+    console.log("[111216] FHIR Task GET response:", tasks);
+    return tasks;
   } catch (error) {
+    console.error("Failed to fetch tasks by observation UUIDs", error);
     return [];
   }
 };

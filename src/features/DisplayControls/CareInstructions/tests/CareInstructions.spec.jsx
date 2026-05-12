@@ -87,28 +87,20 @@ const mockCurrentUserWithoutPrivilege = {
   privileges: [],
 };
 
-const mockVisitSummary = {
-  startDateTime: "2026-05-01T00:00:00.000Z",
-  stopDateTime: null,
-};
-
 const mockIPDContextWithData = {
   visit: "visit-uuid-1",
-  visitSummary: mockVisitSummary,
   config: { enable24HourTime: false },
   currentUser: mockCurrentUserWithPrivilege,
 };
 
 const mockIPDContextEmpty = {
   visit: "visit-uuid-1",
-  visitSummary: mockVisitSummary,
   config: { enable24HourTime: false },
   currentUser: mockCurrentUserWithPrivilege,
 };
 
 const mockIPDContextNoVisit = {
   visit: null,
-  visitSummary: null,
   config: { enable24HourTime: false },
   currentUser: mockCurrentUserWithPrivilege,
 };
@@ -520,7 +512,6 @@ describe("CareInstructions", () => {
   it("should not render Add Task button when user lacks ADD_TASKS privilege", async () => {
     const ipdContextNoPrivilege = {
       visit: "visit-uuid-1",
-      visitSummary: mockVisitSummary,
       config: { enable24HourTime: false },
       currentUser: mockCurrentUserWithoutPrivilege,
     };
