@@ -191,8 +191,18 @@ const DrugChartSlider = (props) => {
         propagateToSubsequentDays(timeStr);
         const editableCount = firstDaySchedules.length - firstDaySlotsMissed;
         if (editableCount > 1) {
-          const wardBase = enableSchedule.scheduleTiming[firstDaySlotsMissed];
-          const scheduleM = moment(wardBase, "HH:mm");
+          const base =
+            autoFilledFirstEditableSlotRef.current !== null
+              ? autoFilledFirstEditableSlotRef.current
+              : enableSchedule.scheduleTiming[firstDaySlotsMissed];
+          const scheduleM = enable24HourTimers
+            ? moment(
+                typeof base === "string" ? base : base.format("HH:mm"),
+                "HH:mm"
+              )
+            : moment.isMoment(base)
+            ? base.clone()
+            : moment(base, timeFormatFor12Hr);
           const userM = enable24HourTimers
             ? moment(
                 typeof timeStr === "string" ? timeStr : timeStr.format("HH:mm"),
