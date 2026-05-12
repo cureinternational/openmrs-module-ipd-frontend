@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { TextArea } from "carbon-components-react";
 import moment from "moment";
 import PropTypes from "prop-types";
@@ -123,6 +123,11 @@ const DrugChartSlider = (props) => {
   const [applyToAllDays, setApplyToAllDays] = useState(false);
   const [isToggleEnabled, setIsToggleEnabled] = useState(false);
 
+  // Stores the auto-filled moment for the first editable slot so that
+  // subsequent-day propagation uses the same reference as the day-1 cascade,
+  // preventing the auto-fill artifact (:51 minutes) from leaking into future days.
+  const autoFilledFirstEditableSlotRef = useRef(null);
+
   const [showScheduleNextDayWarning, setShowScheduleNextDayWarning] = useState(
     []
   );
@@ -135,6 +140,8 @@ const DrugChartSlider = (props) => {
     const base =
       referenceSlot !== null
         ? referenceSlot
+        : autoFilledFirstEditableSlotRef.current !== null
+        ? autoFilledFirstEditableSlotRef.current
         : enableSchedule.scheduleTiming[firstDaySlotsMissed];
     const scheduleM = enable24HourTimers
       ? moment(typeof base === "string" ? base : base.format("HH:mm"), "HH:mm")
@@ -711,6 +718,7 @@ const DrugChartSlider = (props) => {
               currentTimeMomentObject,
             ]);
           } else {
+            autoFilledFirstEditableSlotRef.current = currentTimeMomentObject;
             setFirstDaySchedules((prevSchedules) => [
               ...prevSchedules,
               currentTimeMomentObject,
