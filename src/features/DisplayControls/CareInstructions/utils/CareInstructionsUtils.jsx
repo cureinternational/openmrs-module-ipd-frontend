@@ -34,19 +34,16 @@ export const fetchCareInstructionsObs = async (visitUuid, conceptNames) => {
 export const fetchTasksByObservationUuids = async (observationUuids) => {
   if (!observationUuids || observationUuids.length === 0) return [];
   try {
-    const focusParams = observationUuids
-      .map((uuid) => `focus=Observation/${uuid}`)
-      .join("&");
-    const url = `${FHIR_TASK_URL}?${focusParams}`;
-    console.log("[111216] FHIR Task GET request:", url);
+    const url = `${FHIR_TASK_URL}?focus=${observationUuids
+      .map((uuid) => `Observation/${uuid}`)
+      .join(",")}`;
+
     const response = await axios.get(url, { withCredentials: true });
     const entries = response.data?.entry || [];
-    const tasks = entries.map((e) => ({
-      observationUuid: e.resource?.focus?.reference?.split("/")[1],
+    return entries.map((e) => ({
+      observationUuid: e.resource?.focus?.reference?.split("/").pop(),
       uuid: e.resource?.id,
     }));
-    console.log("[111216] FHIR Task GET response:", tasks);
-    return tasks;
   } catch (error) {
     console.error("Failed to fetch tasks by observation UUIDs", error);
     return [];
