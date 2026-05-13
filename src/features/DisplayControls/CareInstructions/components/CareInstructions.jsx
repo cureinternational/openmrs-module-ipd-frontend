@@ -157,11 +157,19 @@ const CareInstructions = (props) => {
     });
   }, [instructions]);
 
-  const notAcknowledgedInstructions = instructions.filter(
-    (row) => !acknowledgedObsUuids.has(row.observationUuid)
+  const notAcknowledgedInstructions = useMemo(
+    () =>
+      instructions.filter(
+        (row) => !acknowledgedObsUuids.has(row.observationUuid)
+      ),
+    [instructions, acknowledgedObsUuids]
   );
-  const acknowledgedInstructions = instructions.filter((row) =>
-    acknowledgedObsUuids.has(row.observationUuid)
+  const acknowledgedInstructions = useMemo(
+    () =>
+      instructions.filter((row) =>
+        acknowledgedObsUuids.has(row.observationUuid)
+      ),
+    [instructions, acknowledgedObsUuids]
   );
 
   const renderInstructionRows = (rows) => (

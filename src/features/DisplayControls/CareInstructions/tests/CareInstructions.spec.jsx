@@ -294,6 +294,36 @@ describe("CareInstructions", () => {
     expect(getByText("Monitor blood pressure")).toBeInTheDocument();
   });
 
+  it("should show notification after task is saved via slider", async () => {
+    const sliderOpenContext = {
+      isSliderOpen: { careInstructionsTasks: true },
+      updateSliderOpen: jest.fn(),
+      provider: { uuid: "provider-uuid-1" },
+    };
+
+    const { getByTestId } = renderWithProviders(
+      <CareInstructions
+        patientId="patient-uuid-1"
+        config={{ formConcepts: mockFormConcepts }}
+      />,
+      mockIPDContextWithData,
+      sliderOpenContext
+    );
+
+    // Slider is visible
+    await waitFor(() => {
+      expect(getByTestId("add-emergency-tasks-slider")).toBeInTheDocument();
+    });
+
+    // Save the task
+    fireEvent.click(getByTestId("save-task"));
+
+    // Notification appears confirming save success
+    await waitFor(() => {
+      expect(getByTestId("task-notification")).toBeInTheDocument();
+    });
+  });
+
   it("should render instructions from both forms", async () => {
     const { getByText } = renderWithProviders(
       <CareInstructions config={{ formConcepts: mockFormConcepts }} />,
