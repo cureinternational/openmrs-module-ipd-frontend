@@ -6,7 +6,7 @@ import {
   updateStartTimeBasedOnFrequency,
   getUTCTimeEpoch,
   saveMedication,
-  calculateShiftedSchedules,
+  computeShiftedSchedules,
   detectNextDayCrossings,
   isNextDayCrossing,
   computeShiftedScheduleTimings,
@@ -182,15 +182,10 @@ describe("DrugChartSliderUtils", () => {
     });
   });
 
-  describe("calculateShiftedSchedules", () => {
+  describe("computeShiftedSchedules", () => {
     it("shifts subsequent doses by the same offset as first dose change (24hr)", () => {
       const schedules = ["06:00", "16:00", "23:00"];
-      const result = calculateShiftedSchedules(
-        schedules,
-        "06:00",
-        "04:00",
-        true
-      );
+      const result = computeShiftedSchedules(schedules, "06:00", "04:00", true);
       expect(result[0]).toBe("04:00");
       expect(result[1]).toBe("14:00");
       expect(result[2]).toBe("21:00");
@@ -198,12 +193,7 @@ describe("DrugChartSliderUtils", () => {
 
     it("only changes index 0 when there is one dose (24hr)", () => {
       const schedules = ["06:00"];
-      const result = calculateShiftedSchedules(
-        schedules,
-        "06:00",
-        "04:00",
-        true
-      );
+      const result = computeShiftedSchedules(schedules, "06:00", "04:00", true);
       expect(result[0]).toBe("04:00");
       expect(result.length).toBe(1);
     });
@@ -212,7 +202,7 @@ describe("DrugChartSliderUtils", () => {
       const orig0 = moment("06:00 AM", "hh:mm A");
       const orig1 = moment("04:00 PM", "hh:mm A");
       const schedules = [orig0, orig1];
-      const result = calculateShiftedSchedules(
+      const result = computeShiftedSchedules(
         schedules,
         orig0,
         "04:00 AM",

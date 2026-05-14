@@ -112,7 +112,8 @@ describe("ScheduleSection", () => {
     await waitFor(() => {
       const toggle = getByRole("checkbox");
       fireEvent.click(toggle);
-      expect(mockToggle).toHaveBeenCalledWith(true);
+      expect(mockToggle).toHaveBeenCalled();
+      expect(mockToggle.mock.calls[0][0]).toBe(true);
     });
   });
 

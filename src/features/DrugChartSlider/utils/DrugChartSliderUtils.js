@@ -171,7 +171,7 @@ export const setDrugOrderScheduleIn12HourFormat = (schedule) => {
   return drugOrderSchduleIn12HourFormat;
 };
 
-export const calculateShiftedSchedules = (
+export const computeShiftedSchedules = (
   schedules,
   firstDoseOriginal,
   firstDoseNew,
@@ -181,23 +181,23 @@ export const calculateShiftedSchedules = (
     ? moment(firstDoseOriginal, "HH:mm")
     : moment.isMoment(firstDoseOriginal)
     ? firstDoseOriginal.clone()
-    : moment(firstDoseOriginal, "hh:mm A");
+    : moment(firstDoseOriginal, timeFormatFor12Hr);
   const newMoment = enable24HourTimers
     ? moment(firstDoseNew, "HH:mm")
-    : moment(firstDoseNew, "hh:mm A");
+    : moment(firstDoseNew, timeFormatFor12Hr);
   const offsetMinutes = newMoment.diff(origMoment, "minutes");
 
   return schedules.map((schedule, index) => {
     if (index === 0) {
       return enable24HourTimers
         ? firstDoseNew
-        : moment(firstDoseNew, "hh:mm A");
+        : moment(firstDoseNew, timeFormatFor12Hr);
     }
     const scheduleMoment = enable24HourTimers
       ? moment(schedule, "HH:mm")
       : moment.isMoment(schedule)
       ? schedule.clone()
-      : moment(schedule, "hh:mm A");
+      : moment(schedule, timeFormatFor12Hr);
     const shifted = scheduleMoment.add(offsetMinutes, "minutes");
     return enable24HourTimers ? shifted.format("HH:mm") : shifted;
   });
@@ -206,18 +206,22 @@ export const calculateShiftedSchedules = (
 export const isNextDayCrossing = (newTime, prevTime, enable24HourTimers) => {
   const newM = enable24HourTimers
     ? moment(newTime, "HH:mm", true)
-    : moment(newTime, "hh:mm A", true);
+    : moment(newTime, timeFormatFor12Hr, true);
   const prevM = enable24HourTimers
     ? moment(prevTime, "HH:mm", true)
     : moment.isMoment(prevTime)
     ? prevTime.clone()
-    : moment(prevTime, "hh:mm A", true);
+    : moment(prevTime, timeFormatFor12Hr, true);
   if (!newM.isValid() || !prevM.isValid()) return false;
   const newMinutes = newM.hours() * 60 + newM.minutes();
   const prevMinutes = prevM.hours() * 60 + prevM.minutes();
   return newMinutes < prevMinutes;
 };
 
+// Determines which schedules will cross midnight after applying offsetMinutes.
+// subsequentSchedules must be the CURRENT values (post any prior cascade).
+// currentNextDayFlags must match subsequentSchedules index-for-index — pass the
+// prior next-day flags so already-shifted next-day slots are treated as 24h+.
 export const detectNextDayCrossings = (
   subsequentSchedules,
   offsetMinutes,
@@ -229,13 +233,30 @@ export const detectNextDayCrossings = (
       ? moment(schedule, "HH:mm")
       : moment.isMoment(schedule)
       ? schedule.clone()
-      : moment(schedule, "hh:mm A");
+      : moment(schedule, timeFormatFor12Hr);
+    if (!m.isValid()) return false;
     const isAlreadyNextDay = currentNextDayFlags[i] === true;
     const originalMinutes =
       (isAlreadyNextDay ? 24 * 60 : 0) + m.hours() * 60 + m.minutes();
     const shiftedMinutes = originalMinutes + offsetMinutes;
     return shiftedMinutes >= 24 * 60 || shiftedMinutes < 0;
   });
+};
+
+// Computes the minute offset between two schedule values (original → updated).
+// Values can be HH:mm strings (24hr) or moment objects (12hr).
+export const computeOffsetMinutes = (original, updated, enable24HourTimers) => {
+  const origM = enable24HourTimers
+    ? moment(original, "HH:mm")
+    : moment.isMoment(original)
+    ? original.clone()
+    : moment(original, timeFormatFor12Hr);
+  const newM = enable24HourTimers
+    ? moment(updated, "HH:mm")
+    : moment.isMoment(updated)
+    ? updated.clone()
+    : moment(updated, timeFormatFor12Hr);
+  return newM.diff(origM, "minutes");
 };
 
 // Shifts all scheduleTimings (24-hr strings) by offsetMinutes.

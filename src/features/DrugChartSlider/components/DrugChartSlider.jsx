@@ -25,10 +25,11 @@ import {
   getUTCTimeEpoch,
   setDrugOrderScheduleIn24HourFormat,
   setDrugOrderScheduleIn12HourFormat,
-  calculateShiftedSchedules,
+  computeShiftedSchedules,
   detectNextDayCrossings,
   isNextDayCrossing,
   computeShiftedScheduleTimings,
+  computeOffsetMinutes,
 } from "../utils/DrugChartSliderUtils";
 import {
   epochTo24HourTimeFormat,
@@ -125,7 +126,7 @@ const DrugChartSlider = (props) => {
 
   // Stores the auto-filled moment for the first editable slot so that
   // subsequent-day propagation uses the same reference as the day-1 cascade,
-  // preventing the auto-fill artifact (:51 minutes) from leaking into future days.
+  // preventing minute-level drift between the auto-filled day-1 slot and propagated subsequent-day slots.
   const autoFilledFirstEditableSlotRef = useRef(null);
 
   const [showScheduleNextDayWarning, setShowScheduleNextDayWarning] = useState(
@@ -136,11 +137,9 @@ const DrugChartSlider = (props) => {
     setShowFirstDayScheduleNextDayWarning,
   ] = useState([]);
 
-  const propagateToSubsequentDays = (newTime, referenceSlot = null) => {
+  const propagateToSubsequentDays = (newTime) => {
     const base =
-      referenceSlot !== null
-        ? referenceSlot
-        : autoFilledFirstEditableSlotRef.current !== null
+      autoFilledFirstEditableSlotRef.current !== null
         ? autoFilledFirstEditableSlotRef.current
         : enableSchedule.scheduleTiming[firstDaySlotsMissed];
     const scheduleM = enable24HourTimers
@@ -195,37 +194,24 @@ const DrugChartSlider = (props) => {
             autoFilledFirstEditableSlotRef.current !== null
               ? autoFilledFirstEditableSlotRef.current
               : enableSchedule.scheduleTiming[firstDaySlotsMissed];
-          const scheduleM = enable24HourTimers
-            ? moment(
-                typeof base === "string" ? base : base.format("HH:mm"),
-                "HH:mm"
-              )
-            : moment.isMoment(base)
-            ? base.clone()
-            : moment(base, timeFormatFor12Hr);
-          const userM = enable24HourTimers
-            ? moment(
-                typeof timeStr === "string" ? timeStr : timeStr.format("HH:mm"),
-                "HH:mm"
-              )
-            : moment.isMoment(timeStr)
-            ? timeStr.clone()
-            : moment(timeStr, timeFormatFor12Hr);
-          const offsetMinutes = userM.diff(scheduleM, "minutes");
+          const offsetMinutes = computeOffsetMinutes(
+            base,
+            timeStr,
+            enable24HourTimers
+          );
+          const editableSlice = enableSchedule.scheduleTiming.slice(
+            firstDaySlotsMissed + 1
+          );
+          const shiftedSlice = computeShiftedScheduleTimings(
+            editableSlice,
+            offsetMinutes,
+            enable24HourTimers
+          );
           setFirstDaySchedules((prev) => {
             const updated = [...prev];
-            for (let i = firstDaySlotsMissed + 1; i < prev.length; i++) {
-              const wardTime = enableSchedule.scheduleTiming[i];
-              if (wardTime) {
-                const shifted = moment(wardTime, "HH:mm").add(
-                  offsetMinutes,
-                  "minutes"
-                );
-                updated[i] = enable24HourTimers
-                  ? shifted.format("HH:mm")
-                  : shifted;
-              }
-            }
+            shiftedSlice.forEach((val, i) => {
+              updated[firstDaySlotsMissed + 1 + i] = val;
+            });
             return updated;
           });
         }
@@ -272,7 +258,7 @@ const DrugChartSlider = (props) => {
 
       if (isOriginalValid) {
         const editablePortion = firstDaySchedules.slice(firstDaySlotsMissed);
-        const shiftedEditable = calculateShiftedSchedules(
+        const shiftedEditable = computeShiftedSchedules(
           editablePortion,
           firstDoseOriginal,
           newSchedule,
@@ -284,15 +270,11 @@ const DrugChartSlider = (props) => {
         });
         setFirstDaySchedules(newScheduleArray);
 
-        const origM = enable24HourTimers
-          ? moment(firstDoseOriginal, "HH:mm")
-          : moment.isMoment(firstDoseOriginal)
-          ? firstDoseOriginal.clone()
-          : moment(firstDoseOriginal, timeFormatFor12Hr);
-        const newM = enable24HourTimers
-          ? moment(newSchedule, "HH:mm")
-          : moment(newSchedule, "hh:mm A");
-        const offsetMinutes = newM.diff(origM, "minutes");
+        const offsetMinutes = computeOffsetMinutes(
+          firstDoseOriginal,
+          newSchedule,
+          enable24HourTimers
+        );
         const editableWarnings = detectNextDayCrossings(
           editablePortion.slice(1),
           offsetMinutes,
@@ -355,9 +337,16 @@ const DrugChartSlider = (props) => {
         return newSchedulePassedWarnings;
       });
     }
-    if (index === firstDaySlotsMissed) setIsToggleEnabled(true);
-    if (applyToAllDays && index === firstDaySlotsMissed) {
-      propagateToSubsequentDays(newSchedule);
+    if (index === firstDaySlotsMissed) {
+      const isNewScheduleValid = enable24HourTimers
+        ? moment(newSchedule, "HH:mm", true).isValid()
+        : moment(newSchedule, timeFormatFor12Hr, true).isValid();
+      if (isNewScheduleValid) {
+        setIsToggleEnabled(true);
+        if (applyToAllDays) propagateToSubsequentDays(newSchedule);
+      } else {
+        setIsToggleEnabled(false);
+      }
     }
   };
 
@@ -383,7 +372,7 @@ const DrugChartSlider = (props) => {
           moment(firstDoseOriginal, timeFormatFor12Hr, true).isValid();
 
       if (isOriginalValid) {
-        const shifted = calculateShiftedSchedules(
+        const shifted = computeShiftedSchedules(
           schedules,
           firstDoseOriginal,
           newSchedule,
@@ -391,15 +380,11 @@ const DrugChartSlider = (props) => {
         );
         setSchedules(shifted);
 
-        const origM = enable24HourTimers
-          ? moment(firstDoseOriginal, "HH:mm")
-          : moment.isMoment(firstDoseOriginal)
-          ? firstDoseOriginal.clone()
-          : moment(firstDoseOriginal, timeFormatFor12Hr);
-        const newM = enable24HourTimers
-          ? moment(newSchedule, "HH:mm")
-          : moment(newSchedule, "hh:mm A");
-        const offsetMinutes = newM.diff(origM, "minutes");
+        const offsetMinutes = computeOffsetMinutes(
+          firstDoseOriginal,
+          newSchedule,
+          enable24HourTimers
+        );
         const warnings = detectNextDayCrossings(
           schedules.slice(1),
           offsetMinutes,
@@ -427,17 +412,11 @@ const DrugChartSlider = (props) => {
 
         if (applyToAllDays && firstDaySlotsMissed > 0) {
           setFinalDaySchedules((prev) =>
-            prev.map((slot) => {
-              const m = enable24HourTimers
-                ? moment(slot, "HH:mm")
-                : moment.isMoment(slot)
-                ? slot.clone()
-                : moment(slot, timeFormatFor12Hr);
-              const shiftedSlot = m.add(offsetMinutes, "minutes");
-              return enable24HourTimers
-                ? shiftedSlot.format("HH:mm")
-                : shiftedSlot;
-            })
+            computeShiftedScheduleTimings(
+              prev,
+              offsetMinutes,
+              enable24HourTimers
+            )
           );
         }
         return;
@@ -708,6 +687,7 @@ const DrugChartSlider = (props) => {
     moment().diff(timeMomentObject, "minutes") <= timeWindowToDisableSlots;
 
   useEffect(() => {
+    autoFilledFirstEditableSlotRef.current = null;
     if (isAutoFill) {
       const scheduleTimings = enable24HourTimers
         ? enableSchedule?.scheduleTiming

@@ -2,12 +2,12 @@
 
 exports[`ScheduleSection renders ScheduleSection component when firstday slots  missed is 0 1`] = `
 <div>
+  <p
+    class="medication-schedule-heading"
+  >
+    Medication Schedule
+  </p>
   <div>
-    <p
-      class="medication-schedule-heading"
-    >
-      Medication Schedule
-    </p>
     <div
       class="schedule-section"
     >
@@ -152,12 +152,12 @@ exports[`ScheduleSection renders ScheduleSection component when firstday slots  
 
 exports[`ScheduleSection renders ScheduleSection component when firstday slots are missed 1`] = `
 <div>
+  <p
+    class="medication-schedule-heading"
+  >
+    Medication Schedule
+  </p>
   <div>
-    <p
-      class="medication-schedule-heading"
-    >
-      Medication Schedule
-    </p>
     <div
       class="schedule-info-notification"
     >

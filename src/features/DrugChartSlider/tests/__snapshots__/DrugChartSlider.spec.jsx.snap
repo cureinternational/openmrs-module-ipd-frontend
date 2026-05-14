@@ -641,12 +641,12 @@ exports[`DrugChartSlider Should render Drug Chart Slider for schedules with sche
             </div>
           </div>
         </div>
+        <p
+          class="medication-schedule-heading"
+        >
+          Medication Schedule
+        </p>
         <div>
-          <p
-            class="medication-schedule-heading"
-          >
-            Medication Schedule
-          </p>
           <div
             class="schedule-section"
           >
@@ -1501,12 +1501,12 @@ exports[`DrugChartSlider Should render Drug Chart Slider for schedules with star
             </div>
           </div>
         </div>
+        <p
+          class="medication-schedule-heading"
+        >
+          Medication Schedule
+        </p>
         <div>
-          <p
-            class="medication-schedule-heading"
-          >
-            Medication Schedule
-          </p>
           <div
             class="schedule-info-notification"
           >
@@ -2592,12 +2592,12 @@ exports[`DrugChartSlider should render with previous time on click of edit drug 
             </div>
           </div>
         </div>
+        <p
+          class="medication-schedule-heading"
+        >
+          Medication Schedule
+        </p>
         <div>
-          <p
-            class="medication-schedule-heading"
-          >
-            Medication Schedule
-          </p>
           <div
             class="schedule-info-notification"
           >

@@ -31,7 +31,7 @@ export const ScheduleSection = ({
   showScheduleNextDayWarning = [],
   showFirstDayScheduleNextDayWarning = [],
   applyToAllDays = false,
-  onApplyToAllDaysToggle,
+  onApplyToAllDaysToggle = () => {},
   isToggleEnabled = false,
   duration,
 }) => {
@@ -42,14 +42,16 @@ export const ScheduleSection = ({
 
   return (
     <>
+      {enableSchedule && (
+        <p className="medication-schedule-heading">
+          <FormattedMessage
+            id="DRUG_CHART_MEDICATION_SCHEDULE"
+            defaultMessage="Medication Schedule"
+          />
+        </p>
+      )}
       {enableSchedule && firstDaySlotsMissed > 0 && (
         <div>
-          <p className="medication-schedule-heading">
-            <FormattedMessage
-              id="DRUG_CHART_MEDICATION_SCHEDULE"
-              defaultMessage="Medication Schedule"
-            />
-          </p>
           <div className="schedule-info-notification">
             <Information20 />
             <span>
@@ -157,7 +159,7 @@ export const ScheduleSection = ({
                 size="sm"
                 toggled={applyToAllDays}
                 disabled={!isToggleEnabled}
-                onToggle={(checked) => onApplyToAllDaysToggle(checked)}
+                onToggle={onApplyToAllDaysToggle}
                 labelA=""
                 labelB=""
                 labelText=""
@@ -320,12 +322,6 @@ export const ScheduleSection = ({
       )}
       {enableSchedule && firstDaySlotsMissed == 0 && (
         <div>
-          <p className="medication-schedule-heading">
-            <FormattedMessage
-              id="DRUG_CHART_MEDICATION_SCHEDULE"
-              defaultMessage="Medication Schedule"
-            />
-          </p>
           <div className="schedule-section">
             <Title
               text={

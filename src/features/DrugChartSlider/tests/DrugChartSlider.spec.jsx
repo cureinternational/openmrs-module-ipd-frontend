@@ -618,6 +618,59 @@ describe("DrugChartSlider", () => {
       MockDate.reset();
     });
 
+    it("SC3: changing a middle dose in a 3-slot schedule does not affect first or last dose", async () => {
+      MockDate.set("2010-12-22T00:00:00.000Z");
+      const thriceFrequencies = [
+        {
+          name: "Thrice a day",
+          frequencyPerDay: 3,
+          scheduleTiming: ["08:00", "10:00", "20:00"],
+        },
+      ];
+      const thriceDrugOrder = {
+        ...mockScheduleDrugOrder,
+        uniformDosingType: {
+          ...mockScheduleDrugOrder.uniformDosingType,
+          frequency: "Thrice a day",
+        },
+      };
+
+      renderWithProviders(
+        <DrugChartSlider
+          hostData={{
+            enable24HourTimers: true,
+            scheduleFrequencies: thriceFrequencies,
+            startTimeFrequencies: mockStartTimeFrequencies,
+            drugOrder: thriceDrugOrder,
+          }}
+          hostApi={{}}
+          title=""
+          drugChartNotes=""
+          setDrugChartNotes={jest.fn()}
+        />
+      );
+
+      await waitFor(() => {
+        const inputs = document.querySelectorAll("#time-selector");
+        expect(inputs.length).toBeGreaterThan(2);
+      });
+
+      const inputs = document.querySelectorAll("#time-selector");
+      const firstBefore = inputs[0].value;
+      const lastBefore = inputs[2].value;
+
+      // Change only the middle dose (index 1)
+      fireEvent.change(inputs[1], { target: { value: "12:00" } });
+
+      await waitFor(() => {
+        const updatedInputs = document.querySelectorAll("#time-selector");
+        expect(updatedInputs[0].value).toBe(firstBefore);
+        expect(updatedInputs[1].value).toBe("12:00");
+        expect(updatedInputs[2].value).toBe(lastBefore);
+      });
+      MockDate.reset();
+    });
+
     it("SC5: save payload uses next-day epoch for dose that crosses midnight after cascade (AC4)", async () => {
       MockDate.set("2010-12-22T00:00:00.000Z");
       mockSaveMedication.mockClear();
