@@ -103,12 +103,16 @@ export const CareViewPatientsSummary = ({
   };
 
   const fetchCareInstructions = async (patients) => {
-    const ciSection = ipdConfig?.sections?.find((s) => s.componentKey === "CI");
+    const ciSection = ipdConfig?.sections?.find(
+      (section) => section.componentKey === "CI"
+    );
     const formConcepts = ciSection?.config?.formConcepts ?? [];
     if (formConcepts.length === 0) return;
 
-    const concepts = [...new Set(formConcepts.flatMap((fc) => fc.concepts))];
-    const visitUuids = patients.map((p) => p.visitDetails.uuid);
+    const concepts = [
+      ...new Set(formConcepts.flatMap((formConcept) => formConcept.concepts)),
+    ];
+    const visitUuids = patients.map((patient) => patient.visitDetails.uuid);
 
     const batchResult = await fetchBatchObservations(visitUuids, concepts);
 
@@ -122,11 +126,12 @@ export const CareViewPatientsSummary = ({
     });
 
     const allObsUuids = [
-      ...Object.values(instructionsMap).reduce((acc, instructions) => {
-        instructions.forEach((i) => {
-          if (i.observationUuid) acc.add(i.observationUuid);
+      ...Object.values(instructionsMap).reduce((obsUuidSet, instructions) => {
+        instructions.forEach((instruction) => {
+          if (instruction.observationUuid)
+            obsUuidSet.add(instruction.observationUuid);
         });
-        return acc;
+        return obsUuidSet;
       }, new Set()),
     ];
 
@@ -134,7 +139,7 @@ export const CareViewPatientsSummary = ({
       const acknowledgedUuids = await fetchAcknowledgedObsUuids(allObsUuids);
       Object.keys(instructionsMap).forEach((visitUuid) => {
         instructionsMap[visitUuid] = instructionsMap[visitUuid].filter(
-          (i) => !acknowledgedUuids.has(i.observationUuid)
+          (instruction) => !acknowledgedUuids.has(instruction.observationUuid)
         );
       });
     }

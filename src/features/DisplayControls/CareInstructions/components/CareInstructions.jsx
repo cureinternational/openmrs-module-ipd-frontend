@@ -148,7 +148,9 @@ const CareInstructions = (props) => {
   }, [visit, formConcepts]);
 
   useEffect(() => {
-    const obsUuids = instructions.map((i) => i.observationUuid).filter(Boolean);
+    const obsUuids = instructions
+      .map((instruction) => instruction.observationUuid)
+      .filter(Boolean);
     if (obsUuids.length === 0) return;
     fetchAcknowledgedObsUuids(obsUuids).then(setAcknowledgedObsUuids);
   }, [instructions]);

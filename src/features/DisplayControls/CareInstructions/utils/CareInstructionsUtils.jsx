@@ -44,9 +44,9 @@ export const fetchTasksByObservationUuids = async (observationUuids) => {
 
     const response = await axios.get(url, { withCredentials: true });
     const entries = response.data?.entry || [];
-    return entries.map((e) => ({
-      observationUuid: e.resource?.focus?.reference?.split("/").pop(),
-      uuid: e.resource?.id,
+    return entries.map((entry) => ({
+      observationUuid: entry.resource?.focus?.reference?.split("/").pop(),
+      uuid: entry.resource?.id,
     }));
   } catch (error) {
     console.error("Failed to fetch tasks by observation UUIDs", error);
@@ -56,7 +56,7 @@ export const fetchTasksByObservationUuids = async (observationUuids) => {
 
 export const fetchAcknowledgedObsUuids = async (obsUuids) => {
   const tasks = await fetchTasksByObservationUuids(obsUuids);
-  return new Set(tasks.map((t) => t.observationUuid).filter(Boolean));
+  return new Set(tasks.map((task) => task.observationUuid).filter(Boolean));
 };
 
 export const fetchBatchObservations = async (visitUuids, concepts) => {
