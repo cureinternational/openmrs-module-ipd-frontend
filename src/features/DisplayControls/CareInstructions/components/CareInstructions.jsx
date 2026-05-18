@@ -17,7 +17,7 @@ import { IPDContext } from "../../../../context/IPDContext";
 import { SliderContext } from "../../../../context/SliderContext";
 import RefreshDisplayControl from "../../../../context/RefreshDisplayControl";
 import {
-  fetchAcknowledgedObsUuids,
+  fetchAcknowledgedObservationUuids,
   fetchCareInstructionsObs,
   mapObservationsToInstructions,
 } from "../utils/CareInstructionsUtils.jsx";
@@ -152,7 +152,7 @@ const CareInstructions = (props) => {
       .map((instruction) => instruction.observationUuid)
       .filter(Boolean);
     if (obsUuids.length === 0) return;
-    fetchAcknowledgedObsUuids(obsUuids).then(setAcknowledgedObsUuids);
+    fetchAcknowledgedObservationUuids(obsUuids).then(setAcknowledgedObsUuids);
   }, [instructions]);
 
   const notAcknowledgedInstructions = useMemo(

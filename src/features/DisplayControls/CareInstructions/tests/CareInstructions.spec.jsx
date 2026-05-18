@@ -131,7 +131,7 @@ describe("CareInstructions", () => {
       .spyOn(CareInstructionsUtils, "fetchCareInstructionsObs")
       .mockResolvedValue(mockObservationsApiResponse);
     jest
-      .spyOn(CareInstructionsUtils, "fetchAcknowledgedObsUuids")
+      .spyOn(CareInstructionsUtils, "fetchAcknowledgedObservationUuids")
       .mockResolvedValue(new Set());
   });
 
@@ -239,7 +239,7 @@ describe("CareInstructions", () => {
 
   it("should move instruction to Acknowledged tab when a task exists for its observationUuid", async () => {
     jest
-      .spyOn(CareInstructionsUtils, "fetchAcknowledgedObsUuids")
+      .spyOn(CareInstructionsUtils, "fetchAcknowledgedObservationUuids")
       .mockResolvedValue(new Set(["obs-uuid-1"]));
 
     const { getByText, queryByText } = renderWithProviders(
@@ -247,7 +247,7 @@ describe("CareInstructions", () => {
       mockIPDContextWithData
     );
 
-    // Wait until fetchAcknowledgedObsUuids resolves and obs-uuid-1 is removed from Not Acknowledged
+    // Wait until fetchAcknowledgedObservationUuids resolves and obs-uuid-1 is removed from Not Acknowledged
     await waitFor(() => {
       expect(queryByText("Patient should rest")).not.toBeInTheDocument();
     });
@@ -262,7 +262,7 @@ describe("CareInstructions", () => {
 
   it("should keep all instructions in Not Acknowledged tab when no tasks exist", async () => {
     jest
-      .spyOn(CareInstructionsUtils, "fetchAcknowledgedObsUuids")
+      .spyOn(CareInstructionsUtils, "fetchAcknowledgedObservationUuids")
       .mockResolvedValue(new Set());
 
     const { getByText } = renderWithProviders(
@@ -278,7 +278,7 @@ describe("CareInstructions", () => {
 
   it("should only move the specific instruction whose observationUuid matches a task", async () => {
     jest
-      .spyOn(CareInstructionsUtils, "fetchAcknowledgedObsUuids")
+      .spyOn(CareInstructionsUtils, "fetchAcknowledgedObservationUuids")
       .mockResolvedValue(new Set(["obs-uuid-1"]));
 
     const { getByText, queryByText } = renderWithProviders(

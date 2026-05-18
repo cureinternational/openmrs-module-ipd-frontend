@@ -16,7 +16,7 @@ import {
 } from "../../DisplayControls/DrugChart/utils/DrugChartUtils";
 import { TASK_FILTER_HEADER } from "../../../constants";
 import {
-  fetchAcknowledgedObsUuids,
+  fetchAcknowledgedObservationUuids,
   fetchBatchObservations,
   mapObservationsToInstructions,
 } from "../../DisplayControls/CareInstructions/utils/CareInstructionsUtils";
@@ -136,7 +136,9 @@ export const CareViewPatientsSummary = ({
     ];
 
     if (enableNurseAcknowledgement && allObsUuids.length > 0) {
-      const acknowledgedUuids = await fetchAcknowledgedObsUuids(allObsUuids);
+      const acknowledgedUuids = await fetchAcknowledgedObservationUuids(
+        allObsUuids
+      );
       Object.keys(instructionsMap).forEach((visitUuid) => {
         instructionsMap[visitUuid] = instructionsMap[visitUuid].filter(
           (instruction) => !acknowledgedUuids.has(instruction.observationUuid)

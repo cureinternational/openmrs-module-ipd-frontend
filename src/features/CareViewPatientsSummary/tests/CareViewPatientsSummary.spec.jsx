@@ -53,7 +53,7 @@ jest.mock(
       fetchBatchObservations: (...args) => mockFetchBatchObservations(...args),
       mapObservationsToInstructions: (...args) =>
         mockMapObservationsToInstructions(...args),
-      fetchAcknowledgedObsUuids: (...args) =>
+      fetchAcknowledgedObservationUuids: (...args) =>
         mockFetchAcknowledgedObsUuids(...args),
     };
   }
@@ -558,7 +558,7 @@ describe("CareViewPatientsSummary", () => {
       });
     });
 
-    it("should not call fetchAcknowledgedObsUuids when all instructions have no observationUuid", async () => {
+    it("should not call fetchAcknowledgedObservationUuids when all instructions have no observationUuid", async () => {
       const visitUuid1 = "626b822d-741e-4a86-95ff-626eea753c4c";
 
       mockFetchBatchObservations.mockResolvedValue([
@@ -643,7 +643,7 @@ describe("CareViewPatientsSummary", () => {
       });
     });
 
-    it("should show all instructions when fetchAcknowledgedObsUuids fails", async () => {
+    it("should show all instructions when fetchAcknowledgedObservationUuids fails", async () => {
       const visitUuid1 = "626b822d-741e-4a86-95ff-626eea753c4c";
       const obsUuid1 = "obs-uuid-1";
       const obsUuid2 = "obs-uuid-2";
@@ -683,7 +683,7 @@ describe("CareViewPatientsSummary", () => {
       });
     });
 
-    it("should not call fetchAcknowledgedObsUuids when enableNurseAcknowledgement is false", async () => {
+    it("should not call fetchAcknowledgedObservationUuids when enableNurseAcknowledgement is false", async () => {
       const visitUuid1 = "626b822d-741e-4a86-95ff-626eea753c4c";
 
       mockFetchBatchObservations.mockResolvedValue([

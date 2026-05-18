@@ -54,7 +54,7 @@ export const fetchTasksByObservationUuids = async (observationUuids) => {
   }
 };
 
-export const fetchAcknowledgedObsUuids = async (obsUuids) => {
+export const fetchAcknowledgedObservationUuids = async (obsUuids) => {
   const tasks = await fetchTasksByObservationUuids(obsUuids);
   return new Set(tasks.map((task) => task.observationUuid).filter(Boolean));
 };
