@@ -17,6 +17,7 @@ import {
 import { TASK_FILTER_HEADER } from "../../../constants";
 import {
   fetchBatchObservations,
+  fetchTasksByObservationUuids,
   mapObservationsToInstructions,
 } from "../../DisplayControls/CareInstructions/utils/CareInstructionsUtils";
 
@@ -119,6 +120,24 @@ export const CareViewPatientsSummary = ({
       );
       instructionsMap[visitUuid] = instructions;
     });
+
+    const allObsUuids = Object.values(instructionsMap)
+      .flat()
+      .map((i) => i.observationUuid)
+      .filter(Boolean);
+
+    if (allObsUuids.length > 0) {
+      const tasks = await fetchTasksByObservationUuids(allObsUuids);
+      const acknowledgedUuids = new Set(
+        tasks.map((t) => t.observationUuid).filter(Boolean)
+      );
+      Object.keys(instructionsMap).forEach((visitUuid) => {
+        instructionsMap[visitUuid] = instructionsMap[visitUuid].filter(
+          (i) => !acknowledgedUuids.has(i.observationUuid)
+        );
+      });
+    }
+
     setCareInstructionsMap(instructionsMap);
   };
 
