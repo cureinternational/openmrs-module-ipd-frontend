@@ -16,8 +16,8 @@ import {
 } from "../../DisplayControls/DrugChart/utils/DrugChartUtils";
 import { TASK_FILTER_HEADER } from "../../../constants";
 import {
+  fetchAcknowledgedObsUuids,
   fetchBatchObservations,
-  fetchTasksByObservationUuids,
   mapObservationsToInstructions,
 } from "../../DisplayControls/CareInstructions/utils/CareInstructionsUtils";
 
@@ -121,16 +121,17 @@ export const CareViewPatientsSummary = ({
       instructionsMap[visitUuid] = instructions;
     });
 
-    const allObsUuids = Object.values(instructionsMap)
-      .flat()
-      .map((i) => i.observationUuid)
-      .filter(Boolean);
+    const allObsUuids = [
+      ...new Set(
+        Object.values(instructionsMap)
+          .flat()
+          .map((i) => i.observationUuid)
+          .filter(Boolean)
+      ),
+    ];
 
-    if (allObsUuids.length > 0) {
-      const tasks = await fetchTasksByObservationUuids(allObsUuids);
-      const acknowledgedUuids = new Set(
-        tasks.map((t) => t.observationUuid).filter(Boolean)
-      );
+    if (enableNurseAcknowledgement && allObsUuids.length > 0) {
+      const acknowledgedUuids = await fetchAcknowledgedObsUuids(allObsUuids);
       Object.keys(instructionsMap).forEach((visitUuid) => {
         instructionsMap[visitUuid] = instructionsMap[visitUuid].filter(
           (i) => !acknowledgedUuids.has(i.observationUuid)
@@ -193,7 +194,7 @@ export const CareViewPatientsSummary = ({
                   careTeamDetails={careTeam}
                   navHourEpoch={navHourEpoch}
                   newTreatments={newTreatments}
-                  careInstructions={
+                  unacknowledgedCareInstructions={
                     careInstructionsMap[visitDetails.uuid] || []
                   }
                   visitDetails={visitDetails}

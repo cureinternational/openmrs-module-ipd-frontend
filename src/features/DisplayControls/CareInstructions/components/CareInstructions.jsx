@@ -17,8 +17,8 @@ import { IPDContext } from "../../../../context/IPDContext";
 import { SliderContext } from "../../../../context/SliderContext";
 import RefreshDisplayControl from "../../../../context/RefreshDisplayControl";
 import {
+  fetchAcknowledgedObsUuids,
   fetchCareInstructionsObs,
-  fetchTasksByObservationUuids,
   mapObservationsToInstructions,
 } from "../utils/CareInstructionsUtils.jsx";
 import { getDateTimeFromEpochTime } from "../../../../utils/DateTimeUtils";
@@ -150,11 +150,7 @@ const CareInstructions = (props) => {
   useEffect(() => {
     const obsUuids = instructions.map((i) => i.observationUuid).filter(Boolean);
     if (obsUuids.length === 0) return;
-    fetchTasksByObservationUuids(obsUuids).then((tasks) => {
-      setAcknowledgedObsUuids(
-        new Set(tasks.map((t) => t.observationUuid).filter(Boolean))
-      );
-    });
+    fetchAcknowledgedObsUuids(obsUuids).then(setAcknowledgedObsUuids);
   }, [instructions]);
 
   const notAcknowledgedInstructions = useMemo(

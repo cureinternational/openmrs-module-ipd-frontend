@@ -35,7 +35,7 @@ const mockSetCurrentShiftTimes = jest.fn();
 const mockGetPreviousShiftDetails = jest.fn();
 const mockFetchBatchObservations = jest.fn();
 const mockMapObservationsToInstructions = jest.fn();
-const mockFetchTasksByObservationUuids = jest.fn();
+const mockFetchAcknowledgedObsUuids = jest.fn();
 jest.mock("../../CareViewSummary/utils/CareViewSummary", () => {
   return {
     getSlotsForPatients: () => mockGetSlotsForPatients(),
@@ -53,8 +53,8 @@ jest.mock(
       fetchBatchObservations: (...args) => mockFetchBatchObservations(...args),
       mapObservationsToInstructions: (...args) =>
         mockMapObservationsToInstructions(...args),
-      fetchTasksByObservationUuids: (...args) =>
-        mockFetchTasksByObservationUuids(...args),
+      fetchAcknowledgedObsUuids: (...args) =>
+        mockFetchAcknowledgedObsUuids(...args),
     };
   }
 );
@@ -99,7 +99,7 @@ describe("CareViewPatientsSummary", () => {
     });
     mockFetchBatchObservations.mockResolvedValue([]);
     mockMapObservationsToInstructions.mockReturnValue([]);
-    mockFetchTasksByObservationUuids.mockResolvedValue([]);
+    mockFetchAcknowledgedObsUuids.mockResolvedValue(new Set());
   });
 
   it("should match snapshot", () => {
@@ -496,9 +496,7 @@ describe("CareViewPatientsSummary", () => {
       ]);
 
       // obsUuid1 is acknowledged, obsUuid2 is not
-      mockFetchTasksByObservationUuids.mockResolvedValue([
-        { observationUuid: obsUuid1, uuid: "task-uuid-1" },
-      ]);
+      mockFetchAcknowledgedObsUuids.mockResolvedValue(new Set([obsUuid1]));
 
       render(
         <IntlProvider locale="en">
@@ -513,7 +511,7 @@ describe("CareViewPatientsSummary", () => {
       );
 
       await waitFor(() => {
-        expect(mockFetchTasksByObservationUuids).toHaveBeenCalledWith([
+        expect(mockFetchAcknowledgedObsUuids).toHaveBeenCalledWith([
           obsUuid1,
           obsUuid2,
         ]);
@@ -538,9 +536,7 @@ describe("CareViewPatientsSummary", () => {
         { observationUuid: obsUuid1, instruction: "Do X" },
       ]);
 
-      mockFetchTasksByObservationUuids.mockResolvedValue([
-        { observationUuid: obsUuid1, uuid: "task-uuid-1" },
-      ]);
+      mockFetchAcknowledgedObsUuids.mockResolvedValue(new Set([obsUuid1]));
 
       render(
         <IntlProvider locale="en">
@@ -555,14 +551,14 @@ describe("CareViewPatientsSummary", () => {
       );
 
       await waitFor(() => {
-        expect(mockFetchTasksByObservationUuids).toHaveBeenCalled();
+        expect(mockFetchAcknowledgedObsUuids).toHaveBeenCalledWith([obsUuid1]);
         expect(
           screen.queryByTestId("new-care-instructions-notification")
         ).toBeNull();
       });
     });
 
-    it("should not call fetchTasksByObservationUuids when all instructions have no observationUuid", async () => {
+    it("should not call fetchAcknowledgedObsUuids when all instructions have no observationUuid", async () => {
       const visitUuid1 = "626b822d-741e-4a86-95ff-626eea753c4c";
 
       mockFetchBatchObservations.mockResolvedValue([
@@ -586,7 +582,143 @@ describe("CareViewPatientsSummary", () => {
       );
 
       await waitFor(() => {
-        expect(mockFetchTasksByObservationUuids).not.toHaveBeenCalled();
+        expect(mockFetchAcknowledgedObsUuids).not.toHaveBeenCalled();
+      });
+    });
+
+    it("should isolate acknowledgement filtering per patient — Patient A's ack should not affect Patient B's count", async () => {
+      const visitUuid1 = "626b822d-741e-4a86-95ff-626eea753c4c";
+      const visitUuid2 = "626b822d-741e-4a86-95ff-636eea753c2c";
+      const obsUuid1 = "obs-uuid-p1-1";
+      const obsUuid2 = "obs-uuid-p1-2";
+      const obsUuid3 = "obs-uuid-p2-1";
+
+      mockFetchBatchObservations.mockResolvedValue([
+        {
+          visitUuid: visitUuid1,
+          observations: [{ uuid: obsUuid1 }, { uuid: obsUuid2 }],
+        },
+        {
+          visitUuid: visitUuid2,
+          observations: [{ uuid: obsUuid3 }],
+        },
+      ]);
+
+      mockMapObservationsToInstructions
+        .mockReturnValueOnce([
+          { observationUuid: obsUuid1, instruction: "P1 instruction A" },
+          { observationUuid: obsUuid2, instruction: "P1 instruction B" },
+        ])
+        .mockReturnValueOnce([
+          { observationUuid: obsUuid3, instruction: "P2 instruction A" },
+        ]);
+
+      // Patient 1: obsUuid1 acknowledged, obsUuid2 not → count 1
+      // Patient 2: none acknowledged → count 1
+      mockFetchAcknowledgedObsUuids.mockResolvedValue(new Set([obsUuid1]));
+
+      render(
+        <IntlProvider locale="en">
+          <CareViewContext.Provider value={mockContextWithCI}>
+            <CareViewPatientsSummary
+              patientsSummary={mockPatientsList.admittedPatients}
+              navHourEpoch={mockNavHourEpoch}
+              filterValue={mockFilterValue}
+            />
+          </CareViewContext.Provider>
+        </IntlProvider>
+      );
+
+      await waitFor(() => {
+        expect(mockFetchAcknowledgedObsUuids).toHaveBeenCalledWith([
+          obsUuid1,
+          obsUuid2,
+          obsUuid3,
+        ]);
+        const notifications = screen.queryAllByTestId(
+          "new-care-instructions-notification"
+        );
+        expect(notifications.length).toBe(2);
+        notifications.forEach((n) => expect(n).toHaveTextContent("1"));
+      });
+    });
+
+    it("should show all instructions when fetchAcknowledgedObsUuids fails", async () => {
+      const visitUuid1 = "626b822d-741e-4a86-95ff-626eea753c4c";
+      const obsUuid1 = "obs-uuid-1";
+      const obsUuid2 = "obs-uuid-2";
+
+      mockFetchBatchObservations.mockResolvedValue([
+        {
+          visitUuid: visitUuid1,
+          observations: [{ uuid: obsUuid1 }, { uuid: obsUuid2 }],
+        },
+      ]);
+
+      mockMapObservationsToInstructions.mockReturnValue([
+        { observationUuid: obsUuid1, instruction: "Do X" },
+        { observationUuid: obsUuid2, instruction: "Do Y" },
+      ]);
+
+      mockFetchAcknowledgedObsUuids.mockResolvedValue(new Set());
+
+      render(
+        <IntlProvider locale="en">
+          <CareViewContext.Provider value={mockContextWithCI}>
+            <CareViewPatientsSummary
+              patientsSummary={mockPatientsList.admittedPatients}
+              navHourEpoch={mockNavHourEpoch}
+              filterValue={mockFilterValue}
+            />
+          </CareViewContext.Provider>
+        </IntlProvider>
+      );
+
+      await waitFor(() => {
+        const notifications = screen.queryAllByTestId(
+          "new-care-instructions-notification"
+        );
+        expect(notifications.length).toBe(1);
+        expect(notifications[0]).toHaveTextContent("2");
+      });
+    });
+
+    it("should not call fetchAcknowledgedObsUuids when enableNurseAcknowledgement is false", async () => {
+      const visitUuid1 = "626b822d-741e-4a86-95ff-626eea753c4c";
+
+      mockFetchBatchObservations.mockResolvedValue([
+        {
+          visitUuid: visitUuid1,
+          observations: [{ uuid: "obs-uuid-1" }],
+        },
+      ]);
+
+      mockMapObservationsToInstructions.mockReturnValue([
+        { observationUuid: "obs-uuid-1", instruction: "Do X" },
+      ]);
+
+      const contextWithAckDisabled = {
+        ...mockContextWithCI,
+        careViewConfig: {
+          ...mockContextWithCI.careViewConfig,
+          enableNurseAcknowledgement: false,
+        },
+      };
+
+      render(
+        <IntlProvider locale="en">
+          <CareViewContext.Provider value={contextWithAckDisabled}>
+            <CareViewPatientsSummary
+              patientsSummary={mockPatientsList.admittedPatients}
+              navHourEpoch={mockNavHourEpoch}
+              filterValue={mockFilterValue}
+            />
+          </CareViewContext.Provider>
+        </IntlProvider>
+      );
+
+      await waitFor(() => {
+        expect(mockFetchAcknowledgedObsUuids).not.toHaveBeenCalled();
       });
     });
   });
