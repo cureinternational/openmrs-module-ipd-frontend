@@ -122,12 +122,12 @@ export const CareViewPatientsSummary = ({
     });
 
     const allObsUuids = [
-      ...new Set(
-        Object.values(instructionsMap)
-          .flat()
-          .map((i) => i.observationUuid)
-          .filter(Boolean)
-      ),
+      ...Object.values(instructionsMap).reduce((acc, instructions) => {
+        instructions.forEach((i) => {
+          if (i.observationUuid) acc.add(i.observationUuid);
+        });
+        return acc;
+      }, new Set()),
     ];
 
     if (enableNurseAcknowledgement && allObsUuids.length > 0) {
