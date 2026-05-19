@@ -287,7 +287,7 @@ export const mockConfig = {
   medicationTags: {
     asNeeded: "Rx-PRN",
     "STAT (Immediately)": "Rx-STAT",
-    "Loading Dose": "Rx-STAT",
+    "Loading Dose": "Rx",
     default: "Rx",
     emergency: "EMERG",
   },
@@ -392,7 +392,7 @@ export const mockConfigFor12HourFormat = {
   medicationTags: {
     asNeeded: "Rx-PRN",
     "STAT (Immediately)": "Rx-STAT",
-    "Loading Dose": "Rx-STAT",
+    "Loading Dose": "Rx",
     default: "Rx",
     emergency: "EMERG",
   },
