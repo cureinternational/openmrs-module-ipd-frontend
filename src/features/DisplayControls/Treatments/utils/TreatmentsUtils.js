@@ -142,6 +142,18 @@ export const updateDrugOrderList = (drugOrderList) => {
   return drugOrderList;
 };
 
+export const isMedicationCourseEndedBeforeAdmission = (
+  drugOrder,
+  admissionDate
+) => {
+  const { autoExpireDate, effectiveStartDate } = drugOrder;
+  if (!autoExpireDate) return false;
+  return (
+    new Date(autoExpireDate) < new Date(admissionDate) &&
+    new Date(effectiveStartDate) < new Date(admissionDate)
+  );
+};
+
 export const AddToDrugChart = (
   <FormattedMessage
     id={"ADD_TO_DRUG_CHART"}
