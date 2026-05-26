@@ -81,7 +81,11 @@ const VariableDoseStagesTable = ({ fhirDosages, effectiveStartDate }) => {
             const stageLabel = stage.isLoadingDose
               ? stage.stageName
               : String(dosage.sequence - loadingDoseCount);
-            const hasNote = stage.instructions || stage.additionalInstructions;
+            const hasNote =
+              stage.instructions ||
+              stage.additionalInstructions ||
+              stage.rate ||
+              stage.additives;
             const noteTooltipContent = hasNote ? (
               <div>
                 {stage.instructions && (
@@ -97,6 +101,30 @@ const VariableDoseStagesTable = ({ fhirDosages, effectiveStartDate }) => {
                     )}
                     Additional Instructions:&nbsp;
                     {stage.additionalInstructions}
+                  </>
+                )}
+                {stage.rate && (
+                  <>
+                    {(stage.instructions || stage.additionalInstructions) && (
+                      <>
+                        <br />
+                        <div className="tooltip-content-separater" />
+                      </>
+                    )}
+                    Rate:&nbsp;{stage.rate} ml/hr
+                  </>
+                )}
+                {stage.additives && (
+                  <>
+                    {(stage.instructions ||
+                      stage.additionalInstructions ||
+                      stage.rate) && (
+                      <>
+                        <br />
+                        <div className="tooltip-content-separater" />
+                      </>
+                    )}
+                    Additives:&nbsp;{stage.additives}
                   </>
                 )}
               </div>

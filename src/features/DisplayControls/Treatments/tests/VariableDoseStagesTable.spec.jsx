@@ -14,15 +14,31 @@ const makeDosage = ({
   unit = "mg",
   instructions = "",
   additionalInstructions = "",
+  rate = "",
+  additives = "",
 }) => ({
   sequence,
   text,
   timing: {
-    repeat: { duration, durationUnit, frequency: 1, period: 1, periodUnit: "d" },
+    repeat: {
+      duration,
+      durationUnit,
+      frequency: 1,
+      period: 1,
+      periodUnit: "d",
+    },
     code: { text: frequency },
   },
   route: { text: "Oral" },
-  doseAndRate: [{ type: { text: "ordered" }, doseQuantity: { value: dose, unit } }],
+  doseAndRate: [
+    {
+      type: { text: "ordered" },
+      doseQuantity: { value: dose, unit },
+      ...(rate
+        ? { rateQuantity: { value: parseFloat(rate), unit: "ml/hr" } }
+        : {}),
+    },
+  ],
   additionalInstruction: instructions ? [{ text: instructions }] : [],
   patientInstruction: additionalInstructions,
   extension: [
@@ -30,13 +46,37 @@ const makeDosage = ({
     ...(isLoadingDose
       ? [{ url: "durationDisplay", valueString: "1 Occurrence" }]
       : []),
+    ...(additives ? [{ url: "additives", valueString: additives }] : []),
   ],
 });
 
 const mockFhirDosages = [
-  makeDosage({ sequence: 1, text: "Loading Dose", isLoadingDose: true, dose: 2, unit: "mg", frequency: "Once" }),
-  makeDosage({ sequence: 2, text: "Stage 1", dose: 10, unit: "mg", frequency: "Three times a day", duration: 3, durationUnit: "d" }),
-  makeDosage({ sequence: 3, text: "Stage 2", dose: 8, unit: "mg", frequency: "Two times a day", duration: 3, durationUnit: "d" }),
+  makeDosage({
+    sequence: 1,
+    text: "Loading Dose",
+    isLoadingDose: true,
+    dose: 2,
+    unit: "mg",
+    frequency: "Once",
+  }),
+  makeDosage({
+    sequence: 2,
+    text: "Stage 1",
+    dose: 10,
+    unit: "mg",
+    frequency: "Three times a day",
+    duration: 3,
+    durationUnit: "d",
+  }),
+  makeDosage({
+    sequence: 3,
+    text: "Stage 2",
+    dose: 8,
+    unit: "mg",
+    frequency: "Two times a day",
+    duration: 3,
+    durationUnit: "d",
+  }),
 ];
 
 const effectiveStartDate = new Date("2026-04-21").getTime();
@@ -94,8 +134,24 @@ describe("VariableDoseStagesTable", () => {
 
   it("renders ordinal numbers correctly when there is no loading dose", () => {
     const noLoadingDoseFhirDosages = [
-      makeDosage({ sequence: 1, text: "Stage 1", dose: 10, unit: "mg", frequency: "Once a day", duration: 3, durationUnit: "d" }),
-      makeDosage({ sequence: 2, text: "Stage 2", dose: 5, unit: "mg", frequency: "Twice a day", duration: 3, durationUnit: "d" }),
+      makeDosage({
+        sequence: 1,
+        text: "Stage 1",
+        dose: 10,
+        unit: "mg",
+        frequency: "Once a day",
+        duration: 3,
+        durationUnit: "d",
+      }),
+      makeDosage({
+        sequence: 2,
+        text: "Stage 2",
+        dose: 5,
+        unit: "mg",
+        frequency: "Twice a day",
+        duration: 3,
+        durationUnit: "d",
+      }),
     ];
     render(
       <VariableDoseStagesTable
@@ -123,7 +179,7 @@ describe("VariableDoseStagesTable", () => {
   });
 
   it("shows note icon when stage has instructions", () => {
-    const dosagesWithInstructions = [
+    const dosages = [
       makeDosage({
         sequence: 1,
         text: "Loading Dose",
@@ -136,20 +192,69 @@ describe("VariableDoseStagesTable", () => {
     ];
     render(
       <VariableDoseStagesTable
-        fhirDosages={dosagesWithInstructions}
+        fhirDosages={dosages}
         effectiveStartDate={effectiveStartDate}
       />
     );
     expect(screen.getByTestId("stage-note-icon-0")).toBeInTheDocument();
   });
 
-  it("does not show note icon when stage has no instructions", () => {
-    const dosagesNoInstructions = [
-      makeDosage({ sequence: 1, text: "Loading Dose", isLoadingDose: true, dose: 2, unit: "mg", frequency: "Once" }),
+  it("shows note icon when stage has rate", () => {
+    const dosages = [
+      makeDosage({
+        sequence: 1,
+        text: "Loading Dose",
+        isLoadingDose: true,
+        dose: 2,
+        unit: "mg",
+        frequency: "Once",
+        rate: "20",
+      }),
     ];
     render(
       <VariableDoseStagesTable
-        fhirDosages={dosagesNoInstructions}
+        fhirDosages={dosages}
+        effectiveStartDate={effectiveStartDate}
+      />
+    );
+    expect(screen.getByTestId("stage-note-icon-0")).toBeInTheDocument();
+  });
+
+  it("shows note icon when stage has additives", () => {
+    const dosages = [
+      makeDosage({
+        sequence: 1,
+        text: "Loading Dose",
+        isLoadingDose: true,
+        dose: 2,
+        unit: "mg",
+        frequency: "Once",
+        additives: "Saline",
+      }),
+    ];
+    render(
+      <VariableDoseStagesTable
+        fhirDosages={dosages}
+        effectiveStartDate={effectiveStartDate}
+      />
+    );
+    expect(screen.getByTestId("stage-note-icon-0")).toBeInTheDocument();
+  });
+
+  it("does not show note icon when stage has no instructions, rate or additives", () => {
+    const dosages = [
+      makeDosage({
+        sequence: 1,
+        text: "Loading Dose",
+        isLoadingDose: true,
+        dose: 2,
+        unit: "mg",
+        frequency: "Once",
+      }),
+    ];
+    render(
+      <VariableDoseStagesTable
+        fhirDosages={dosages}
         effectiveStartDate={effectiveStartDate}
       />
     );

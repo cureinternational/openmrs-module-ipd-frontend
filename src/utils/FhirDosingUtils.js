@@ -34,8 +34,7 @@ const DISPLAY_TO_DAYS = {
   "occurrence(s)": 0,
 };
 
-export const fromUcumDurationUnit = (ucum) =>
-  UCUM_TO_DISPLAY[ucum] || "Day(s)";
+export const fromUcumDurationUnit = (ucum) => UCUM_TO_DISPLAY[ucum] || "Day(s)";
 
 const normalizeToDays = (duration, displayUnit) => {
   const d = parseFloat(duration) || 0;
@@ -46,8 +45,7 @@ const normalizeToDays = (duration, displayUnit) => {
 
 const buildExtensionMap = (extensions) =>
   (extensions || []).reduce((acc, e) => {
-    acc[e.url] =
-      e.valueString !== undefined ? e.valueString : e.valueBoolean;
+    acc[e.url] = e.valueString !== undefined ? e.valueString : e.valueBoolean;
     return acc;
   }, {});
 
@@ -76,17 +74,17 @@ export const fhirDosageToDisplayStage = (dosage) => {
     duration,
     durationDays,
     isLoadingDose,
-    instructions:
-      dosage.additionalInstruction?.[0]?.text || "",
+    instructions: dosage.additionalInstruction?.[0]?.text || "",
     additionalInstructions: dosage.patientInstruction || "",
+    rate: dr?.rateQuantity?.value ? String(dr.rateQuantity.value) : "",
+    additives: extMap.additives || "",
   };
 };
 
 export const computeStageStartDates = (fhirDosages, effectiveStartDate) => {
   let cumulativeDays = 0;
   return (fhirDosages || []).map((dosage) => {
-    const startDate =
-      effectiveStartDate + cumulativeDays * 24 * 60 * 60 * 1000;
+    const startDate = effectiveStartDate + cumulativeDays * 24 * 60 * 60 * 1000;
     const stage = fhirDosageToDisplayStage(dosage);
     cumulativeDays += stage.durationDays;
     return startDate;
