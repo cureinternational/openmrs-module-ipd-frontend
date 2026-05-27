@@ -20,8 +20,6 @@ export default function DrugListCell(props) {
   const showInstructionsIcon =
     instructions?.instructions ||
     instructions?.additionalInstructions ||
-    instructions?.rate ||
-    instructions?.additives ||
     notes ||
     orderReasonText;
   const administrationInfo = [];
@@ -54,31 +52,6 @@ export default function DrugListCell(props) {
           )}
           Additional Instructions:&nbsp;
           {dosingInstructions?.instructions?.additionalInstructions}
-        </>
-      )}
-      {dosingInstructions?.instructions?.rate && (
-        <>
-          {(dosingInstructions?.instructions?.instructions ||
-            dosingInstructions?.instructions?.additionalInstructions) && (
-            <>
-              <br />
-              <div className="tooltip-content-separater" />
-            </>
-          )}
-          Rate:&nbsp;{dosingInstructions?.instructions?.rate} ml/hr
-        </>
-      )}
-      {dosingInstructions?.instructions?.additives && (
-        <>
-          {(dosingInstructions?.instructions?.instructions ||
-            dosingInstructions?.instructions?.additionalInstructions ||
-            dosingInstructions?.instructions?.rate) && (
-            <>
-              <br />
-              <div className="tooltip-content-separater" />
-            </>
-          )}
-          Additives:&nbsp;{dosingInstructions?.instructions?.additives}
         </>
       )}
       {orderReasonText && (
