@@ -102,6 +102,9 @@
   }
   .ipd-header {
     color: #fff !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
   .header-nav {
     display: flex;
