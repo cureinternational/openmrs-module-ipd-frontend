@@ -912,6 +912,19 @@ const DrugChartSlider = (props) => {
 
       setSchedules(scheduleTimings.dayWiseSlotsStartTime || []);
 
+      if (scheduleTimings.dayWiseSlotsStartTime?.length > 1) {
+        const loadedTimes = scheduleTimings.dayWiseSlotsStartTime;
+        const nextDayFlags = loadedTimes.map((time, i) => {
+          if (i === 0) return false;
+          return isNextDayCrossing(
+            time,
+            loadedTimes[i - 1],
+            enable24HourTimers
+          );
+        });
+        setShowSubsequentDayScheduleNextDayWarning(nextDayFlags);
+      }
+
       setFinalDaySchedules(scheduleTimings.remainingDaySlotsStartTime);
     }
   }, [isEdit, enable24HourTimers, enableSchedule]);
