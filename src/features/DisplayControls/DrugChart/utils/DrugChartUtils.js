@@ -50,8 +50,7 @@ export const transformDrugOrders = (orders) => {
         doseUnits;
       if (
         dosingInstructions.doseUnits?.toLowerCase() === "ml" ||
-        dosingInstructions.doseUnits?.toLowerCase() === "mg" ||
-        dosingInstructions.doseUnits?.toLowerCase() === "mcg"
+        dosingInstructions.doseUnits?.toLowerCase() === "mg"
       ) {
         dosage = dosingInstructions.dose + dosingInstructions.doseUnits;
       } else {
@@ -93,8 +92,7 @@ export const transformDrugOrders = (orders) => {
       doseUnits;
     if (
       medication.doseUnits?.display?.toLowerCase() === "ml" ||
-      medication.doseUnits?.display?.toLowerCase() === "mg" ||
-      medication.doseUnits?.display?.toLowerCase() === "mcg"
+      medication.doseUnits?.display?.toLowerCase() === "mg"
     ) {
       dosage = medication.dose + medication.doseUnits.display;
     } else {

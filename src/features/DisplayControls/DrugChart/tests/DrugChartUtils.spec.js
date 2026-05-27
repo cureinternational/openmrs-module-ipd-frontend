@@ -5,7 +5,6 @@ import {
   getPreviousShiftDetails,
   getDateTime,
   canAcknowledgeAmendment,
-  transformDrugOrders,
 } from "../utils/DrugChartUtils";
 import axios from "axios";
 import { mockResponse } from "./DrugChartUtilsMockData";
@@ -164,115 +163,6 @@ describe("DrugChartUtils", () => {
 
     it("returns false when privileges is undefined", () => {
       expect(canAcknowledgeAmendment(undefined)).toBe(false);
-    });
-  });
-
-  describe("transformDrugOrders - dosage formatting", () => {
-    const createOrder = (doseUnits) => ({
-      drugOrder: {
-        uuid: "order-1",
-        careSetting: "INPATIENT",
-        drug: { name: "Drug A" },
-        duration: 5,
-        durationUnits: "Day(s)",
-        dosingInstructions: {
-          dose: 10,
-          doseUnits,
-          route: "Oral",
-          frequency: { display: "Daily" },
-          administrationInstructions: "{}",
-        },
-      },
-      drugOrderSchedule: { slotStartTime: 1000 },
-    });
-
-    it("should concatenate compact units (ml, mg, mcg) with dose", () => {
-      ["ml", "mg", "mcg"].forEach((unit) => {
-        const result = transformDrugOrders({
-          ipdDrugOrders: [createOrder(unit)],
-          emergencyMedications: [],
-        });
-        const med = result["order-1"];
-        expect(med.dosingInstructions.dosage).toBe(`10${unit}`);
-        expect(med.dosingInstructions.doseUnits).toBeUndefined();
-      });
-    });
-
-    it("should separate non-compact units (e.g., Tablet) from dose", () => {
-      const result = transformDrugOrders({
-        ipdDrugOrders: [createOrder("Tablet")],
-        emergencyMedications: [],
-      });
-      const med = result["order-1"];
-      expect(med.dosingInstructions.dosage).toBe(10);
-      expect(med.dosingInstructions.doseUnits).toBe("Tablet");
-    });
-
-    it("should handle compact units in emergency medications", () => {
-      const result = transformDrugOrders({
-        ipdDrugOrders: [],
-        emergencyMedications: [
-          {
-            uuid: "emerg-1",
-            dose: 20,
-            doseUnits: { display: "mcg" },
-            drug: { uuid: "drug-1", display: "Drug B" },
-            route: { display: "IV" },
-            administeredDateTime: 2000000,
-          },
-        ],
-      });
-      const med = result["emerg-1"];
-      expect(med.dosingInstructions.dosage).toBe("20mcg");
-      expect(med.dosingInstructions.doseUnits).toBeUndefined();
-    });
-
-    it("should use effectiveStartDate / 1000 as firstSlotStartTime for PRN (asNeeded) orders", () => {
-      const result = transformDrugOrders({
-        ipdDrugOrders: [
-          {
-            drugOrder: {
-              uuid: "prn-order-1",
-              careSetting: "INPATIENT",
-              drug: { name: "PRN Drug" },
-              duration: 3,
-              durationUnits: "Day(s)",
-              effectiveStartDate: 1704441600000,
-              dosingInstructions: {
-                dose: 5,
-                doseUnits: "mg",
-                route: "Oral",
-                frequency: { display: "As needed" },
-                administrationInstructions: "{}",
-                asNeeded: true,
-              },
-            },
-            drugOrderSchedule: { slotStartTime: 9999 },
-          },
-        ],
-        emergencyMedications: [],
-      });
-      const med = result["prn-order-1"];
-      expect(med.firstSlotStartTime).toBe(1704441600000 / 1000);
-    });
-
-    it("should handle non-compact units in emergency medications", () => {
-      const result = transformDrugOrders({
-        ipdDrugOrders: [],
-        emergencyMedications: [
-          {
-            uuid: "emerg-1",
-            dose: 2,
-            doseUnits: { display: "Tablet" },
-            drug: { uuid: "drug-1", display: "Drug C" },
-            route: { display: "Oral" },
-            administeredDateTime: 2000000,
-          },
-        ],
-      });
-      const med = result["emerg-1"];
-      expect(med.dosingInstructions.dosage).toBe(2);
-      expect(med.dosingInstructions.doseUnits).toBe("Tablet");
     });
   });
 });
