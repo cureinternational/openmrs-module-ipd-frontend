@@ -707,13 +707,16 @@ const DrugChartSlider = (props) => {
           []
         );
 
+        const hasDayWiseOffset = firstDaySchedules.some(
+          (schedule) => schedule == "hh:mm"
+        );
         const schedulesUTCTimeEpoch = schedules?.map((schedule, i) => {
           const epoch = getUTCTimeEpoch(
             schedule,
             enable24HourTimers,
             hostData?.drugOrder?.drugOrder?.scheduledDate
           );
-          return showSubsequentDayScheduleNextDayWarning[i]
+          return !hasDayWiseOffset && showSubsequentDayScheduleNextDayWarning[i]
             ? epoch + nextScheduleDate
             : epoch;
         });
@@ -733,9 +736,7 @@ const DrugChartSlider = (props) => {
 
         payload.firstDaySlotsStartTime =
           firstDaySlotsMissed > 0 ? firstDaySchedulesUTCTimeEpoch : [];
-        payload.dayWiseSlotsStartTime = firstDaySchedules.some(
-          (schedule) => schedule == "hh:mm"
-        )
+        payload.dayWiseSlotsStartTime = hasDayWiseOffset
           ? schedulesUTCTimeEpoch?.map(
               (schedules) => schedules + nextScheduleDate
             )

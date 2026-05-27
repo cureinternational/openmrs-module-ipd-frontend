@@ -1035,6 +1035,43 @@ describe("DrugChartSlider", () => {
       ).toBe(8 * 3600);
     });
 
+    it("AC5: midnight-crossing subsequent slot stays in dayWiseSlotsStartTime (no double +86400)", async () => {
+      // Ward: 06:00, 14:00, 22:00. MockDate=20:00 → firstDaySlotsMissed=2, hasDayWiseOffset=true.
+      // User shifts subsequent slot 0: 06:00→08:00 (+2h).
+      // Cascade: 14:00→16:00, 22:00→00:00 (midnight, showScheduleNextDayWarning[2]=true).
+      // Bug (before fix): midnight slot got +86400 twice → epoch on day+2 → backend puts it
+      //   in remainingDaySlotsStartTime → dayWiseSlotsStartTime missing slot → hh:mm on reload.
+      // Fix: skip showScheduleNextDayWarning +86400 when hasDayWiseOffset=true.
+      //   dayWise mapping's single +86400 is enough → epoch on day+1 → backend keeps it in dayWise.
+      renderMultiDay();
+
+      await waitFor(() => {
+        expect(
+          document.querySelectorAll("#time-selector").length
+        ).toBeGreaterThan(0);
+      });
+
+      // inputs[3] = subsequent slot 0 (06:00); change to 08:00 (+2h), cascade fires
+      const inputs = document.querySelectorAll("#time-selector");
+      fireEvent.change(inputs[3], { target: { value: "08:00" } });
+      fireEvent.blur(inputs[3]);
+
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      await waitFor(() => {
+        expect(mockSaveMedication).toHaveBeenCalled();
+      });
+
+      const payload = mockSaveMedication.mock.calls[0][0];
+      const slots = payload.dayWiseSlotsStartTime;
+      // All 3 slots present — midnight slot not displaced to remainingDaySlotsStartTime
+      expect(slots.length).toBe(3);
+      // midnight slot epoch (00:00) is 8h before 08:00 slot on the same day
+      // slots[0]=08:00, slots[2]=00:00 → slots[0]-slots[2] = 8h
+      // Without fix (double +86400): slots[2] falls on day+2, slots[0]-slots[2] = negative
+      expect(slots[0] - slots[2]).toBe(8 * 3600);
+    });
+
     it("AC4: toggle ON then OFF reverts subsequent days to original schedule timings (Scenario 2 revert)", async () => {
       renderMultiDay();
 
