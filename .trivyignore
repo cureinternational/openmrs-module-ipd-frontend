@@ -46,3 +46,8 @@ CVE-2026-4867 # path-to-regexp: transitive dev dep via webpack-dev-server#expres
 CVE-2026-33671 # picomatch: transitive dev dep via lint-staged/jest/sass, build-time only, no runtime exposure https://avd.aquasec.com/nvd/cve-2026-33671
 CVE-2025-62718
 CVE-2026-40175
+CVE-2026-44728 # @babel/plugin-transform-modules-systemjs
+CVE-2026-42033 # axios Prototype
+CVE-2026-42035 # axios: Axios: Arbitrary HTTP header injection via prototype
+CVE-2026-42043 # axios: Axios: NO_PROXY bypass via crafted URL
+CVE-2026-42264 # Axios is a promise based HTTP client for the browser and
