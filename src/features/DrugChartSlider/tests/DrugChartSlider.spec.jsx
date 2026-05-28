@@ -997,8 +997,6 @@ describe("DrugChartSlider", () => {
       });
 
       const payload = mockSaveMedication.mock.calls[0][0];
-      // With toggle OFF: subsequent first slot = original 06:00 next day
-      // firstDay first slot = 20:00 same day → diff = 10h
       expect(
         payload.dayWiseSlotsStartTime[0] - payload.firstDaySlotsStartTime[0]
       ).toBe(10 * 3600);
@@ -1013,11 +1011,9 @@ describe("DrugChartSlider", () => {
         ).toBeGreaterThan(0);
       });
 
-      // Enable toggle first (initial value "22:00" → offset=0, no shift)
       const toggleEl = document.querySelector("#apply-to-all-days-toggle");
       fireEvent.click(toggleEl);
 
-      // Then change Day 1 slot: 22:00 → 20:00 → re-propagation triggers (-120 min)
       const inputs = document.querySelectorAll("#time-selector");
       fireEvent.change(inputs[2], { target: { value: "20:00" } });
       fireEvent.blur(inputs[2]);
@@ -1029,20 +1025,12 @@ describe("DrugChartSlider", () => {
       });
 
       const payload = mockSaveMedication.mock.calls[0][0];
-      // Re-propagated: subsequent first slot = 04:00 next day → diff = 8h
       expect(
         payload.dayWiseSlotsStartTime[0] - payload.firstDaySlotsStartTime[0]
       ).toBe(8 * 3600);
     });
 
     it("AC5: midnight-crossing subsequent slot stays in dayWiseSlotsStartTime (no double +86400)", async () => {
-      // Ward: 06:00, 14:00, 22:00. MockDate=20:00 → firstDaySlotsMissed=2, hasDayWiseOffset=true.
-      // User shifts subsequent slot 0: 06:00→08:00 (+2h).
-      // Cascade: 14:00→16:00, 22:00→00:00 (midnight, showScheduleNextDayWarning[2]=true).
-      // Bug (before fix): midnight slot got +86400 twice → epoch on day+2 → backend puts it
-      //   in remainingDaySlotsStartTime → dayWiseSlotsStartTime missing slot → hh:mm on reload.
-      // Fix: skip showScheduleNextDayWarning +86400 when hasDayWiseOffset=true.
-      //   dayWise mapping's single +86400 is enough → epoch on day+1 → backend keeps it in dayWise.
       renderMultiDay();
 
       await waitFor(() => {
@@ -1051,7 +1039,6 @@ describe("DrugChartSlider", () => {
         ).toBeGreaterThan(0);
       });
 
-      // inputs[3] = subsequent slot 0 (06:00); change to 08:00 (+2h), cascade fires
       const inputs = document.querySelectorAll("#time-selector");
       fireEvent.change(inputs[3], { target: { value: "08:00" } });
       fireEvent.blur(inputs[3]);
@@ -1064,11 +1051,7 @@ describe("DrugChartSlider", () => {
 
       const payload = mockSaveMedication.mock.calls[0][0];
       const slots = payload.dayWiseSlotsStartTime;
-      // All 3 slots present — midnight slot not displaced to remainingDaySlotsStartTime
       expect(slots.length).toBe(3);
-      // midnight slot epoch (00:00) is 8h before 08:00 slot on the same day
-      // slots[0]=08:00, slots[2]=00:00 → slots[0]-slots[2] = 8h
-      // Without fix (double +86400): slots[2] falls on day+2, slots[0]-slots[2] = negative
       expect(slots[0] - slots[2]).toBe(8 * 3600);
     });
 
@@ -1097,17 +1080,12 @@ describe("DrugChartSlider", () => {
       });
 
       const payload = mockSaveMedication.mock.calls[0][0];
-      // After toggle OFF: subsequent reverts to original schedule 06:00 next day → diff = 10h
       expect(
         payload.dayWiseSlotsStartTime[0] - payload.firstDaySlotsStartTime[0]
       ).toBe(10 * 3600);
     });
 
     it("AC5: changing first remainder slot cascades offset to remaining remainder slots", async () => {
-      // Edit mode: 3 slots/day, firstDaySlotsStartTime has 1 item → firstDaySlotsMissed=2
-      // remainingDaySlotsStartTime has 2 items → finalDaySchedules=["06:00","14:00"]
-      // inputs layout: [0,1]=hh:mm(disabled), [2]=day1 slot, [3,4,5]=subsequent, [6,7]=remainder
-      // Change inputs[6] 06:00→08:00 (+2h) → inputs[7] should cascade 14:00→16:00
       const epoch06 = 1704088800; // 2024-01-01 06:00 UTC
       const epoch14 = 1704117600; // 2024-01-01 14:00 UTC
       const epoch22 = 1704146400; // 2024-01-01 22:00 UTC
