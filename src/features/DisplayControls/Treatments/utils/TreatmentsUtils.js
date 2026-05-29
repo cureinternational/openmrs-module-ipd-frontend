@@ -161,6 +161,8 @@ export const updateDrugOrderList = (drugOrderList) => {
       ipdDrugOrder.rate = administrationInstructions.rate || null;
       ipdDrugOrder.additives = administrationInstructions.additives || null;
     }
+    ipdDrugOrder.isDischargeMedication =
+      administrationInstructions.isDischargeMedication || false;
   });
   return drugOrderList;
 };

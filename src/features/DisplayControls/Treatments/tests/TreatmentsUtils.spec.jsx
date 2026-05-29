@@ -156,6 +156,32 @@ describe("TreatmentsUtils", () => {
       const result = updateDrugOrderList(drugOrderList);
       expect(result[0].uniformDosingType.frequency).toBe("Once a day");
     });
+
+    it("should set isDischargeMedication to true when isDischargeMedication is true in administrationInstructions", () => {
+      const drugOrder = {
+        drugOrder: {
+          dosingInstructions: {
+            dose: 1,
+            doseUnits: "mg",
+            frequency: "Once a day",
+            route: "Oral",
+            administrationInstructions: JSON.stringify({
+              isLoadingDose: false,
+              isDischargeMedication: true,
+            }),
+          },
+          durationUnits: "Day(s)",
+        },
+      };
+      const result = updateDrugOrderList([drugOrder]);
+      expect(result[0].isDischargeMedication).toBe(true);
+    });
+
+    it("should set isDischargeMedication to false when not present in administrationInstructions", () => {
+      const drugOrderList = [buildDrugOrder("Once a day", false)];
+      const result = updateDrugOrderList(drugOrderList);
+      expect(result[0].isDischargeMedication).toBe(false);
+    });
   });
 
   describe("isPRNEligibleForNextDose", () => {

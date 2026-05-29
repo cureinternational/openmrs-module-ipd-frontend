@@ -306,13 +306,19 @@ const Treatments = (props) => {
 
   const modifyPrescribedTreatmentData = async (drugOrders, prnInterval) => {
     const admissionDate = visitSummary?.startDateTime;
-    drugOrders = drugOrders.filter(
-      (drugOrderObject) =>
-        !isMedicationCourseEndedBeforeAdmission(
-          drugOrderObject.drugOrder,
-          admissionDate
-        )
-    );
+    drugOrders = drugOrders.filter((drugOrderObject) => {
+      if (isMedicationCourseEndedBeforeAdmission(drugOrderObject.drugOrder, admissionDate)) {
+        return false;
+      }
+      if (!allMedicinesInPrescriptionAvailableForIPD) {
+        return isIPDrugOrder(drugOrderObject.drugOrder);
+      }
+      // exclude only when OUTPATIENT AND explicitly DISCH-tagged
+      return !(
+        !isIPDrugOrder(drugOrderObject.drugOrder) &&
+        drugOrderObject.isDischargeMedication
+      );
+    });
     const prescribedTreatments = await Promise.all(
       drugOrders
         .filter(
