@@ -107,7 +107,10 @@ const ExpandableDataTable = (props) => {
                     data-testid="non-expandable-row"
                     className={rowClassName}
                   >
-                    <TableCell style={{ padding: "0px", width: "2rem" }} />
+                    <TableCell
+                      style={{ padding: "0px", width: "2rem" }}
+                      className={cellClassName}
+                    />
                     {row.cells.map((cell) => (
                       <TableCell key={cell.id} className={cellClassName}>
                         {cell.value}

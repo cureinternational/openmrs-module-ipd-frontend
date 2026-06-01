@@ -153,12 +153,14 @@ const VariableDoseStagesTable = ({ fhirDosages, effectiveStartDate }) => {
                 <TableCell>{stage.frequency}</TableCell>
                 <TableCell>{stage.duration}</TableCell>
                 <TableCell>
-                  <Link disabled>
-                    <FormattedMessage
-                      id="ADD_TO_DRUG_CHART"
-                      defaultMessage="Add to Drug Chart"
-                    />
-                  </Link>
+                  {index === 0 && (
+                    <Link disabled>
+                      <FormattedMessage
+                        id="ADD_TO_DRUG_CHART"
+                        defaultMessage="Add to Drug Chart"
+                      />
+                    </Link>
+                  )}
                 </TableCell>
               </TableRow>
             );

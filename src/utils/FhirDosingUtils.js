@@ -57,7 +57,7 @@ export const fhirDosageToDisplayStage = (dosage) => {
     dosage.timing?.repeat?.durationUnit
   );
   const duration = isLoadingDose
-    ? extMap.durationDisplay || "1 Occurrence"
+    ? "1 Occurrence(s)"
     : dosage.timing?.repeat
     ? `${dosage.timing.repeat.duration} ${durationUnit}`
     : "";

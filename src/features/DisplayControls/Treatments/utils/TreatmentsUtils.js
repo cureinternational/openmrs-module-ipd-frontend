@@ -12,10 +12,15 @@ import {
 import axios from "axios";
 import { FormattedMessage } from "react-intl";
 import NoteIcon from "../../../../icons/note.svg";
+import NotesIcon from "../../../../icons/notes.svg";
 import DisplayTags from "../../../../components/DisplayTags/DisplayTags";
 import { TooltipCarbon } from "bahmni-carbon-ui";
 import { formatDate } from "../../../../utils/DateTimeUtils";
-import { parseFhirDosages, parseFlatAdminInstructions, isVariableDoseOrder } from "../../../../utils/FhirDosingUtils";
+import {
+  parseFhirDosages,
+  parseFlatAdminInstructions,
+  isVariableDoseOrder,
+} from "../../../../utils/FhirDosingUtils";
 
 export const treatmentHeaders = [
   {
@@ -124,7 +129,8 @@ export const updateDrugOrderList = (drugOrderList) => {
     };
     ipdDrugOrder.route = ipdDrugOrder.drugOrder.dosingInstructions.route;
     ipdDrugOrder.durationUnit = ipdDrugOrder.drugOrder.durationUnits;
-    const adminInstructionsStr = ipdDrugOrder.drugOrder.dosingInstructions.administrationInstructions;
+    const adminInstructionsStr =
+      ipdDrugOrder.drugOrder.dosingInstructions.administrationInstructions;
     if (isVariableDoseOrder(ipdDrugOrder.drugOrder.dosingInstructionType)) {
       const fhirDosages = parseFhirDosages(adminInstructionsStr) || [];
       ipdDrugOrder.fhirDosages = fhirDosages;
@@ -147,9 +153,11 @@ export const updateDrugOrderList = (drugOrderList) => {
         frequency: null,
       };
     } else {
-      const administrationInstructions = parseFlatAdminInstructions(adminInstructionsStr);
+      const administrationInstructions =
+        parseFlatAdminInstructions(adminInstructionsStr);
       ipdDrugOrder.instructions = administrationInstructions.instructions || "";
-      ipdDrugOrder.additionalInstructions = administrationInstructions.additionalInstructions || "";
+      ipdDrugOrder.additionalInstructions =
+        administrationInstructions.additionalInstructions || "";
       ipdDrugOrder.rate = administrationInstructions.rate || null;
       ipdDrugOrder.additives = administrationInstructions.additives || null;
     }
@@ -279,7 +287,7 @@ export const getDrugName = (drugOrderObject) => {
           Additives:&nbsp;{drugOrderObject.additives}
         </>
       )}
-      {drugOrder.orderReasonText && (
+      {getStopReason(drugOrder) && (
         <>
           {(drugOrderObject.instructions ||
             drugOrderObject.additionalInstructions) && (
@@ -288,7 +296,7 @@ export const getDrugName = (drugOrderObject) => {
               <div className="tooltip-content-separater" />
             </>
           )}
-          Stopped Notes:&nbsp;{drugOrder.orderReasonText}
+          Stopped Notes:&nbsp;{getStopReason(drugOrder)}
         </>
       )}
     </div>

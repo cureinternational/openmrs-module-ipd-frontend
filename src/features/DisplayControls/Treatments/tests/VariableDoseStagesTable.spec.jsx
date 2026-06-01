@@ -43,9 +43,6 @@ const makeDosage = ({
   patientInstruction: additionalInstructions,
   extension: [
     { url: "isLoadingDose", valueBoolean: isLoadingDose },
-    ...(isLoadingDose
-      ? [{ url: "durationDisplay", valueString: "1 Occurrence" }]
-      : []),
     ...(additives ? [{ url: "additives", valueString: additives }] : []),
   ],
 });
@@ -117,7 +114,7 @@ describe("VariableDoseStagesTable", () => {
     expect(screen.getByText("Loading Dose")).toBeInTheDocument();
     expect(screen.getByText("2 mg")).toBeInTheDocument();
     expect(screen.getByText("Once")).toBeInTheDocument();
-    expect(screen.getByText("1 Occurrence")).toBeInTheDocument();
+    expect(screen.getByText("1 Occurrence(s)")).toBeInTheDocument();
   });
 
   it("renders ordinal numbers (sequence - loadingDoseCount) for non-loading-dose stages", () => {
