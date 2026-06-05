@@ -98,7 +98,6 @@ describe("DrugChartSliderUtils", () => {
     });
 
     it("should return valid when last slot crosses midnight and nextDayFlags marks it as next-day", async () => {
-      // 09:00, 15:00, 21:00, 02:45 — last slot crosses midnight
       const schedules = ["09:00", "15:00", "21:00", "02:45"];
       const nextDayFlags = [false, false, false, true];
 
@@ -113,7 +112,6 @@ describe("DrugChartSliderUtils", () => {
 
     it('should still return invalid with warningType "passed" when truly out-of-order without midnight crossing', async () => {
       const schedules = ["09:00", "15:00", "10:00", "21:00"];
-      // No midnight crossings
       const nextDayFlags = [false, false, false, false];
 
       const result = await validateSchedules(

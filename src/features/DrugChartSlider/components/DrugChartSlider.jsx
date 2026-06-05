@@ -564,15 +564,13 @@ const DrugChartSlider = (props) => {
 
   const handleFirstDayScheduleWarnings = async () => {
     const filteredSchedules = firstDaySchedules.filter(
-      (firstDaySchedule) => firstDaySchedule != UNSET_SCHEDULE_TIME
+      (firstDaySchedule) => firstDaySchedule !== UNSET_SCHEDULE_TIME
     );
     const filteredNextDayFlags = firstDaySchedules.reduce(
-      (flags, schedule, i) => {
-        if (schedule !== UNSET_SCHEDULE_TIME) {
-          flags.push(showFirstDayScheduleNextDayWarning[i] || false);
-        }
-        return flags;
-      },
+      (flags, schedule, i) =>
+        schedule !== UNSET_SCHEDULE_TIME
+          ? [...flags, showFirstDayScheduleNextDayWarning[i] || false]
+          : flags,
       []
     );
     const { isValid, warningType } = await validateSchedules(
