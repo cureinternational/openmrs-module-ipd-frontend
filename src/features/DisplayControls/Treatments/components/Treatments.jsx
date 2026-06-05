@@ -24,6 +24,7 @@ import {
   getSlotsForAnOrderAndServiceType,
   isPRNEligibleForNextDose,
   isMedicationCourseEndedBeforeAdmission,
+  shouldIncludeInIPDDashboard,
 } from "../utils/TreatmentsUtils";
 import {
   getCookies,
@@ -307,16 +308,17 @@ const Treatments = (props) => {
   const modifyPrescribedTreatmentData = async (drugOrders, prnInterval) => {
     const admissionDate = visitSummary?.startDateTime;
     drugOrders = drugOrders.filter((drugOrderObject) => {
-      if (isMedicationCourseEndedBeforeAdmission(drugOrderObject.drugOrder, admissionDate)) {
+      if (
+        isMedicationCourseEndedBeforeAdmission(
+          drugOrderObject.drugOrder,
+          admissionDate
+        )
+      ) {
         return false;
       }
-      if (!allMedicinesInPrescriptionAvailableForIPD) {
-        return isIPDrugOrder(drugOrderObject.drugOrder);
-      }
-      // exclude only when OUTPATIENT AND explicitly DISCH-tagged
-      return !(
-        !isIPDrugOrder(drugOrderObject.drugOrder) &&
-        drugOrderObject.isDischargeMedication
+      return shouldIncludeInIPDDashboard(
+        drugOrderObject,
+        allMedicinesInPrescriptionAvailableForIPD
       );
     });
     const prescribedTreatments = await Promise.all(
