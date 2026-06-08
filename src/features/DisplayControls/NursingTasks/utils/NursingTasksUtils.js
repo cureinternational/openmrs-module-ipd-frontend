@@ -79,7 +79,8 @@ export const ExtractMedicationNursingTasksData = (
         }
         if (
           order.doseUnits.display !== "ml" &&
-          order.doseUnits.display !== "mg"
+          order.doseUnits.display !== "mg" &&
+          order.doseUnits.display !== "mcg"
         ) {
           dosage = order.dose;
           doseType = order.doseUnits.display;

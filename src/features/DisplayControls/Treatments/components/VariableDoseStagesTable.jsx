@@ -17,7 +17,7 @@ import {
   computeStageStartDates,
 } from "../../../../utils/FhirDosingUtils";
 import { formatDate } from "../../../../utils/DateTimeUtils";
-import moment from "moment";
+import { getActiveStageIndex } from "../utils/TreatmentsUtils";
 import "../styles/VariableDoseStagesTable.scss";
 
 const VariableDoseStagesTable = ({
@@ -36,29 +36,7 @@ const VariableDoseStagesTable = ({
   const stages = fhirDosages.map(fhirDosageToDisplayStage);
   const loadingDoseCount = stages.filter((s) => s.isLoadingDose).length;
 
-  // Computes which single stage should show the "Add to Drug Chart" button.
-  // Based only on scheduling sequence and start dates — privilege/disabled
-  // are handled at render time (same as regular orders show disabled button).
-  const getActiveStageIndex = () => {
-    const statusBySequence = new Map(
-      (stageSchedules || []).map((s) => [s.variableDosageSequence, s])
-    );
-    for (let i = 0; i < fhirDosages.length; i++) {
-      const dosage = fhirDosages[i];
-      const stageStatus = statusBySequence.get(dosage.sequence);
-      if (stageStatus?.isScheduled) continue;
-      if (i > 0) {
-        const prevDosage = fhirDosages[i - 1];
-        const prevStatus = statusBySequence.get(prevDosage.sequence);
-        if (prevStatus?.allAttended !== true) break;
-      }
-      if (moment().valueOf() >= startDates[i]) return i;
-      break;
-    }
-    return -1;
-  };
-
-  const activeStageIndex = getActiveStageIndex();
+  const activeStageIndex = getActiveStageIndex(fhirDosages, stageSchedules, startDates);
   const isButtonDisabled = !hasScheduleEditPrivilege || isAddToDrugChartDisabled;
 
   return (

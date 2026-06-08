@@ -54,10 +54,13 @@
 .drug-name-container {
   display: flex;
   align-items: center;
+  overflow: hidden;
 }
 
 .name-tooltip {
-  max-width: 100%;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
   [id*="definition-tooltip-"] {
     color: #fff;
     font-size: 0.875rem;
@@ -75,6 +78,7 @@
 }
 
 .note-icon-container {
+  flex-shrink: 0;
   cursor: pointer;
   margin-left: 5px;
 }
@@ -94,7 +98,7 @@
   margin: 4px 0;
 }
 
-.bx--tooltip__content {
+.note-icon-container .bx--tooltip__content {
   max-height: 400px;
   overflow-y: auto;
 }

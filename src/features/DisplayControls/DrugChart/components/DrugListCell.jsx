@@ -29,19 +29,6 @@ export default function DrugListCell(props) {
   const noteIconRef = useRef(null);
   const [tooltipDirection, setTooltipDirection] = useState("bottom");
 
-  useEffect(() => {
-    if (!showInstructionsIcon) return;
-    const updateDirection = () => {
-      const rect = noteIconRef.current.getBoundingClientRect();
-      const next =
-        rect.top > window.innerHeight - rect.bottom ? "top" : "bottom";
-      setTooltipDirection((prev) => (prev !== next ? next : prev));
-    };
-    updateDirection();
-    window.addEventListener("scroll", updateDirection, true);
-    return () => window.removeEventListener("scroll", updateDirection, true);
-  }, [showInstructionsIcon]);
-
   const vdpStages = isVariableDose
     ? (fhirDosages || []).map(fhirDosageToDisplayStage)
     : [];
@@ -114,6 +101,21 @@ export default function DrugListCell(props) {
       instructions?.additives ||
       notes ||
       orderReasonText;
+
+  useEffect(() => {
+    if (!showInstructionsIcon) return;
+    const updateDirection = () => {
+      if (!noteIconRef.current) return;
+      const rect = noteIconRef.current.getBoundingClientRect();
+      const next =
+        rect.top > window.innerHeight - rect.bottom ? "top" : "bottom";
+      setTooltipDirection((prev) => (prev !== next ? next : prev));
+    };
+    updateDirection();
+    window.addEventListener("scroll", updateDirection, true);
+    return () => window.removeEventListener("scroll", updateDirection, true);
+  }, [showInstructionsIcon]);
+
   const administrationInfo = [];
   slots.forEach((slot) => {
     if (
@@ -201,7 +203,7 @@ export default function DrugListCell(props) {
         </TooltipDefinition>
         &nbsp;
         {showInstructionsIcon && (
-          <div ref={noteIconRef}>
+          <div ref={noteIconRef} className="note-icon-container">
             <Tooltip
               direction={tooltipDirection}
               align="start"
@@ -301,7 +303,6 @@ export default function DrugListCell(props) {
         ) : (
           <DisplayTags drugOrder={dosingInstructions} />
         )}
-        {/*{dateStopped && <Tag className={"red-tag"}><FormattedMessage id={"STOPPED"} defaultMessage={"Stopped"} /></Tag>}*/}
       </div>
     </div>
   );

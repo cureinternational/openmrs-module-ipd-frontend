@@ -20,8 +20,10 @@ import {
   parseFhirDosages,
   parseFlatAdminInstructions,
   isVariableDoseOrder,
+  fromUcumDurationUnit,
 } from "../../../../utils/FhirDosingUtils";
 import { isIPDrugOrder } from "../../../../utils/CommonUtils";
+import moment from "moment";
 
 export const treatmentHeaders = [
   {
@@ -507,4 +509,59 @@ export const getStopReason = (drugOrder) => {
   const stopReason = conceptName + (conceptName && notes ? ": " : "") + notes;
 
   return stopReason.trim() !== "" ? stopReason : null;
+};
+
+export const buildStageDrugOrder = (
+  drugOrderObject,
+  dosage,
+  stageInfo,
+  numberOfSlots,
+  drugOrderSchedule = null,
+  stageFrequencyPerDay = null
+) => {
+  const dr = dosage.doseAndRate?.[0];
+  const { fhirDosages: _fhirDosages, ...drugOrderWithoutVdpData } = drugOrderObject;
+  return {
+    ...drugOrderWithoutVdpData,
+    drugOrderSchedule,
+    uniformDosingType: {
+      frequency: stageInfo.frequency,
+      dose: dr?.doseQuantity?.value || null,
+      doseUnits: dr?.doseQuantity?.unit || null,
+    },
+    route: dosage.route?.text || drugOrderObject.route || null,
+    instructions: stageInfo.instructions || "",
+    additionalInstructions: stageInfo.additionalInstructions || "",
+    rate: stageInfo.rate || null,
+    additives: stageInfo.additives || null,
+    durationDisplayValue: stageInfo.isLoadingDose ? 1 : null,
+    durationDisplayUnits: stageInfo.isLoadingDose ? "Occurrence(s)" : null,
+    drugOrder: {
+      ...drugOrderObject.drugOrder,
+      duration: stageInfo.durationDays || 0,
+      durationUnits: fromUcumDurationUnit(dosage.timing?.repeat?.durationUnit),
+    },
+    variableDosageSequence: dosage.sequence,
+    numberOfSlots,
+    stageFrequencyPerDay,
+  };
+};
+
+export const getActiveStageIndex = (fhirDosages, stageSchedules, startDates) => {
+  const statusBySequence = new Map(
+    (stageSchedules || []).map((s) => [s.variableDosageSequence, s])
+  );
+  for (let i = 0; i < fhirDosages.length; i++) {
+    const dosage = fhirDosages[i];
+    const stageStatus = statusBySequence.get(dosage.sequence);
+    if (stageStatus?.isScheduled) continue;
+    if (i > 0) {
+      const prevDosage = fhirDosages[i - 1];
+      const prevStatus = statusBySequence.get(prevDosage.sequence);
+      if (prevStatus?.allAttended !== true) break;
+    }
+    if (moment().valueOf() >= startDates[i]) return i;
+    break;
+  }
+  return -1;
 };

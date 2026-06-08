@@ -25,6 +25,7 @@ import {
   isPRNEligibleForNextDose,
   isMedicationCourseEndedBeforeAdmission,
   shouldIncludeInIPDDashboard,
+  buildStageDrugOrder,
 } from "../utils/TreatmentsUtils";
 import {
   getCookies,
@@ -33,7 +34,6 @@ import {
 import {
   isVariableDoseOrder,
   fhirDosageToDisplayStage,
-  fromUcumDurationUnit,
 } from "../../../../utils/FhirDosingUtils";
 import {
   ForbiddenErrorMessage,
@@ -181,42 +181,6 @@ const Treatments = (props) => {
     return scheduleConfig?.frequencyPerDay || 1;
   };
 
-  const buildStageDrugOrder = (
-    drugOrderObject,
-    dosage,
-    stageInfo,
-    numberOfSlots,
-    drugOrderSchedule = null,
-    stageFrequencyPerDay = null
-  ) => {
-    const dr = dosage.doseAndRate?.[0];
-    const { fhirDosages: _fhirDosages, ...drugOrderWithoutVdpData } = drugOrderObject;
-    return {
-      ...drugOrderWithoutVdpData,
-      drugOrderSchedule,
-      uniformDosingType: {
-        frequency: stageInfo.frequency,
-        dose: dr?.doseQuantity?.value || null,
-        doseUnits: dr?.doseQuantity?.unit || null,
-      },
-      route: dosage.route?.text || drugOrderObject.route || null,
-      instructions: stageInfo.instructions || "",
-      additionalInstructions: stageInfo.additionalInstructions || "",
-      rate: stageInfo.rate || null,
-      additives: stageInfo.additives || null,
-      durationDisplayValue: stageInfo.isLoadingDose ? 1 : null,
-      durationDisplayUnits: stageInfo.isLoadingDose ? "Occurrence(s)" : null,
-      drugOrder: {
-        ...drugOrderObject.drugOrder,
-        duration: stageInfo.durationDays || 0,
-        durationUnits: fromUcumDurationUnit(dosage.timing?.repeat?.durationUnit),
-      },
-      variableDosageSequence: dosage.sequence,
-      numberOfSlots,
-      stageFrequencyPerDay,
-    };
-  };
-
   const handleStageAddToDrugChart = (drugOrderId, stageIndex) => {
     if (isAddToDrugChartDisabled) return;
     const drugOrderObject = drugOrderList.find(
@@ -232,6 +196,7 @@ const Treatments = (props) => {
       ? 1
       : Math.ceil((stageInfo.durationDays || 0) * stageFrequencyPerDay);
 
+    setShowEditMessage(false);
     setSliderContentModified((prev) => ({ ...prev, treatments: false }));
     setSelectedDrugOrder((prev) => ({
       ...prev,
@@ -509,6 +474,21 @@ const Treatments = (props) => {
               drugOrderObject.drugOrderAttributes,
               drugOrderObject
             );
+          const isVariableDose = isVariableDoseOrder(
+            drugOrder.dosingInstructionType
+          );
+          const stageSchedules = isVariableDose
+            ? drugOrderObject.drugOrderSchedule?.stageSchedules || []
+            : [];
+          const totalFhirStages = isVariableDose
+            ? (drugOrderObject.fhirDosages || []).length
+            : 0;
+          const isAnyStageScheduled = stageSchedules.some((s) => s.isScheduled);
+          const isAllStagesAttended =
+            isAnyStageScheduled &&
+            stageSchedules.length === totalFhirStages &&
+            stageSchedules.every((s) => s.allAttended);
+          const isInProgress = isAnyStageScheduled && !isAllStagesAttended;
           const getStatus = () => {
             if (drugOrder.dateStopped) {
               return (
@@ -554,21 +534,6 @@ const Treatments = (props) => {
               );
             }
           };
-          const isVariableDose = isVariableDoseOrder(
-            drugOrder.dosingInstructionType
-          );
-          const stageSchedules = isVariableDose
-            ? drugOrderObject.drugOrderSchedule?.stageSchedules || []
-            : [];
-          const totalFhirStages = isVariableDose
-            ? (drugOrderObject.fhirDosages || []).length
-            : 0;
-          const isAnyStageScheduled = stageSchedules.some((s) => s.isScheduled);
-          const isAllStagesAttended =
-            isAnyStageScheduled &&
-            stageSchedules.length === totalFhirStages &&
-            stageSchedules.every((s) => s.allAttended);
-          const isInProgress = isAnyStageScheduled && !isAllStagesAttended;
           return {
             id: drugOrder.uuid,
             startDate: formatDate(drugOrder.effectiveStartDate),
