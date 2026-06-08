@@ -30,7 +30,11 @@ import {
   getCookies,
   isUserPrivileged,
 } from "../../../../utils/CommonUtils";
-import { isVariableDoseOrder } from "../../../../utils/FhirDosingUtils";
+import {
+  isVariableDoseOrder,
+  fhirDosageToDisplayStage,
+  fromUcumDurationUnit,
+} from "../../../../utils/FhirDosingUtils";
 import {
   ForbiddenErrorMessage,
   GenericErrorMessage,
@@ -168,6 +172,134 @@ const Treatments = (props) => {
     }
     updateTreatmentsSlider(true);
     if (!showEditDrugChartLink) setDrugChartNotes("");
+  };
+
+  const getStageFrequencyPerDay = (stageInfo) => {
+    const scheduleConfig = selectedDrugOrder.scheduleFrequencies?.find(
+      (f) => f.name === stageInfo.frequency
+    );
+    return scheduleConfig?.frequencyPerDay || 1;
+  };
+
+  const buildStageDrugOrder = (
+    drugOrderObject,
+    dosage,
+    stageInfo,
+    numberOfSlots,
+    drugOrderSchedule = null,
+    stageFrequencyPerDay = null
+  ) => {
+    const dr = dosage.doseAndRate?.[0];
+    const { fhirDosages: _fhirDosages, ...drugOrderWithoutVdpData } = drugOrderObject;
+    return {
+      ...drugOrderWithoutVdpData,
+      drugOrderSchedule,
+      uniformDosingType: {
+        frequency: stageInfo.frequency,
+        dose: dr?.doseQuantity?.value || null,
+        doseUnits: dr?.doseQuantity?.unit || null,
+      },
+      route: dosage.route?.text || drugOrderObject.route || null,
+      instructions: stageInfo.instructions || "",
+      additionalInstructions: stageInfo.additionalInstructions || "",
+      rate: stageInfo.rate || null,
+      additives: stageInfo.additives || null,
+      durationDisplayValue: stageInfo.isLoadingDose ? 1 : null,
+      durationDisplayUnits: stageInfo.isLoadingDose ? "Occurrence(s)" : null,
+      drugOrder: {
+        ...drugOrderObject.drugOrder,
+        duration: stageInfo.durationDays || 0,
+        durationUnits: fromUcumDurationUnit(dosage.timing?.repeat?.durationUnit),
+      },
+      variableDosageSequence: dosage.sequence,
+      numberOfSlots,
+      stageFrequencyPerDay,
+    };
+  };
+
+  const handleStageAddToDrugChart = (drugOrderId, stageIndex) => {
+    if (isAddToDrugChartDisabled) return;
+    const drugOrderObject = drugOrderList.find(
+      (o) => o.drugOrder.uuid === drugOrderId
+    );
+    if (!drugOrderObject) return;
+    const fhirDosages = drugOrderObject.fhirDosages || [];
+    const dosage = fhirDosages[stageIndex];
+    if (!dosage) return;
+    const stageInfo = fhirDosageToDisplayStage(dosage);
+    const stageFrequencyPerDay = getStageFrequencyPerDay(stageInfo);
+    const numberOfSlots = stageInfo.isLoadingDose
+      ? 1
+      : Math.ceil((stageInfo.durationDays || 0) * stageFrequencyPerDay);
+
+    setSliderContentModified((prev) => ({ ...prev, treatments: false }));
+    setSelectedDrugOrder((prev) => ({
+      ...prev,
+      drugOrder: buildStageDrugOrder(
+        drugOrderObject,
+        dosage,
+        stageInfo,
+        numberOfSlots,
+        null,
+        stageFrequencyPerDay
+      ),
+    }));
+    if (!isSliderOpen.treatments) {
+      updateTreatmentsSlider(true);
+    }
+    setDrugChartNotes("");
+  };
+
+  const handleStageEditDrugChart = (drugOrderId, stageIndex) => {
+    if (isReadMode) return;
+    const drugOrderObject = drugOrderList.find(
+      (o) => o.drugOrder.uuid === drugOrderId
+    );
+    if (!drugOrderObject) return;
+    const fhirDosages = drugOrderObject.fhirDosages || [];
+    const dosage = fhirDosages[stageIndex];
+    if (!dosage) return;
+    const stageInfo = fhirDosageToDisplayStage(dosage);
+    const stageFrequencyPerDay = getStageFrequencyPerDay(stageInfo);
+    const numberOfSlots = stageInfo.isLoadingDose
+      ? 1
+      : Math.ceil((stageInfo.durationDays || 0) * stageFrequencyPerDay);
+    const stageSchedules =
+      drugOrderObject.drugOrderSchedule?.stageSchedules || [];
+    const stageStatus = stageSchedules.find(
+      (s) => s.variableDosageSequence === dosage.sequence
+    );
+
+    const stageSpecificSchedule = stageStatus
+      ? {
+          slotStartTime: stageStatus.slotStartTime,
+          firstDaySlotsStartTime: stageStatus.firstDaySlotsStartTime || null,
+          dayWiseSlotsStartTime: stageStatus.dayWiseSlotsStartTime || null,
+          remainingDaySlotsStartTime: stageStatus.remainingDaySlotsStartTime || null,
+          notes: stageStatus.notes,
+          medicationAdministrationStarted: stageStatus.administrationStarted,
+          pendingSlotsAvailable: stageStatus.pendingSlotsAvailable,
+          allSlotsAttended: stageStatus.allAttended,
+        }
+      : null;
+
+    setShowEditMessage(true);
+    setDrugChartNotes(stageStatus?.notes || "");
+    setSliderContentModified((prev) => ({ ...prev, treatments: false }));
+    setSelectedDrugOrder((prev) => ({
+      ...prev,
+      drugOrder: buildStageDrugOrder(
+        drugOrderObject,
+        dosage,
+        stageInfo,
+        numberOfSlots,
+        stageSpecificSchedule,
+        stageFrequencyPerDay
+      ),
+    }));
+    if (!isSliderOpen.treatments) {
+      updateTreatmentsSlider(true);
+    }
   };
 
   const handleStopDrugChartClick = (drugOrderId) => {
@@ -384,7 +516,24 @@ const Treatments = (props) => {
                   <FormattedMessage id="STOPPED" defaultMessage="Stopped" />
                 </span>
               );
-            } else if (drugOrder.dosingInstructions?.asNeeded) {
+            }
+            if (isVariableDose) {
+              if (isAllStagesAttended) {
+                return (
+                  <FormattedMessage id={"COMPLETED"} defaultMessage={"Completed"} />
+                );
+              }
+              if (isInProgress) {
+                return (
+                  <FormattedMessage
+                    id={"IN_PROGRESS"}
+                    defaultMessage={"In Progress"}
+                  />
+                );
+              }
+              return null;
+            }
+            if (drugOrder.dosingInstructions?.asNeeded) {
               if (
                 drugOrder.autoExpireDate &&
                 new Date() > new Date(drugOrder.autoExpireDate)
@@ -408,6 +557,18 @@ const Treatments = (props) => {
           const isVariableDose = isVariableDoseOrder(
             drugOrder.dosingInstructionType
           );
+          const stageSchedules = isVariableDose
+            ? drugOrderObject.drugOrderSchedule?.stageSchedules || []
+            : [];
+          const totalFhirStages = isVariableDose
+            ? (drugOrderObject.fhirDosages || []).length
+            : 0;
+          const isAnyStageScheduled = stageSchedules.some((s) => s.isScheduled);
+          const isAllStagesAttended =
+            isAnyStageScheduled &&
+            stageSchedules.length === totalFhirStages &&
+            stageSchedules.every((s) => s.allAttended);
+          const isInProgress = isAnyStageScheduled && !isAllStagesAttended;
           return {
             id: drugOrder.uuid,
             startDate: formatDate(drugOrder.effectiveStartDate),
@@ -443,6 +604,23 @@ const Treatments = (props) => {
                 ? drugOrderObject.fhirDosages || []
                 : [],
               effectiveStartDate: drugOrder.effectiveStartDate,
+              stageSchedules,
+              isAddToDrugChartDisabled,
+              isReadMode,
+              hasScheduleEditPrivilege: isUserPrivileged(
+                currentUser,
+                PRIVILEGE_CONSTANTS.EDIT_MEDICATION_TASKS
+              ),
+              onAddToDrugChart: isVariableDose
+                ? (stageIndex) =>
+                    handleStageAddToDrugChart(drugOrder.uuid, stageIndex)
+                : undefined,
+              onEditDrugChart: isVariableDose
+                ? (stageIndex) =>
+                    handleStageEditDrugChart(drugOrder.uuid, stageIndex)
+                : undefined,
+              isInProgress: isVariableDose ? isInProgress : undefined,
+              isCompleted: isVariableDose ? isAllStagesAttended : undefined,
             },
           };
         })
@@ -459,10 +637,20 @@ const Treatments = (props) => {
         provider: treatment.providerName,
         stopReason: treatment.additionalData.stopReason,
         stopperAdditionalData: treatment.additionalData.stopperAdditionalData,
-        isNotScheduled: !(treatment.additionalData.isScheduled ?? true),
+        isNotScheduled: treatment.additionalData.isVariableDose
+          ? !treatment.additionalData.stageSchedules?.some((s) => s.isScheduled)
+          : !(treatment.additionalData.isScheduled ?? true),
         isVariableDose: treatment.additionalData.isVariableDose,
         fhirDosages: treatment.additionalData.fhirDosages,
         effectiveStartDate: treatment.additionalData.effectiveStartDate,
+        stageSchedules: treatment.additionalData.stageSchedules,
+        isAddToDrugChartDisabled: treatment.additionalData.isAddToDrugChartDisabled,
+        isReadMode: treatment.additionalData.isReadMode,
+        hasScheduleEditPrivilege: treatment.additionalData.hasScheduleEditPrivilege,
+        onAddToDrugChart: treatment.additionalData.onAddToDrugChart,
+        onEditDrugChart: treatment.additionalData.onEditDrugChart,
+        isInProgress: treatment.additionalData.isInProgress,
+        isCompleted: treatment.additionalData.isCompleted,
       };
     });
     setAdditionalData(additionalMappedData);

@@ -17,14 +17,49 @@ import {
   computeStageStartDates,
 } from "../../../../utils/FhirDosingUtils";
 import { formatDate } from "../../../../utils/DateTimeUtils";
+import moment from "moment";
 import "../styles/VariableDoseStagesTable.scss";
 
-const VariableDoseStagesTable = ({ fhirDosages, effectiveStartDate }) => {
+const VariableDoseStagesTable = ({
+  fhirDosages,
+  effectiveStartDate,
+  onAddToDrugChart,
+  onEditDrugChart,
+  stageSchedules,
+  isAddToDrugChartDisabled,
+  isReadMode,
+  hasScheduleEditPrivilege,
+}) => {
   if (!fhirDosages || fhirDosages.length === 0) return null;
 
   const startDates = computeStageStartDates(fhirDosages, effectiveStartDate);
   const stages = fhirDosages.map(fhirDosageToDisplayStage);
   const loadingDoseCount = stages.filter((s) => s.isLoadingDose).length;
+
+  // Computes which single stage should show the "Add to Drug Chart" button.
+  // Based only on scheduling sequence and start dates — privilege/disabled
+  // are handled at render time (same as regular orders show disabled button).
+  const getActiveStageIndex = () => {
+    const statusBySequence = new Map(
+      (stageSchedules || []).map((s) => [s.variableDosageSequence, s])
+    );
+    for (let i = 0; i < fhirDosages.length; i++) {
+      const dosage = fhirDosages[i];
+      const stageStatus = statusBySequence.get(dosage.sequence);
+      if (stageStatus?.isScheduled) continue;
+      if (i > 0) {
+        const prevDosage = fhirDosages[i - 1];
+        const prevStatus = statusBySequence.get(prevDosage.sequence);
+        if (prevStatus?.allAttended !== true) break;
+      }
+      if (moment().valueOf() >= startDates[i]) return i;
+      break;
+    }
+    return -1;
+  };
+
+  const activeStageIndex = getActiveStageIndex();
+  const isButtonDisabled = !hasScheduleEditPrivilege || isAddToDrugChartDisabled;
 
   return (
     <div className="vdp-section">
@@ -77,6 +112,13 @@ const VariableDoseStagesTable = ({ fhirDosages, effectiveStartDate }) => {
         </TableHead>
         <TableBody>
           {fhirDosages.map((dosage, index) => {
+            const stageStatus = stageSchedules?.find(
+              (s) => s.variableDosageSequence === dosage.sequence
+            );
+            const isScheduled = stageStatus?.isScheduled;
+            const adminStarted = stageStatus?.administrationStarted;
+            const isActiveStage = index === activeStageIndex;
+
             const stage = stages[index];
             const stageLabel = stage.isLoadingDose
               ? stage.stageName
@@ -153,11 +195,29 @@ const VariableDoseStagesTable = ({ fhirDosages, effectiveStartDate }) => {
                 <TableCell>{stage.frequency}</TableCell>
                 <TableCell>{stage.duration}</TableCell>
                 <TableCell>
-                  {index === 0 && (
-                    <Link disabled>
+                  {isActiveStage && (
+                    <Link
+                      disabled={isButtonDisabled}
+                      onClick={() => {
+                        if (!isButtonDisabled) onAddToDrugChart(index);
+                      }}
+                    >
                       <FormattedMessage
                         id="ADD_TO_DRUG_CHART"
                         defaultMessage="Add to Drug Chart"
+                      />
+                    </Link>
+                  )}
+                  {isScheduled && !adminStarted && (
+                    <Link
+                      disabled={isReadMode}
+                      onClick={() => {
+                        if (!isReadMode) onEditDrugChart(index);
+                      }}
+                    >
+                      <FormattedMessage
+                        id="EDIT_DRUG_CHART"
+                        defaultMessage="Edit Drug Chart"
                       />
                     </Link>
                   )}
@@ -174,6 +234,12 @@ const VariableDoseStagesTable = ({ fhirDosages, effectiveStartDate }) => {
 VariableDoseStagesTable.propTypes = {
   fhirDosages: PropTypes.array.isRequired,
   effectiveStartDate: PropTypes.number.isRequired,
+  onAddToDrugChart: PropTypes.func,
+  onEditDrugChart: PropTypes.func,
+  stageSchedules: PropTypes.array,
+  isAddToDrugChartDisabled: PropTypes.bool,
+  isReadMode: PropTypes.bool,
+  hasScheduleEditPrivilege: PropTypes.bool,
 };
 
 export default VariableDoseStagesTable;

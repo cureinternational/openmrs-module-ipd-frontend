@@ -90,3 +90,6 @@ export const computeStageStartDates = (fhirDosages, effectiveStartDate) => {
     return startDate;
   });
 };
+
+export const getDosageBySequence = (fhirDosages, sequence) =>
+  (fhirDosages || []).find((d) => d.sequence === sequence) || null;

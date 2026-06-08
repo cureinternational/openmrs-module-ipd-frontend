@@ -69,11 +69,19 @@ const ExpandableDataTable = (props) => {
                   : true;
                 const rowClassName = matchedData?.isNotScheduled
                   ? "green-row"
+                  : matchedData?.isInProgress
+                  ? "in-progress-row"
+                  : matchedData?.isCompleted
+                  ? ""
                   : matchedData?.isVariableDose
                   ? "variable-dose-row"
                   : "";
                 const cellClassName = matchedData?.isNotScheduled
                   ? "green-cell"
+                  : matchedData?.isInProgress
+                  ? "in-progress-cell"
+                  : matchedData?.isCompleted
+                  ? ""
                   : matchedData?.isVariableDose
                   ? "variable-dose-cell"
                   : "";
