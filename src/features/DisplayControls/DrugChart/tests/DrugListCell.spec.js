@@ -107,8 +107,9 @@ describe("variable dose order", () => {
         <DrugListCell drugInfo={mockVariableDrugInfo} />
       </IPDContext.Provider>
     );
-    // 2 fhirDosages (loading dose + stage 1), total days = 0 + 3 = 3
-    expect(getByText("2 Stages - 3 Days")).toBeInTheDocument();
+    // loading dose present → "Loading Dose + 1 Stages - 3 Days" rendered as two nodes
+    expect(getByText("Loading Dose +")).toBeInTheDocument();
+    expect(getByText("1 Stages - 3 Days")).toBeInTheDocument();
   });
 
   it("shows Variable Dosage tag for variable dose order", () => {

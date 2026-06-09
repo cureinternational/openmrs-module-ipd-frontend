@@ -392,10 +392,10 @@ describe("stage button behaviour", () => {
     expect(screen.getByText("Edit Drug Chart")).toBeInTheDocument();
   });
 
-  it("shows no Edit or Add button for a stage that is scheduled and administration has started", () => {
+  it("shows no Edit or Add button when a later stage is scheduled and administration has started", () => {
     MockDate.set(new Date("2026-04-25").getTime());
-    // mockFhirDosages has loading dose (seq=1), stage1 (seq=2), stage2 (seq=3)
-    // sequence=1 (loading dose) is not scheduled → it becomes the active stage
+    // stage1 (seq=2) is scheduled+adminStarted; loading dose (seq=1) was never scheduled
+    // No button should show for loading dose — stage1 is already active
     render(
       <VariableDoseStagesTable
         fhirDosages={mockFhirDosages}
@@ -411,10 +411,8 @@ describe("stage button behaviour", () => {
         ]}
       />
     );
-    // sequence=2 is scheduled + adminStarted → no Edit link for it
     expect(screen.queryByText("Edit Drug Chart")).toBeNull();
-    // Loading dose (seq=1) is unscheduled and active → Add button shows for it
-    expect(screen.getByText("Add to Drug Chart")).toBeInTheDocument();
+    expect(screen.queryByText("Add to Drug Chart")).toBeNull();
   });
 
   it("shows no Add to Drug Chart button for Stage 1 when loading dose is scheduled but not attended", () => {

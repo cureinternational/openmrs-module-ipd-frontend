@@ -34,7 +34,7 @@ const VariableDoseStagesTable = ({
 
   const startDates = computeStageStartDates(fhirDosages, effectiveStartDate);
   const stages = fhirDosages.map(fhirDosageToDisplayStage);
-  const loadingDoseCount = stages.filter((s) => s.isLoadingDose).length;
+  const hasLoadingDose = stages.some((s) => s.isLoadingDose);
 
   const activeStageIndex = getActiveStageIndex(fhirDosages, stageSchedules, startDates);
   const isButtonDisabled = !hasScheduleEditPrivilege || isAddToDrugChartDisabled;
@@ -100,7 +100,7 @@ const VariableDoseStagesTable = ({
             const stage = stages[index];
             const stageLabel = stage.isLoadingDose
               ? stage.stageName
-              : String(dosage.sequence - loadingDoseCount);
+              : String(dosage.sequence - (hasLoadingDose ? 1 : 0));
             const hasNote =
               stage.instructions ||
               stage.additionalInstructions ||

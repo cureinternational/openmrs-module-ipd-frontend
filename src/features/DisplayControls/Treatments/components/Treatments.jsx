@@ -34,6 +34,7 @@ import {
 import {
   isVariableDoseOrder,
   fhirDosageToDisplayStage,
+  computeStageStartDates,
 } from "../../../../utils/FhirDosingUtils";
 import {
   ForbiddenErrorMessage,
@@ -195,6 +196,11 @@ const Treatments = (props) => {
     const numberOfSlots = stageInfo.isLoadingDose
       ? 1
       : Math.ceil((stageInfo.durationDays || 0) * stageFrequencyPerDay);
+    const startDates = computeStageStartDates(
+      fhirDosages,
+      drugOrderObject.drugOrder.effectiveStartDate
+    );
+    const stageStartDate = startDates[stageIndex];
 
     setShowEditMessage(false);
     setSliderContentModified((prev) => ({ ...prev, treatments: false }));
@@ -206,7 +212,8 @@ const Treatments = (props) => {
         stageInfo,
         numberOfSlots,
         null,
-        stageFrequencyPerDay
+        stageFrequencyPerDay,
+        stageStartDate
       ),
     }));
     if (!isSliderOpen.treatments) {
@@ -234,6 +241,11 @@ const Treatments = (props) => {
     const stageStatus = stageSchedules.find(
       (s) => s.variableDosageSequence === dosage.sequence
     );
+    const startDates = computeStageStartDates(
+      fhirDosages,
+      drugOrderObject.drugOrder.effectiveStartDate
+    );
+    const stageStartDate = startDates[stageIndex];
 
     const stageSpecificSchedule = stageStatus
       ? {
@@ -259,7 +271,8 @@ const Treatments = (props) => {
         stageInfo,
         numberOfSlots,
         stageSpecificSchedule,
-        stageFrequencyPerDay
+        stageFrequencyPerDay,
+        stageStartDate
       ),
     }));
     if (!isSliderOpen.treatments) {

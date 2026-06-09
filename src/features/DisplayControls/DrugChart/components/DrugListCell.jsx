@@ -32,7 +32,8 @@ export default function DrugListCell(props) {
   const vdpStages = isVariableDose
     ? (fhirDosages || []).map(fhirDosageToDisplayStage)
     : [];
-  const loadingDoseCount = vdpStages.filter((s) => s.isLoadingDose).length;
+  const hasLoadingDose = vdpStages.some((s) => s.isLoadingDose);
+  const loadingDoseStageName = vdpStages.find((s) => s.isLoadingDose)?.stageName;
   const totalDays = vdpStages.reduce((sum, s) => sum + s.durationDays, 0);
 
   const buildStageTooltipContent = () => {
@@ -53,7 +54,7 @@ export default function DrugListCell(props) {
         if (!hasContent) return null;
         const stageLabel = stage.isLoadingDose
           ? stage.stageName
-          : `Stage ${dosage.sequence - loadingDoseCount}`;
+          : `Stage ${dosage.sequence - (hasLoadingDose ? 1 : 0)}`;
         return (
           <div key={dosage.sequence} className="vdp-tooltip-stage">
             <div className="vdp-tooltip-stage-header">{stageLabel}:</div>
@@ -235,11 +236,14 @@ export default function DrugListCell(props) {
         {getMedicationName()}
         <div>
           {isVariableDose ? (
-            <FormattedMessage
-              id="VARIABLE_DOSE_STAGES_DAYS"
-              defaultMessage="{stages} Stages - {days} Days"
-              values={{ stages: fhirDosages?.length || 0, days: totalDays }}
-            />
+            <>
+              {hasLoadingDose && loadingDoseStageName && <span>{`${loadingDoseStageName} + `}</span>}
+              <FormattedMessage
+                id="VARIABLE_DOSE_STAGES_DAYS"
+                defaultMessage="{stages} Stages - {days} Days"
+                values={{ stages: vdpStages.filter((s) => !s.isLoadingDose).length, days: totalDays }}
+              />
+            </>
           ) : (
             <>
               {dosage}
