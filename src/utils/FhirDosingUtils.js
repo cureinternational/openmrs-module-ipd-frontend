@@ -1,3 +1,5 @@
+import moment from "moment";
+
 const safeParseJson = (str) => {
   if (!str) return null;
   try {
@@ -82,9 +84,13 @@ export const fhirDosageToDisplayStage = (dosage) => {
 };
 
 export const computeStageStartDates = (fhirDosages, effectiveStartDate) => {
+  const startOfPrescriptionDay = moment(effectiveStartDate).startOf("day").valueOf();
   let cumulativeDays = 0;
   return (fhirDosages || []).map((dosage) => {
-    const startDate = effectiveStartDate + cumulativeDays * 24 * 60 * 60 * 1000;
+    const startDate =
+      cumulativeDays === 0
+        ? effectiveStartDate
+        : startOfPrescriptionDay + cumulativeDays * 24 * 60 * 60 * 1000;
     const stage = fhirDosageToDisplayStage(dosage);
     cumulativeDays += stage.durationDays;
     return startDate;
