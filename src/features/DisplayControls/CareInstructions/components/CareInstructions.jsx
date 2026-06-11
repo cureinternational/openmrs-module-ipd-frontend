@@ -181,7 +181,10 @@ const CareInstructions = (props) => {
       </TableHead>
       <TableBody>
         {rows.map((row) => (
-          <TableRow key={row.id}>
+          <TableRow
+            key={row.id}
+            className={row.previousVersionUuid ? "edited-instruction-row" : ""}
+          >
             <TableCell>
               {getDateTimeFromEpochTime(
                 row.encounterDateTime,
