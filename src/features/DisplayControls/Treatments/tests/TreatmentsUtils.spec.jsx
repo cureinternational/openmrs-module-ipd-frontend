@@ -14,6 +14,7 @@ import {
   getDischargeRevisedOrderUuids,
   isSupersededByDischargeRevision,
   DRUG_ORDER_ACTIONS,
+  modifyEmergencyTreatmentData,
 } from "../utils/TreatmentsUtils";
 import { IPDContext } from "../../../../context/IPDContext";
 import { mockConfig } from "../../../../utils/CommonUtils";
@@ -146,18 +147,22 @@ describe("TreatmentsUtils", () => {
 
   describe("updateDrugOrderList", () => {
     it("should keep original frequency in uniformDosingType for regular orders", () => {
-      const drugOrderList = [{
-        drugOrder: {
-          dosingInstructions: {
-            dose: 1,
-            doseUnits: "mg",
-            frequency: "Once a day",
-            route: "Oral",
-            administrationInstructions: JSON.stringify({ isLoadingDose: false }),
+      const drugOrderList = [
+        {
+          drugOrder: {
+            dosingInstructions: {
+              dose: 1,
+              doseUnits: "mg",
+              frequency: "Once a day",
+              route: "Oral",
+              administrationInstructions: JSON.stringify({
+                isLoadingDose: false,
+              }),
+            },
+            durationUnits: "Day(s)",
           },
-          durationUnits: "Day(s)",
         },
-      }];
+      ];
       const result = updateDrugOrderList(drugOrderList);
       expect(result[0].uniformDosingType.frequency).toBe("Once a day");
     });
@@ -249,7 +254,11 @@ describe("TreatmentsUtils", () => {
   });
 
   describe("getDischargeRevisedOrderUuids", () => {
-    const buildDrugOrder = (action, isDischargeMedication, previousOrderUuid) => ({
+    const buildDrugOrder = (
+      action,
+      isDischargeMedication,
+      previousOrderUuid
+    ) => ({
       drugOrder: { action, previousOrderUuid },
       isDischargeMedication,
     });
@@ -259,12 +268,18 @@ describe("TreatmentsUtils", () => {
     });
 
     it("should include previousOrderUuid for REVISE + isDischargeMedication=true", () => {
-      const orders = [buildDrugOrder(DRUG_ORDER_ACTIONS.REVISE, true, "uuid-123")];
-      expect(getDischargeRevisedOrderUuids(orders)).toEqual(new Set(["uuid-123"]));
+      const orders = [
+        buildDrugOrder(DRUG_ORDER_ACTIONS.REVISE, true, "uuid-123"),
+      ];
+      expect(getDischargeRevisedOrderUuids(orders)).toEqual(
+        new Set(["uuid-123"])
+      );
     });
 
     it("should NOT include uuid for REVISE + isDischargeMedication=false", () => {
-      const orders = [buildDrugOrder(DRUG_ORDER_ACTIONS.REVISE, false, "uuid-123")];
+      const orders = [
+        buildDrugOrder(DRUG_ORDER_ACTIONS.REVISE, false, "uuid-123"),
+      ];
       expect(getDischargeRevisedOrderUuids(orders)).toEqual(new Set());
     });
 
@@ -279,7 +294,9 @@ describe("TreatmentsUtils", () => {
     });
 
     it("should NOT include entry when previousOrderUuid is undefined", () => {
-      const orders = [buildDrugOrder(DRUG_ORDER_ACTIONS.REVISE, true, undefined)];
+      const orders = [
+        buildDrugOrder(DRUG_ORDER_ACTIONS.REVISE, true, undefined),
+      ];
       expect(getDischargeRevisedOrderUuids(orders)).toEqual(new Set());
     });
 
@@ -289,7 +306,9 @@ describe("TreatmentsUtils", () => {
         buildDrugOrder(DRUG_ORDER_ACTIONS.REVISE, true, "uuid-2"),
         buildDrugOrder(DRUG_ORDER_ACTIONS.REVISE, false, "uuid-3"),
       ];
-      expect(getDischargeRevisedOrderUuids(orders)).toEqual(new Set(["uuid-1", "uuid-2"]));
+      expect(getDischargeRevisedOrderUuids(orders)).toEqual(
+        new Set(["uuid-1", "uuid-2"])
+      );
     });
   });
 
@@ -421,48 +440,127 @@ describe("TreatmentsUtils", () => {
       const fhirDosages = [dosage(1), dosage(2)];
       const stageSchedules = [scheduled(1, true)];
       const startDates = [pastDate, pastDate];
-      expect(getActiveStageIndex(fhirDosages, stageSchedules, startDates)).toBe(1);
+      expect(getActiveStageIndex(fhirDosages, stageSchedules, startDates)).toBe(
+        1
+      );
     });
 
     it("should return -1 when a scheduled stage is not yet attended", () => {
       const fhirDosages = [dosage(1), dosage(2)];
       const stageSchedules = [scheduled(1, false)];
       const startDates = [pastDate, pastDate];
-      expect(getActiveStageIndex(fhirDosages, stageSchedules, startDates)).toBe(-1);
+      expect(getActiveStageIndex(fhirDosages, stageSchedules, startDates)).toBe(
+        -1
+      );
     });
 
     it("should return -1 when all stages are attended", () => {
       const fhirDosages = [dosage(1), dosage(2)];
       const stageSchedules = [scheduled(1, true), scheduled(2, true)];
       const startDates = [pastDate, pastDate];
-      expect(getActiveStageIndex(fhirDosages, stageSchedules, startDates)).toBe(-1);
+      expect(getActiveStageIndex(fhirDosages, stageSchedules, startDates)).toBe(
+        -1
+      );
     });
 
     it("should return -1 when next stage start date is in the future", () => {
       const fhirDosages = [dosage(1), dosage(2)];
       const stageSchedules = [scheduled(1, true)];
       const startDates = [pastDate, futureDate];
-      expect(getActiveStageIndex(fhirDosages, stageSchedules, startDates)).toBe(-1);
+      expect(getActiveStageIndex(fhirDosages, stageSchedules, startDates)).toBe(
+        -1
+      );
     });
 
     it("should return -1 when no stages are scheduled and start date is in the future", () => {
       const fhirDosages = [dosage(1)];
       const stageSchedules = [];
       const startDates = [futureDate];
-      expect(getActiveStageIndex(fhirDosages, stageSchedules, startDates)).toBe(-1);
+      expect(getActiveStageIndex(fhirDosages, stageSchedules, startDates)).toBe(
+        -1
+      );
     });
 
     it("should return 0 when first stage is unscheduled and start date has passed", () => {
       const fhirDosages = [dosage(1), dosage(2)];
       const stageSchedules = [];
       const startDates = [pastDate, futureDate];
-      expect(getActiveStageIndex(fhirDosages, stageSchedules, startDates)).toBe(0);
+      expect(getActiveStageIndex(fhirDosages, stageSchedules, startDates)).toBe(
+        0
+      );
     });
 
     it("should return -1 when stageSchedules is null", () => {
       const fhirDosages = [dosage(1)];
       const startDates = [futureDate];
       expect(getActiveStageIndex(fhirDosages, null, startDates)).toBe(-1);
+    });
+  });
+  describe("modifyEmergencyTreatmentData", () => {
+    const validEmergencyMedication = {
+      uuid: "em-uuid-1",
+      drug: { display: "Paracetamol" },
+      dose: 500,
+      doseUnits: { display: "mg" },
+      route: { display: "Oral" },
+      administeredDateTime: 1700000000,
+      providers: [
+        {
+          function: "Requester",
+          provider: { uuid: "prov-1", display: "Dr. Smith - John Smith" },
+        },
+      ],
+      notes: [],
+    };
+
+    it("should filter out emergency medications with null drug", () => {
+      const medications = [
+        { ...validEmergencyMedication, drug: null, uuid: "em-null" },
+        validEmergencyMedication,
+      ];
+
+      const result = modifyEmergencyTreatmentData(medications);
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe("em-uuid-1");
+    });
+
+    it("should filter out emergency medications with undefined drug", () => {
+      const medicationWithoutDrug = { ...validEmergencyMedication };
+      delete medicationWithoutDrug.drug;
+
+      const medications = [medicationWithoutDrug];
+
+      const result = modifyEmergencyTreatmentData(medications);
+      expect(result).toHaveLength(0);
+    });
+
+    it("should return empty array when all medications have null drug", () => {
+      const medications = [
+        { ...validEmergencyMedication, drug: null, uuid: "em-1" },
+        { ...validEmergencyMedication, drug: null, uuid: "em-2" },
+      ];
+
+      const result = modifyEmergencyTreatmentData(medications);
+      expect(result).toHaveLength(0);
+    });
+
+    it("should process all medications when all have valid drug", () => {
+      const medications = [
+        validEmergencyMedication,
+        {
+          ...validEmergencyMedication,
+          uuid: "em-uuid-2",
+          drug: { display: "Ibuprofen" },
+        },
+      ];
+
+      const result = modifyEmergencyTreatmentData(medications);
+      expect(result).toHaveLength(2);
+    });
+
+    it("should return empty array for empty input", () => {
+      const result = modifyEmergencyTreatmentData([]);
+      expect(result).toHaveLength(0);
     });
   });
 });
