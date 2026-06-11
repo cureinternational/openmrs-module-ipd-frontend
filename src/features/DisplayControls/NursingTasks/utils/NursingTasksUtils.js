@@ -4,9 +4,8 @@ import {
   ADMINISTERED_MEDICATIONS_BASE_URL,
   asNeededPlaceholderConceptName,
   NON_MEDICATION_BASE_URL,
+  DOSE_UNITS,
 } from "../../../../constants";
-
-const DOSE_UNITS = ["ml", "mg", "mcg"];
 import { isSystemGeneratedTask } from "../../../../utils/CommonUtils";
 import {
   parseFhirDosages,

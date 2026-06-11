@@ -10,6 +10,7 @@ import {
   PRIVILEGE_CONSTANTS,
   displayShiftTimingsFormat,
   displayShiftTimings12HourFormat,
+  DOSE_UNITS,
 } from "../../../../constants";
 import { formatDate } from "../../../../utils/DateTimeUtils";
 import _ from "lodash";
@@ -65,11 +66,7 @@ export const transformDrugOrders = (orders) => {
         dosage = dosingInstructions.quantity || "";
         doseUnits =
           dosingInstructions.quantityUnits || dosingInstructions.doseUnits || "";
-      } else if (
-        dosingInstructions.doseUnits?.toLowerCase() === "ml" ||
-        dosingInstructions.doseUnits?.toLowerCase() === "mg" ||
-        dosingInstructions.doseUnits?.toLowerCase() === "mcg"
-      ) {
+      } else if (DOSE_UNITS.includes(dosingInstructions.doseUnits?.toLowerCase())) {
         dosage = dosingInstructions.dose + dosingInstructions.doseUnits;
       } else {
         dosage = dosingInstructions.dose;
@@ -113,11 +110,7 @@ export const transformDrugOrders = (orders) => {
       : null;
     let dosage = "",
       doseUnits;
-    if (
-      medication.doseUnits?.display?.toLowerCase() === "ml" ||
-      medication.doseUnits?.display?.toLowerCase() === "mg" ||
-      medication.doseUnits?.display?.toLowerCase() === "mcg"
-    ) {
+    if (DOSE_UNITS.includes(medication.doseUnits?.display?.toLowerCase())) {
       dosage = medication.dose + medication.doseUnits.display;
     } else {
       dosage = medication.dose;

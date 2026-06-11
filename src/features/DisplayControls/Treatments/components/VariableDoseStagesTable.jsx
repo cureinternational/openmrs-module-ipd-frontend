@@ -18,6 +18,10 @@ import {
 } from "../../../../utils/FhirDosingUtils";
 import { formatDate } from "../../../../utils/DateTimeUtils";
 import { getActiveStageIndex } from "../utils/TreatmentsUtils";
+import {
+  LOADING_DOSE_SEQUENCE_OFFSET,
+  NO_LOADING_DOSE_SEQUENCE_OFFSET,
+} from "../../../../constants";
 import "../styles/VariableDoseStagesTable.scss";
 
 const VariableDoseStagesTable = ({
@@ -35,8 +39,6 @@ const VariableDoseStagesTable = ({
   const startDates = computeStageStartDates(fhirDosages, effectiveStartDate);
   const stages = fhirDosages.map(fhirDosageToDisplayStage);
   const hasLoadingDose = stages.some((s) => s.isLoadingDose);
-  const LOADING_DOSE_SEQUENCE_OFFSET = 1;
-  const NO_LOADING_DOSE_SEQUENCE_OFFSET = 0;
 
   const activeStageIndex = getActiveStageIndex(fhirDosages, stageSchedules, startDates);
   const isButtonDisabled = !hasScheduleEditPrivilege || isAddToDrugChartDisabled;
