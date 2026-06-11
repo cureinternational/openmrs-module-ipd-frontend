@@ -516,9 +516,7 @@ export const buildStageDrugOrder = (
   drugOrderObject,
   dosage,
   stageInfo,
-  numberOfSlots,
   drugOrderSchedule = null,
-  stageFrequencyPerDay = null,
   stageStartDate = null
 ) => {
   const dr = dosage.doseAndRate?.[0];
@@ -545,8 +543,6 @@ export const buildStageDrugOrder = (
       ...(stageStartDate != null && { scheduledDate: stageStartDate }),
     },
     variableDosageSequence: dosage.sequence,
-    numberOfSlots,
-    stageFrequencyPerDay,
   };
 };
 

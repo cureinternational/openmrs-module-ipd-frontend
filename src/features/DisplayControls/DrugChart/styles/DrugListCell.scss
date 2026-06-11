@@ -58,7 +58,7 @@
 }
 
 .name-tooltip {
-  flex: 1;
+  flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
   [id*="definition-tooltip-"] {
@@ -98,7 +98,7 @@
   margin: 4px 0;
 }
 
-.note-icon-container .bx--tooltip__content {
+.bx--tooltip__content {
   max-height: 400px;
   overflow-y: auto;
 }

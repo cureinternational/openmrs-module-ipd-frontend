@@ -175,13 +175,6 @@ const Treatments = (props) => {
     if (!showEditDrugChartLink) setDrugChartNotes("");
   };
 
-  const getStageFrequencyPerDay = (stageInfo) => {
-    const scheduleConfig = selectedDrugOrder.scheduleFrequencies?.find(
-      (f) => f.name === stageInfo.frequency
-    );
-    return scheduleConfig?.frequencyPerDay || 1;
-  };
-
   const handleStageAddToDrugChart = (drugOrderId, stageIndex) => {
     if (isAddToDrugChartDisabled) return;
     const drugOrderObject = drugOrderList.find(
@@ -192,10 +185,6 @@ const Treatments = (props) => {
     const dosage = fhirDosages[stageIndex];
     if (!dosage) return;
     const stageInfo = fhirDosageToDisplayStage(dosage);
-    const stageFrequencyPerDay = getStageFrequencyPerDay(stageInfo);
-    const numberOfSlots = stageInfo.isLoadingDose
-      ? 1
-      : Math.ceil((stageInfo.durationDays || 0) * stageFrequencyPerDay);
     const startDates = computeStageStartDates(
       fhirDosages,
       drugOrderObject.drugOrder.effectiveStartDate
@@ -210,9 +199,7 @@ const Treatments = (props) => {
         drugOrderObject,
         dosage,
         stageInfo,
-        numberOfSlots,
         null,
-        stageFrequencyPerDay,
         stageStartDate
       ),
     }));
@@ -232,10 +219,6 @@ const Treatments = (props) => {
     const dosage = fhirDosages[stageIndex];
     if (!dosage) return;
     const stageInfo = fhirDosageToDisplayStage(dosage);
-    const stageFrequencyPerDay = getStageFrequencyPerDay(stageInfo);
-    const numberOfSlots = stageInfo.isLoadingDose
-      ? 1
-      : Math.ceil((stageInfo.durationDays || 0) * stageFrequencyPerDay);
     const stageSchedules =
       drugOrderObject.drugOrderSchedule?.stageSchedules || [];
     const stageStatus = stageSchedules.find(
@@ -269,9 +252,7 @@ const Treatments = (props) => {
         drugOrderObject,
         dosage,
         stageInfo,
-        numberOfSlots,
         stageSpecificSchedule,
-        stageFrequencyPerDay,
         stageStartDate
       ),
     }));
