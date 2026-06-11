@@ -326,8 +326,9 @@ describe("TreatmentsUtils", () => {
   });
 
   describe("getActiveStageIndex", () => {
-    const pastDate = Date.now() - 86400000;
-    const futureDate = Date.now() + 86400000;
+    const ONE_DAY_MS = 86400000;
+    const pastDate = Date.now() - ONE_DAY_MS;
+    const futureDate = Date.now() + ONE_DAY_MS;
 
     const dosage = (sequence) => ({ sequence });
     const scheduled = (sequence, allAttended = false) => ({
