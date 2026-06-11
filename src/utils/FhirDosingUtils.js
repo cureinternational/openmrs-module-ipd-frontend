@@ -27,6 +27,8 @@ export const isVariableDoseOrder = (dosingInstructionType) =>
   dosingInstructionType ===
   "org.openmrs.module.bahmniemrapi.drugorder.dosinginstructions.FhirDosingInstructions";
 
+export const LOADING_DOSE_DURATION_DISPLAY = "Occurrence(s)";
+
 const UCUM_TO_DISPLAY = { d: "Day(s)", wk: "Week(s)", mo: "Month(s)" };
 const DISPLAY_TO_DAYS = {
   "day(s)": 1,
@@ -59,7 +61,7 @@ export const fhirDosageToDisplayStage = (dosage) => {
     dosage.timing?.repeat?.durationUnit
   );
   const duration = isLoadingDose
-    ? "1 Occurrence(s)"
+    ? `1 ${LOADING_DOSE_DURATION_DISPLAY}`
     : dosage.timing?.repeat
     ? `${dosage.timing.repeat.duration} ${durationUnit}`
     : "";

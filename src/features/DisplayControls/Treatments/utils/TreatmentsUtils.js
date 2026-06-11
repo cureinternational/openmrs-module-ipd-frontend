@@ -21,6 +21,7 @@ import {
   parseFlatAdminInstructions,
   isVariableDoseOrder,
   fromUcumDurationUnit,
+  LOADING_DOSE_DURATION_DISPLAY,
 } from "../../../../utils/FhirDosingUtils";
 import { isIPDrugOrder } from "../../../../utils/CommonUtils";
 import moment from "moment";
@@ -536,7 +537,7 @@ export const buildStageDrugOrder = (
     rate: stageInfo.rate || null,
     additives: stageInfo.additives || null,
     durationDisplayValue: stageInfo.isLoadingDose ? 1 : null,
-    durationDisplayUnits: stageInfo.isLoadingDose ? "Occurrence(s)" : null,
+    durationDisplayUnits: stageInfo.isLoadingDose ? LOADING_DOSE_DURATION_DISPLAY : null,
     drugOrder: {
       ...drugOrderObject.drugOrder,
       duration: stageInfo.durationDays || 0,

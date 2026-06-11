@@ -5,6 +5,8 @@ import {
   asNeededPlaceholderConceptName,
   NON_MEDICATION_BASE_URL,
 } from "../../../../constants";
+
+const DOSE_UNITS = ["ml", "mg", "mcg"];
 import { isSystemGeneratedTask } from "../../../../utils/CommonUtils";
 import {
   parseFhirDosages,
@@ -77,11 +79,7 @@ export const ExtractMedicationNursingTasksData = (
         if (order.duration) {
           duration = order.duration + " " + order.durationUnits.display;
         }
-        if (
-          order.doseUnits.display !== "ml" &&
-          order.doseUnits.display !== "mg" &&
-          order.doseUnits.display !== "mcg"
-        ) {
+        if (!DOSE_UNITS.includes(order.doseUnits.display)) {
           dosage = order.dose;
           doseType = order.doseUnits.display;
         } else {
@@ -106,11 +104,7 @@ export const ExtractMedicationNursingTasksData = (
           if (dr?.doseQuantity) {
             const val = dr.doseQuantity.value;
             const unit = dr.doseQuantity.unit || "";
-            if (
-              unit.toLowerCase() === "ml" ||
-              unit.toLowerCase() === "mg" ||
-              unit.toLowerCase() === "mcg"
-            ) {
+            if (DOSE_UNITS.includes(unit.toLowerCase())) {
               dosage = val + unit;
               doseType = "";
             } else {

@@ -139,6 +139,7 @@ export const SlotDetailsCell = ({
           if (stageDosage) {
             const stageInfo = fhirDosageToDisplayStage(stageDosage);
             dose = stageInfo.dose;
+            doseUnitsDisplay = stageDosage.doseAndRate?.[0]?.doseQuantity?.unit || "";
             routeDisplay = stageDosage.route?.text;
           }
         } else {

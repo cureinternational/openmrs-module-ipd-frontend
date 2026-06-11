@@ -35,6 +35,8 @@ const VariableDoseStagesTable = ({
   const startDates = computeStageStartDates(fhirDosages, effectiveStartDate);
   const stages = fhirDosages.map(fhirDosageToDisplayStage);
   const hasLoadingDose = stages.some((s) => s.isLoadingDose);
+  const LOADING_DOSE_SEQUENCE_OFFSET = 1;
+  const NO_LOADING_DOSE_SEQUENCE_OFFSET = 0;
 
   const activeStageIndex = getActiveStageIndex(fhirDosages, stageSchedules, startDates);
   const isButtonDisabled = !hasScheduleEditPrivilege || isAddToDrugChartDisabled;
@@ -100,7 +102,7 @@ const VariableDoseStagesTable = ({
             const stage = stages[index];
             const stageLabel = stage.isLoadingDose
               ? stage.stageName
-              : String(dosage.sequence - (hasLoadingDose ? 1 : 0));
+              : String(dosage.sequence - (hasLoadingDose ? LOADING_DOSE_SEQUENCE_OFFSET : NO_LOADING_DOSE_SEQUENCE_OFFSET));
             const hasNote =
               stage.instructions ||
               stage.additionalInstructions ||
@@ -177,7 +179,7 @@ const VariableDoseStagesTable = ({
                     <Link
                       disabled={isButtonDisabled}
                       onClick={() => {
-                        if (!isButtonDisabled) onAddToDrugChart(index);
+                        if (!isButtonDisabled && onAddToDrugChart) onAddToDrugChart(index);
                       }}
                     >
                       <FormattedMessage
@@ -190,7 +192,7 @@ const VariableDoseStagesTable = ({
                     <Link
                       disabled={isReadMode}
                       onClick={() => {
-                        if (!isReadMode) onEditDrugChart(index);
+                        if (!isReadMode && onEditDrugChart) onEditDrugChart(index);
                       }}
                     >
                       <FormattedMessage
