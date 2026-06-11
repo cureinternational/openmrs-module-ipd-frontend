@@ -916,6 +916,7 @@ describe("fetchCareInstructionsObs", () => {
     expect(mockAxios.history.get[0].params).toEqual({
       visitUuid: "visit-uuid-1",
       concept: ["Instruction for the Ward"],
+      filterObsWithOrders: false,
     });
     expect(mockAxios.history.get[0].params).not.toHaveProperty("patientUuid");
     expect(mockAxios.history.get[0].withCredentials).toBe(true);
@@ -985,6 +986,7 @@ describe("fetchBatchObservations", () => {
     expect(requestBody).toEqual({
       visitUuids: ["visit-uuid-1", "visit-uuid-2"],
       concept: ["Instruction for the Ward"],
+      filterObsWithOrders: false,
     });
     expect(mockAxios.history.post[0].withCredentials).toBe(true);
   });
