@@ -59,14 +59,14 @@ export const ExtractMedicationNursingTasksData = (
       const { startTime, uuid, order, medicationAdministration, serviceType } =
         slot;
       const administeredDateTime =
-        slot.status === "COMPLETED"
-          ? medicationAdministration.administeredDateTime !== null
-            ? medicationAdministration.administeredDateTime
-            : ""
+        slot.status === "COMPLETED" && medicationAdministration
+          ? medicationAdministration.administeredDateTime ?? ""
           : "";
       let drugName, drugRoute, duration, dosage, doseType, dosingInstructions;
       if (order) {
-        drugName = order.drugNonCoded ? order.drugNonCoded : order.drug.display;
+        drugName = order.drugNonCoded
+          ? order.drugNonCoded
+          : order.drug?.display;
         drugRoute = order.route?.display;
         if (order.duration) {
           duration = order.duration + " " + order.durationUnits.display;
@@ -234,7 +234,7 @@ export const saveAdministeredMedication = async (administeredMedication) => {
       administeredMedication
     );
   } catch (error) {
-    return error.response;
+    return error?.response ?? { status: null, data: null };
   }
 };
 
