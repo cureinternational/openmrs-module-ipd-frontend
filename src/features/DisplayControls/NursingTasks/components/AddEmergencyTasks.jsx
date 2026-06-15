@@ -351,7 +351,9 @@ const AddEmergencyTasks = (props) => {
       ...(observationUuid && {
         focus: { type: "Observation", reference: `Observation/${observationUuid}` },
       }),
-      basedOn: { type: "ServiceRequest", reference: orderUuid },
+      ...(orderUuid && {
+        basedOn: { type: "ServiceRequest", reference: `ServiceRequest/${orderUuid}` },
+      }),
     };
     return nonMedicationPayload;
   };

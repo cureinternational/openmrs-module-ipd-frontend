@@ -59,12 +59,12 @@ export const fetchAcknowledgedObservationUuids = async (obsUuids) => {
   return new Set(tasks.map((task) => task.observationUuid).filter(Boolean));
 };
 
-export const fetchBatchObservations = async (visitUuids, concepts) => {
+export const fetchBatchObservations = async (visitUuids, concepts, filterObsWithOrders = false) => {
   try {
     const request = {
       visitUuids,
       concept: concepts,
-      filterObsWithOrders: false,
+      filterObsWithOrders,
     };
 
     const response = await axios.post(OBSERVATIONS_BATCH_URL, request, {
