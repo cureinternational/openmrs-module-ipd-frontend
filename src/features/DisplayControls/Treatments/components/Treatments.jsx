@@ -532,7 +532,7 @@ const Treatments = (props) => {
             id: drugOrder.uuid,
             startDate: formatDate(drugOrder.effectiveStartDate),
             drugName: getDrugName(drugOrderObject),
-            dosageDetails: setDosingInstructions(drugOrder),
+            dosageDetails: setDosingInstructions(drugOrder, drugOrderObject.intradayDose),
             providerName: drugOrderObject.provider.name,
             status: getStatus(),
             actions: isVariableDose ? null : actionsObjectValue.link,
