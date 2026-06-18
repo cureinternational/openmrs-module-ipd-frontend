@@ -191,11 +191,20 @@ export const shouldIncludeInIPDDashboard = (
   drugOrderObject,
   allMedicinesInPrescriptionAvailableForIPD
 ) => {
+  if (drugOrderObject.isDischargeMedication) return false;
   if (!allMedicinesInPrescriptionAvailableForIPD)
     return isIPDrugOrder(drugOrderObject.drugOrder);
-  return !(
-    !isIPDrugOrder(drugOrderObject.drugOrder) &&
-    drugOrderObject.isDischargeMedication
+  return true;
+};
+
+export const getDischargeRevisedOrderUuids = (drugOrders) => {
+  return new Set(
+    drugOrders
+      .filter(
+        (d) => d.drugOrder.action === "REVISE" && d.isDischargeMedication
+      )
+      .map((d) => d.drugOrder.previousOrderUuid)
+      .filter(Boolean)
   );
 };
 

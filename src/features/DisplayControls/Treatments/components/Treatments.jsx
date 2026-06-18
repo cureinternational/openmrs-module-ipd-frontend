@@ -26,6 +26,7 @@ import {
   isMedicationCourseEndedBeforeAdmission,
   shouldIncludeInIPDDashboard,
   buildStageDrugOrder,
+  getDischargeRevisedOrderUuids,
 } from "../utils/TreatmentsUtils";
 import { getCookies, isUserPrivileged } from "../../../../utils/CommonUtils";
 import {
@@ -396,7 +397,14 @@ const Treatments = (props) => {
 
   const modifyPrescribedTreatmentData = async (drugOrders, prnInterval) => {
     const admissionDate = visitSummary?.startDateTime;
+    const dischargeRevisedUuids = getDischargeRevisedOrderUuids(drugOrders);
     drugOrders = drugOrders.filter((drugOrderObject) => {
+      if (
+        drugOrderObject.drugOrder.dateStopped &&
+        dischargeRevisedUuids.has(drugOrderObject.drugOrder.uuid)
+      ) {
+        return false;
+      }
       if (
         isMedicationCourseEndedBeforeAdmission(
           drugOrderObject.drugOrder,

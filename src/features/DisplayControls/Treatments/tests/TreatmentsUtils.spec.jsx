@@ -217,10 +217,16 @@ describe("TreatmentsUtils", () => {
       ).toBe(true);
     });
 
-    it("should include INPATIENT order regardless of DISCH tag", () => {
+    it("should include INPATIENT order without DISCH tag", () => {
       expect(
         shouldIncludeInIPDDashboard(buildOrder("INPATIENT", false), true)
       ).toBe(true);
+    });
+
+    it("should exclude INPATIENT order with DISCH tag", () => {
+      expect(
+        shouldIncludeInIPDDashboard(buildOrder("INPATIENT", true), true)
+      ).toBe(false);
     });
 
     it("should include only INPATIENT orders when allMedicinesInPrescriptionAvailableForIPD is false", () => {
