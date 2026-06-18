@@ -29,6 +29,7 @@ const VariableDoseStagesTable = ({
   effectiveStartDate,
   onAddToDrugChart,
   onEditDrugChart,
+  onStopDrugChart,
   stageSchedules,
   isAddToDrugChartDisabled,
   isReadMode,
@@ -40,17 +41,24 @@ const VariableDoseStagesTable = ({
   const stages = fhirDosages.map(fhirDosageToDisplayStage);
   const hasLoadingDose = stages.some((s) => s.isLoadingDose);
 
-  const activeStageIndex = getActiveStageIndex(fhirDosages, stageSchedules, startDates);
-  const isButtonDisabled = !hasScheduleEditPrivilege || isAddToDrugChartDisabled;
+  const activeStageIndex = getActiveStageIndex(
+    fhirDosages,
+    stageSchedules,
+    startDates
+  );
+  const isButtonDisabled =
+    !hasScheduleEditPrivilege || isAddToDrugChartDisabled;
 
   return (
     <div className="vdp-section">
-      <p className="vdp-title">
-        <FormattedMessage
-          id="VARIABLE_DOSAGE_PROTOCOL"
-          defaultMessage="Variable Dosage Protocol"
-        />
-      </p>
+      <div className="vdp-header">
+        <p className="vdp-title">
+          <FormattedMessage
+            id="VARIABLE_DOSAGE_PROTOCOL"
+            defaultMessage="Variable Dosage Protocol"
+          />
+        </p>
+      </div>
       <Table className="vdp-table">
         <TableHead>
           <TableRow>
@@ -99,12 +107,18 @@ const VariableDoseStagesTable = ({
             );
             const isScheduled = stageStatus?.isScheduled;
             const adminStarted = stageStatus?.administrationStarted;
+            const pendingSlotsAvailable = stageStatus?.pendingSlotsAvailable;
             const isActiveStage = index === activeStageIndex;
 
             const stage = stages[index];
             const stageLabel = stage.isLoadingDose
               ? stage.stageName
-              : String(dosage.sequence - (hasLoadingDose ? LOADING_DOSE_SEQUENCE_OFFSET : NO_LOADING_DOSE_SEQUENCE_OFFSET));
+              : String(
+                  dosage.sequence -
+                    (hasLoadingDose
+                      ? LOADING_DOSE_SEQUENCE_OFFSET
+                      : NO_LOADING_DOSE_SEQUENCE_OFFSET)
+                );
             const hasNote =
               stage.instructions ||
               stage.additionalInstructions ||
@@ -177,11 +191,11 @@ const VariableDoseStagesTable = ({
                 <TableCell>{stage.frequency}</TableCell>
                 <TableCell>{stage.duration}</TableCell>
                 <TableCell>
-                  {isActiveStage && (
+                  {isActiveStage && onAddToDrugChart && (
                     <Link
                       disabled={isButtonDisabled}
                       onClick={() => {
-                        if (!isButtonDisabled && onAddToDrugChart) onAddToDrugChart(index);
+                        if (!isButtonDisabled) onAddToDrugChart(index);
                       }}
                     >
                       <FormattedMessage
@@ -194,12 +208,26 @@ const VariableDoseStagesTable = ({
                     <Link
                       disabled={isReadMode}
                       onClick={() => {
-                        if (!isReadMode && onEditDrugChart) onEditDrugChart(index);
+                        if (!isReadMode && onEditDrugChart)
+                          onEditDrugChart(index);
                       }}
                     >
                       <FormattedMessage
                         id="EDIT_DRUG_CHART"
                         defaultMessage="Edit Drug Chart"
+                      />
+                    </Link>
+                  )}
+                  {adminStarted && pendingSlotsAvailable && onStopDrugChart && (
+                    <Link
+                      disabled={isReadMode}
+                      onClick={() => {
+                        if (!isReadMode) onStopDrugChart();
+                      }}
+                    >
+                      <FormattedMessage
+                        id="STOP_DRUG"
+                        defaultMessage="Stop drug"
                       />
                     </Link>
                   )}
@@ -218,6 +246,7 @@ VariableDoseStagesTable.propTypes = {
   effectiveStartDate: PropTypes.number.isRequired,
   onAddToDrugChart: PropTypes.func,
   onEditDrugChart: PropTypes.func,
+  onStopDrugChart: PropTypes.func,
   stageSchedules: PropTypes.array,
   isAddToDrugChartDisabled: PropTypes.bool,
   isReadMode: PropTypes.bool,

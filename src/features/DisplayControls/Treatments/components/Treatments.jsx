@@ -456,6 +456,12 @@ const Treatments = (props) => {
           }
 
           const drugOrder = drugOrderObject.drugOrder;
+          const isVariableDose = isVariableDoseOrder(
+            drugOrder.dosingInstructionType
+          );
+          const stageSchedules = isVariableDose
+            ? drugOrderObject.drugOrderSchedule?.stageSchedules || []
+            : [];
           const actionsObjectValue =
             !drugOrder.dateStopped &&
             getActions(
@@ -466,12 +472,6 @@ const Treatments = (props) => {
               drugOrderObject.drugOrderAttributes,
               drugOrderObject
             );
-          const isVariableDose = isVariableDoseOrder(
-            drugOrder.dosingInstructionType
-          );
-          const stageSchedules = isVariableDose
-            ? drugOrderObject.drugOrderSchedule?.stageSchedules || []
-            : [];
           const totalFhirStages = isVariableDose
             ? (drugOrderObject.fhirDosages || []).length
             : 0;
@@ -480,7 +480,10 @@ const Treatments = (props) => {
             isAnyStageScheduled &&
             stageSchedules.length === totalFhirStages &&
             stageSchedules.every((s) => s.allAttended);
-          const isInProgress = isAnyStageScheduled && !isAllStagesAttended;
+          const isInProgress =
+            !drugOrder.dateStopped &&
+            isAnyStageScheduled &&
+            !isAllStagesAttended;
           const getStatus = () => {
             if (drugOrder.dateStopped) {
               return (
@@ -571,16 +574,24 @@ const Treatments = (props) => {
                 currentUser,
                 PRIVILEGE_CONSTANTS.EDIT_MEDICATION_TASKS
               ),
-              onAddToDrugChart: isVariableDose
-                ? (stageIndex) =>
-                    handleStageAddToDrugChart(drugOrder.uuid, stageIndex)
-                : undefined,
+              onAddToDrugChart:
+                isVariableDose && !drugOrder.dateStopped
+                  ? (stageIndex) =>
+                      handleStageAddToDrugChart(drugOrder.uuid, stageIndex)
+                  : undefined,
               onEditDrugChart: isVariableDose
                 ? (stageIndex) =>
                     handleStageEditDrugChart(drugOrder.uuid, stageIndex)
                 : undefined,
+              onStopDrugChart:
+                isVariableDose &&
+                showStopDrugChartLink &&
+                stageSchedules.some((s) => s.pendingSlotsAvailable)
+                  ? () => handleStopDrugChartClick(drugOrder.uuid)
+                  : undefined,
               isInProgress: isVariableDose ? isInProgress : undefined,
               isCompleted: isVariableDose ? isAllStagesAttended : undefined,
+              dateStopped: isVariableDose ? !!drugOrder.dateStopped : undefined,
             },
           };
         })
@@ -611,8 +622,10 @@ const Treatments = (props) => {
           treatment.additionalData.hasScheduleEditPrivilege,
         onAddToDrugChart: treatment.additionalData.onAddToDrugChart,
         onEditDrugChart: treatment.additionalData.onEditDrugChart,
+        onStopDrugChart: treatment.additionalData.onStopDrugChart,
         isInProgress: treatment.additionalData.isInProgress,
         isCompleted: treatment.additionalData.isCompleted,
+        dateStopped: treatment.additionalData.dateStopped,
       };
     });
     setAdditionalData(additionalMappedData);

@@ -1385,6 +1385,177 @@ describe("Treatments", () => {
     });
     expect(getByText(/Completed/i)).toBeTruthy();
   });
+
+  const FHIR_DOSING_INSTRUCTION_TYPE =
+    "org.openmrs.module.bahmniemrapi.drugorder.dosinginstructions.FhirDosingInstructions";
+
+  const variableDoseStopDrugOrder = {
+    drugOrder: {
+      uuid: "vdp-1",
+      effectiveStartDate: 1704785404,
+      dateStopped: null,
+      dateActivated: 1704785404,
+      dosingInstructionType: FHIR_DOSING_INSTRUCTION_TYPE,
+      dosingInstructions: {
+        dose: null,
+        doseUnits: "Tablet(s)",
+        route: "Oral",
+        frequency: null,
+        asNeeded: false,
+        administrationInstructions: JSON.stringify([
+          {
+            sequence: 1,
+            text: "Stage 1",
+            timing: {
+              code: { text: "Once a day" },
+              repeat: { duration: 3, durationUnit: "d" },
+            },
+            doseAndRate: [{ doseQuantity: { value: 1, unit: "Tablet(s)" } }],
+            extension: [{ url: "isLoadingDose", valueBoolean: false }],
+          },
+        ]),
+      },
+      drug: { name: "VDP Drug" },
+      duration: 3,
+      durationUnits: "Day(s)",
+      careSetting: "INPATIENT",
+    },
+    drugOrderSchedule: {
+      stageSchedules: [
+        {
+          variableDosageSequence: 1,
+          isScheduled: true,
+          administrationStarted: true,
+          pendingSlotsAvailable: true,
+          allAttended: false,
+        },
+      ],
+      medicationAdministrationStarted: true,
+    },
+    provider: { name: "Dr. Jane Smith" },
+  };
+
+  it("should show Stop drug link in expandable row for variable dose when administration has started", async () => {
+    const updatedAllMedications = {
+      ...mockAllMedicationsProviderValue,
+      data: {
+        emergencyMedications: [],
+        ipdDrugOrders: [variableDoseStopDrugOrder],
+      },
+    };
+
+    const { queryByText } = render(
+      <IPDContext.Provider
+        value={{
+          config: mockConfig,
+          isReadMode: false,
+          currentUser: mockUserWithAllRequiredPrivileges,
+        }}
+      >
+        <SliderContext.Provider value={mockProviderValue}>
+          <AllMedicationsContext.Provider value={updatedAllMedications}>
+            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+          </AllMedicationsContext.Provider>
+        </SliderContext.Provider>
+      </IPDContext.Provider>
+    );
+
+    await waitFor(() => {
+      expect(queryByText("VDP Drug")).toBeTruthy();
+    });
+    expect(queryByText("Stop drug")).toBeTruthy();
+  });
+
+  it("should not show Stop drug link for variable dose when administration has not started", async () => {
+    const notStartedOrder = {
+      ...variableDoseStopDrugOrder,
+      drugOrderSchedule: {
+        stageSchedules: [
+          {
+            variableDosageSequence: 1,
+            isScheduled: true,
+            administrationStarted: false,
+            pendingSlotsAvailable: true,
+            allAttended: false,
+          },
+        ],
+        medicationAdministrationStarted: false,
+      },
+    };
+    const updatedAllMedications = {
+      ...mockAllMedicationsProviderValue,
+      data: {
+        emergencyMedications: [],
+        ipdDrugOrders: [notStartedOrder],
+      },
+    };
+
+    const { queryByText } = render(
+      <IPDContext.Provider
+        value={{
+          config: mockConfig,
+          isReadMode: false,
+          currentUser: mockUserWithAllRequiredPrivileges,
+        }}
+      >
+        <SliderContext.Provider value={mockProviderValue}>
+          <AllMedicationsContext.Provider value={updatedAllMedications}>
+            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+          </AllMedicationsContext.Provider>
+        </SliderContext.Provider>
+      </IPDContext.Provider>
+    );
+
+    await waitFor(() => {
+      expect(queryByText("VDP Drug")).toBeTruthy();
+    });
+    expect(queryByText("Stop drug")).toBeFalsy();
+  });
+
+  it("should stop variable dose medication and show success notification on modal submit", async () => {
+    getEncounterType.mockResolvedValueOnce({
+      uuid: "81852aee-3f10-11e4-adec-0800271c1b75",
+    });
+    stopDrugOrders.mockResolvedValueOnce({ status: 200 });
+
+    const updatedAllMedications = {
+      ...mockAllMedicationsProviderValue,
+      data: {
+        emergencyMedications: [],
+        ipdDrugOrders: [variableDoseStopDrugOrder],
+      },
+    };
+
+    const { getAllByText, container } = render(
+      <IPDContext.Provider
+        value={{
+          config: mockConfig,
+          isReadMode: false,
+          currentUser: mockUserWithAllRequiredPrivileges,
+          handleAuditEvent: mockHandleAuditEvent,
+        }}
+      >
+        <SliderContext.Provider value={mockProviderValue}>
+          <AllMedicationsContext.Provider value={updatedAllMedications}>
+            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+          </AllMedicationsContext.Provider>
+        </SliderContext.Provider>
+      </IPDContext.Provider>
+    );
+
+    await waitFor(() => {
+      getAllByText("Stop drug")[0].click();
+      const reasonInputField = container.querySelector(".bx--text-area");
+      fireEvent.change(reasonInputField, { target: { value: "test reason" } });
+      const stopDrugButton = getAllByText("Stop drug")[1];
+      fireEvent.click(stopDrugButton);
+      expect(getEncounterType).toHaveBeenCalledWith("Consultation");
+      expect(stopDrugOrders).toHaveBeenCalled();
+    });
+    expect(mockHandleAuditEvent).toHaveBeenCalledWith(
+      "STOP_SCHEDULED_MEDICATION_TASK"
+    );
+  });
 });
 
 it("should render an Edit Drug Chart link disabled for IPD treatments read mode", async () => {

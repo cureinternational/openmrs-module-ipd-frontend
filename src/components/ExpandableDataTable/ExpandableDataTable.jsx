@@ -74,7 +74,7 @@ const ExpandableDataTable = (props) => {
                   ? "green-row"
                   : matchedData?.isInProgress
                   ? "in-progress-row"
-                  : matchedData?.isCompleted
+                  : matchedData?.isCompleted || matchedData?.dateStopped
                   ? ""
                   : matchedData?.isVariableDose
                   ? "variable-dose-row"
@@ -83,7 +83,7 @@ const ExpandableDataTable = (props) => {
                   ? "green-cell"
                   : matchedData?.isInProgress
                   ? "in-progress-cell"
-                  : matchedData?.isCompleted
+                  : matchedData?.isCompleted || matchedData?.dateStopped
                   ? ""
                   : matchedData?.isVariableDose
                   ? "variable-dose-cell"
@@ -93,11 +93,23 @@ const ExpandableDataTable = (props) => {
                 const isZebraRow = isPlainRow && zebraIndex % 2 !== 0;
                 if (isPlainRow) zebraIndex++;
 
-                const zebraClass = isZebraRow ? "zebra-row" : isPlainRow ? "plain-row" : "";
-                const zebraCellClass = isZebraRow ? "zebra-cell" : isPlainRow ? "plain-cell" : "";
+                const zebraClass = isZebraRow
+                  ? "zebra-row"
+                  : isPlainRow
+                  ? "plain-row"
+                  : "";
+                const zebraCellClass = isZebraRow
+                  ? "zebra-cell"
+                  : isPlainRow
+                  ? "plain-cell"
+                  : "";
 
-                const rowClass = [rowClassName, zebraClass].filter(Boolean).join(" ");
-                const cellClass = [cellClassName, zebraCellClass].filter(Boolean).join(" ");
+                const rowClass = [rowClassName, zebraClass]
+                  .filter(Boolean)
+                  .join(" ");
+                const cellClass = [cellClassName, zebraCellClass]
+                  .filter(Boolean)
+                  .join(" ");
 
                 if (expandable) {
                   return (
