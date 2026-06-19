@@ -198,11 +198,7 @@ export const shouldIncludeInIPDDashboard = (
   return true;
 };
 
-export const DRUG_ORDER_ACTIONS = {
-  REVISE: "REVISE",
-  DISCONTINUE: "DISCONTINUE",
-  NEW: "NEW",
-};
+export const DRUG_ORDER_ACTIONS = { REVISE: "REVISE" };
 
 export const getDischargeRevisedOrderUuids = (drugOrders) => {
   return new Set(
