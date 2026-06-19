@@ -142,6 +142,7 @@ export const updateDrugOrderList = (drugOrderList) => {
       ipdDrugOrder.additionalInstructions = "";
       ipdDrugOrder.rate = null;
       ipdDrugOrder.additives = null;
+      ipdDrugOrder.isDischargeMedication = false;
 
       const { quantity, quantityUnits, doseUnits } =
         ipdDrugOrder.drugOrder.dosingInstructions;
@@ -197,16 +198,31 @@ export const shouldIncludeInIPDDashboard = (
   return true;
 };
 
+export const DRUG_ORDER_ACTIONS = {
+  REVISE: "REVISE",
+  DISCONTINUE: "DISCONTINUE",
+  NEW: "NEW",
+};
+
 export const getDischargeRevisedOrderUuids = (drugOrders) => {
   return new Set(
     drugOrders
       .filter(
-        (d) => d.drugOrder.action === "REVISE" && d.isDischargeMedication
+        (d) =>
+          d.drugOrder.action === DRUG_ORDER_ACTIONS.REVISE &&
+          d.isDischargeMedication
       )
       .map((d) => d.drugOrder.previousOrderUuid)
       .filter(Boolean)
   );
 };
+
+export const isSupersededByDischargeRevision = (
+  drugOrderObject,
+  dischargeRevisedUuids
+) =>
+  !!drugOrderObject.drugOrder.dateStopped &&
+  dischargeRevisedUuids.has(drugOrderObject.drugOrder.uuid);
 
 export const AddToDrugChart = (
   <FormattedMessage

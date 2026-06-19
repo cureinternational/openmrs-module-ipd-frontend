@@ -27,6 +27,7 @@ import {
   shouldIncludeInIPDDashboard,
   buildStageDrugOrder,
   getDischargeRevisedOrderUuids,
+  isSupersededByDischargeRevision,
 } from "../utils/TreatmentsUtils";
 import { getCookies, isUserPrivileged } from "../../../../utils/CommonUtils";
 import {
@@ -399,10 +400,7 @@ const Treatments = (props) => {
     const admissionDate = visitSummary?.startDateTime;
     const dischargeRevisedUuids = getDischargeRevisedOrderUuids(drugOrders);
     drugOrders = drugOrders.filter((drugOrderObject) => {
-      if (
-        drugOrderObject.drugOrder.dateStopped &&
-        dischargeRevisedUuids.has(drugOrderObject.drugOrder.uuid)
-      ) {
+      if (isSupersededByDischargeRevision(drugOrderObject, dischargeRevisedUuids)) {
         return false;
       }
       if (
