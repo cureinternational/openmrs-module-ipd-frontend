@@ -13,6 +13,7 @@ import {
   fromUcumDurationUnit,
   fhirDosageToDisplayStage,
 } from "../../../../utils/FhirDosingUtils";
+import { formatIntradayDoseString } from "../../Treatments/utils/TreatmentsUtils";
 import moment from "moment";
 
 export const fetchMedicationNursingTasks = async (
@@ -71,7 +72,7 @@ export const ExtractMedicationNursingTasksData = (
             ? medicationAdministration.administeredDateTime
             : ""
           : "";
-      let drugName, drugRoute, duration, dosage, doseType, dosingInstructions;
+      let drugName, drugRoute, duration, dosage, doseType, dosingInstructions, intradayDoseString = null;
       if (order) {
         drugName = order.drugNonCoded ? order.drugNonCoded : order.drug.display;
         drugRoute = order.route?.display;
@@ -91,6 +92,28 @@ export const ExtractMedicationNursingTasksData = (
           asNeeded: order.asNeeded,
           frequency: order.frequency?.display,
         };
+        if (
+          administrationInstructions &&
+          (administrationInstructions.morningDose != null ||
+            administrationInstructions.afternoonDose != null ||
+            administrationInstructions.eveningDose != null ||
+            administrationInstructions.nightDose != null)
+        ) {
+          const intradayDose = {
+            morning: administrationInstructions.morningDose,
+            afternoon: administrationInstructions.afternoonDose,
+            evening: administrationInstructions.eveningDose,
+            night: administrationInstructions.nightDose,
+          };
+          intradayDoseString = formatIntradayDoseString(
+            intradayDose,
+            order.doseUnits?.display,
+            order.route?.display,
+            null,
+            order.duration,
+            order.durationUnits?.display
+          );
+        }
       }
       if (slot.variableDosageSequence != null) {
         const fhirDosages = parseFhirDosages(order?.dosingInstructions);
@@ -160,6 +183,7 @@ export const ExtractMedicationNursingTasksData = (
             slot.status === "MISSED",
         serviceType,
         lastAdministrationTime: slot.lastAdministrationTime ?? null,
+        intradayDoseString,
       };
 
       if (filterValue.id === "prn" && slotInfo.dosingInstructions.asNeeded) {

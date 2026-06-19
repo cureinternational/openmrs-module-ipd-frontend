@@ -22,6 +22,7 @@ import {
   parseFhirDosages,
   parseFlatAdminInstructions,
 } from "../../../../utils/FhirDosingUtils";
+import { formatIntradayDoseString } from "../../Treatments/utils/TreatmentsUtils";
 
 export const fetchMedications = async (
   patientUuid,
@@ -75,6 +76,29 @@ export const transformDrugOrders = (orders) => {
         dosage = dosingInstructions.dose;
         doseUnits = dosingInstructions.doseUnits;
       }
+      const isIntraday = !isVariableDose && (
+        parsedInstructions?.morningDose != null ||
+        parsedInstructions?.afternoonDose != null ||
+        parsedInstructions?.eveningDose != null ||
+        parsedInstructions?.nightDose != null
+      );
+      let intradayDoseString = null;
+      if (isIntraday) {
+        const intradayDose = {
+          morning: parsedInstructions.morningDose,
+          afternoon: parsedInstructions.afternoonDose,
+          evening: parsedInstructions.eveningDose,
+          night: parsedInstructions.nightDose,
+        };
+        intradayDoseString = formatIntradayDoseString(
+          intradayDose,
+          dosingInstructions.doseUnits,
+          dosingInstructions.route,
+          null,
+          duration,
+          durationUnits
+        );
+      }
       medicationData[order.drugOrder.uuid] = {
         name: drug?.name || drugNonCoded,
         dosingInstructions: {
@@ -103,6 +127,8 @@ export const transformDrugOrders = (orders) => {
         stageSchedules: isVariableDose
           ? order.drugOrderSchedule?.stageSchedules || []
           : null,
+        isIntraday,
+        intradayDoseString,
       };
     }
   });
