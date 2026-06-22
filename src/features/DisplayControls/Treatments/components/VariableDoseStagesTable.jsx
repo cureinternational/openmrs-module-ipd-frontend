@@ -41,13 +41,8 @@ const VariableDoseStagesTable = ({
   const stages = fhirDosages.map(fhirDosageToDisplayStage);
   const hasLoadingDose = stages.some((s) => s.isLoadingDose);
 
-  const activeStageIndex = getActiveStageIndex(
-    fhirDosages,
-    stageSchedules,
-    startDates
-  );
-  const isButtonDisabled =
-    !hasScheduleEditPrivilege || isAddToDrugChartDisabled;
+  const activeStageIndex = getActiveStageIndex(fhirDosages, stageSchedules, startDates);
+  const isButtonDisabled = !hasScheduleEditPrivilege || isAddToDrugChartDisabled;
 
   return (
     <div className="vdp-section">
@@ -113,12 +108,7 @@ const VariableDoseStagesTable = ({
             const stage = stages[index];
             const stageLabel = stage.isLoadingDose
               ? stage.stageName
-              : String(
-                  dosage.sequence -
-                    (hasLoadingDose
-                      ? LOADING_DOSE_SEQUENCE_OFFSET
-                      : NO_LOADING_DOSE_SEQUENCE_OFFSET)
-                );
+              : String(dosage.sequence - (hasLoadingDose ? LOADING_DOSE_SEQUENCE_OFFSET : NO_LOADING_DOSE_SEQUENCE_OFFSET));
             const hasNote =
               stage.instructions ||
               stage.additionalInstructions ||
@@ -208,8 +198,7 @@ const VariableDoseStagesTable = ({
                     <Link
                       disabled={isReadMode}
                       onClick={() => {
-                        if (!isReadMode && onEditDrugChart)
-                          onEditDrugChart(index);
+                        if (!isReadMode && onEditDrugChart) onEditDrugChart(index);
                       }}
                     >
                       <FormattedMessage
