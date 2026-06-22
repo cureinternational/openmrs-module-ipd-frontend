@@ -15,6 +15,7 @@ import {
   mockUserWithAllRequiredPrivileges,
   mockUserWithoutAnyPrivilege,
 } from "../../../../utils/mockUserData";
+import { variableDoseStopDrugOrder } from "./TreatmentsMockData";
 
 const mockHandleAuditEvent = jest.fn();
 
@@ -1386,55 +1387,6 @@ describe("Treatments", () => {
     expect(getByText(/Completed/i)).toBeTruthy();
   });
 
-  const FHIR_DOSING_INSTRUCTION_TYPE =
-    "org.openmrs.module.bahmniemrapi.drugorder.dosinginstructions.FhirDosingInstructions";
-
-  const variableDoseStopDrugOrder = {
-    drugOrder: {
-      uuid: "vdp-1",
-      effectiveStartDate: 1704785404,
-      dateStopped: null,
-      dateActivated: 1704785404,
-      dosingInstructionType: FHIR_DOSING_INSTRUCTION_TYPE,
-      dosingInstructions: {
-        dose: null,
-        doseUnits: "Tablet(s)",
-        route: "Oral",
-        frequency: null,
-        asNeeded: false,
-        administrationInstructions: JSON.stringify([
-          {
-            sequence: 1,
-            text: "Stage 1",
-            timing: {
-              code: { text: "Once a day" },
-              repeat: { duration: 3, durationUnit: "d" },
-            },
-            doseAndRate: [{ doseQuantity: { value: 1, unit: "Tablet(s)" } }],
-            extension: [{ url: "isLoadingDose", valueBoolean: false }],
-          },
-        ]),
-      },
-      drug: { name: "VDP Drug" },
-      duration: 3,
-      durationUnits: "Day(s)",
-      careSetting: "INPATIENT",
-    },
-    drugOrderSchedule: {
-      stageSchedules: [
-        {
-          variableDosageSequence: 1,
-          isScheduled: true,
-          administrationStarted: true,
-          pendingSlotsAvailable: true,
-          allAttended: false,
-        },
-      ],
-      medicationAdministrationStarted: true,
-    },
-    provider: { name: "Dr. Jane Smith" },
-  };
-
   it("should show Stop drug link in expandable row for variable dose when administration has started", async () => {
     const updatedAllMedications = {
       ...mockAllMedicationsProviderValue,
@@ -1512,7 +1464,7 @@ describe("Treatments", () => {
     expect(queryByText("Stop drug")).toBeFalsy();
   });
 
-  it("should stop variable dose medication and show success notification on modal submit", async () => {
+  it("should stop variable dose medication and show success stop notification on modal submit", async () => {
     getEncounterType.mockResolvedValueOnce({
       uuid: "81852aee-3f10-11e4-adec-0800271c1b75",
     });
