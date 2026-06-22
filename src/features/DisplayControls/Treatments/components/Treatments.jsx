@@ -480,7 +480,10 @@ const Treatments = (props) => {
             isAnyStageScheduled &&
             stageSchedules.length === totalFhirStages &&
             stageSchedules.every((s) => s.allAttended);
-          const isInProgress = !drugOrder.dateStopped && isAnyStageScheduled && !isAllStagesAttended;
+          const isInProgress =
+            !drugOrder.dateStopped &&
+            isAnyStageScheduled &&
+            !isAllStagesAttended;
           const getStatus = () => {
             if (drugOrder.dateStopped) {
               return (
@@ -571,10 +574,11 @@ const Treatments = (props) => {
                 currentUser,
                 PRIVILEGE_CONSTANTS.EDIT_MEDICATION_TASKS
               ),
-              onAddToDrugChart: isVariableDose && !drugOrder.dateStopped
-                ? (stageIndex) =>
-                  handleStageAddToDrugChart(drugOrder.uuid, stageIndex)
-                : undefined,
+              onAddToDrugChart:
+                isVariableDose && !drugOrder.dateStopped
+                  ? (stageIndex) =>
+                      handleStageAddToDrugChart(drugOrder.uuid, stageIndex)
+                  : undefined,
               onEditDrugChart: isVariableDose
                 ? (stageIndex) =>
                     handleStageEditDrugChart(drugOrder.uuid, stageIndex)
