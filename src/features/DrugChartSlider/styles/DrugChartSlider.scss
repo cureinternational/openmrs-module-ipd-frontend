@@ -243,13 +243,16 @@ button[class*="bx--"]:disabled {
   font-size: 0.85rem;
 }
 
-.bx--number input[type="number"]:disabled ~ .bx--number__controls {
+.dose-field-with-units .bx--number input[type="number"]:disabled ~ .bx--number__controls,
+.duration-field-with-units .bx--number input[type="number"]:disabled ~ .bx--number__controls {
   width: 55%;
   background-color: #efefef;
 }
 
-.bx--number input[type="number"]:disabled ~ .bx--number__controls .bx--number__control-btn::before,
-.bx--number input[type="number"]:disabled ~ .bx--number__controls .bx--number__control-btn::after {
+.dose-field-with-units .bx--number input[type="number"]:disabled ~ .bx--number__controls .bx--number__control-btn::before,
+.dose-field-with-units .bx--number input[type="number"]:disabled ~ .bx--number__controls .bx--number__control-btn::after,
+.duration-field-with-units .bx--number input[type="number"]:disabled ~ .bx--number__controls .bx--number__control-btn::before,
+.duration-field-with-units .bx--number input[type="number"]:disabled ~ .bx--number__controls .bx--number__control-btn::after {
   background-color: transparent;
 }
 

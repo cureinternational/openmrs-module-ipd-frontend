@@ -79,11 +79,11 @@ export const ExtractMedicationNursingTasksData = (
         if (order.duration) {
           duration = order.duration + " " + order.durationUnits.display;
         }
-        if (!DOSE_UNITS.includes(order.doseUnits.display)) {
+        if (!DOSE_UNITS.includes(order.doseUnits?.display)) {
           dosage = order.dose;
-          doseType = order.doseUnits.display;
+          doseType = order.doseUnits?.display;
         } else {
-          dosage = order.dose + order.doseUnits.display;
+          dosage = order.dose + order.doseUnits?.display;
         }
         const administrationInstructions = order.dosingInstructions
           ? JSON.parse(order.dosingInstructions)

@@ -279,7 +279,7 @@ export const formatIntradayDoseString = (intradayDose, doseUnits, route, frequen
     toDisplay(intradayDose.night),
   ].join("-");
 
-  let result = doseString + " " + (doseUnits || "");
+  let result = doseUnits ? doseString + " " + doseUnits : doseString;
   if (route) result += " - " + route;
   if (frequency) result += " - " + frequency;
   if (duration) result += " - for " + duration + " " + (durationUnits || "");

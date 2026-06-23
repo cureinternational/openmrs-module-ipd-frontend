@@ -620,5 +620,17 @@ describe("TreatmentsUtils", () => {
       );
       expect(result).toBe("1-0-1-0 Tablet");
     });
+
+    it("should not append a trailing space when doseUnits is missing", () => {
+      const result = formatIntradayDoseString(
+        { morning: 10, afternoon: 0, evening: 5, night: 0 },
+        null,
+        null,
+        null,
+        null,
+        null
+      );
+      expect(result).toBe("10-0-5-0");
+    });
   });
 });
