@@ -22,7 +22,7 @@ import {
   parseFhirDosages,
   parseFlatAdminInstructions,
 } from "../../../../utils/FhirDosingUtils";
-import { formatIntradayDoseString } from "../../Treatments/utils/TreatmentsUtils";
+import { formatIntradayDoseString, isIntradayDosingInstruction } from "../../Treatments/utils/TreatmentsUtils";
 
 export const fetchMedications = async (
   patientUuid,
@@ -76,12 +76,7 @@ export const transformDrugOrders = (orders) => {
         dosage = dosingInstructions.dose;
         doseUnits = dosingInstructions.doseUnits;
       }
-      const isIntraday = !isVariableDose && (
-        parsedInstructions?.morningDose != null ||
-        parsedInstructions?.afternoonDose != null ||
-        parsedInstructions?.eveningDose != null ||
-        parsedInstructions?.nightDose != null
-      );
+      const isIntraday = !isVariableDose && isIntradayDosingInstruction(parsedInstructions);
       let intradayDoseString = null;
       if (isIntraday) {
         const intradayDose = {

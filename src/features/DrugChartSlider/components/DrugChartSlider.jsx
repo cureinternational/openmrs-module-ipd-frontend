@@ -51,14 +51,14 @@ const DrugChartSlider = (props) => {
     drugChartSlider.timeInMinutesToDisableSlotPostScheduledTime;
 
   const intradayDose = hostData?.drugOrder?.intradayDose;
-  const intradayEffectiveFrequencyPerDay = intradayDose
+  const intradayDosesPerDay = intradayDose
     ? Object.values(intradayDose).filter((v) => v != null && v !== 0).length
     : null;
 
   const enableSchedule = hostData?.drugOrder?.drugOrder?.duration
-    ? intradayDose && intradayEffectiveFrequencyPerDay
+    ? intradayDose && intradayDosesPerDay
       ? hostData?.scheduleFrequencies?.find(
-          (f) => f.frequencyPerDay === intradayEffectiveFrequencyPerDay
+          (f) => f.frequencyPerDay === intradayDosesPerDay
         ) || null
       : hostData?.drugOrder?.uniformDosingType?.frequency
       ? hostData?.scheduleFrequencies?.find(

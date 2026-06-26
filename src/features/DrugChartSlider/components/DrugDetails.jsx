@@ -12,8 +12,59 @@ import {
 import PropTypes from "prop-types";
 import { useIntl } from "react-intl";
 import { formatDate } from "../../../utils/DateTimeUtils";
+import { INTRADAY_SLOTS } from "../../DisplayControls/Treatments/utils/TreatmentsUtils";
 
-const INTRADAY_SLOTS = ["morning", "afternoon", "evening", "night"];
+const RouteField = ({ hostData, intl }) => (
+  <div className="route">
+    <DropdownCarbon
+      id={"Dropdown"}
+      onChange={() => {}}
+      titleText={intl.formatMessage({ id: "ROUTE_COLUMN_HEADER", defaultMessage: "Route" })}
+      selectedValue={hostData?.drugOrder?.route}
+      options={[]}
+      isDisabled={true}
+    />
+  </div>
+);
+
+const DurationField = ({ hostData, intl }) => (
+  <div className="duration-field-with-units">
+    <NumberInputCarbon
+      id={"Dropdown"}
+      onChange={() => {}}
+      label={intl.formatMessage({ id: "DRUG_CHART_MODAL_DURATION", defaultMessage: "Duration" })}
+      value={
+        hostData?.drugOrder?.durationDisplayValue ??
+        hostData?.drugOrder?.drugOrder?.duration
+      }
+      isDisabled={true}
+    />
+    <DropdownCarbon
+      id={"Dropdown"}
+      onChange={() => {}}
+      titleText={" "}
+      selectedValue={
+        hostData?.drugOrder?.durationDisplayUnits ||
+        hostData?.drugOrder?.drugOrder?.durationUnits
+      }
+      options={[]}
+      isDisabled={true}
+    />
+  </div>
+);
+
+const StartDateField = ({ hostData, intl }) => (
+  <DatePickerCarbon
+    id={"Dropdown"}
+    onChange={() => {}}
+    titleText={intl.formatMessage({ id: "TREATMENTS_DATE_COLUMN_HEADER", defaultMessage: "Start Date" })}
+    title={intl.formatMessage({ id: "TREATMENTS_DATE_COLUMN_HEADER", defaultMessage: "Start Date" })}
+    dateFormat={"d M Y"}
+    placeholder="DD MM YYYY"
+    value={formatDate(hostData?.drugOrder?.drugOrder?.scheduledDate)}
+    isDisabled={true}
+  />
+);
 
 export const DrugDetails = ({ hostData, intradayFrequencyName }) => {
   const intl = useIntl();
@@ -36,7 +87,7 @@ export const DrugDetails = ({ hostData, intradayFrequencyName }) => {
       {intradayDose ? (
         <>
           <div className="inline-field">
-            <div className="dose-field-with-units intraday-dose-field" style={{ width: "100%", marginRight: 0 }}>
+            <div className="dose-field-with-units intraday-dose-field">
               {INTRADAY_SLOTS.filter((slot) => intradayDose[slot] != null).map((slot, index) => (
                 <NumberInputCarbon
                   key={slot}
@@ -58,52 +109,12 @@ export const DrugDetails = ({ hostData, intradayFrequencyName }) => {
             </div>
           </div>
           <div className="inline-field intraday-route-duration">
-            <div className="route">
-              <DropdownCarbon
-                id={"Dropdown"}
-                onChange={() => {}}
-                titleText={intl.formatMessage({ id: "ROUTE_COLUMN_HEADER", defaultMessage: "Route" })}
-                selectedValue={hostData?.drugOrder?.route}
-                options={[]}
-                isDisabled={true}
-              />
-            </div>
-            <div className="duration-field-with-units">
-              <NumberInputCarbon
-                id={"Dropdown"}
-                onChange={() => {}}
-                label={intl.formatMessage({ id: "DRUG_CHART_MODAL_DURATION", defaultMessage: "Duration" })}
-                value={
-                  hostData?.drugOrder?.durationDisplayValue ??
-                  hostData?.drugOrder?.drugOrder?.duration
-                }
-                isDisabled={true}
-              />
-              <DropdownCarbon
-                id={"Dropdown"}
-                onChange={() => {}}
-                titleText={" "}
-                selectedValue={
-                  hostData?.drugOrder?.durationDisplayUnits ||
-                  hostData?.drugOrder?.drugOrder?.durationUnits
-                }
-                options={[]}
-                isDisabled={true}
-              />
-            </div>
+            <RouteField hostData={hostData} intl={intl} />
+            <DurationField hostData={hostData} intl={intl} />
           </div>
           <div className="inline-field">
             <div className="intraday-start-date">
-              <DatePickerCarbon
-                id={"Dropdown"}
-                onChange={() => {}}
-                titleText={intl.formatMessage({ id: "TREATMENTS_DATE_COLUMN_HEADER", defaultMessage: "Start Date" })}
-                title={intl.formatMessage({ id: "TREATMENTS_DATE_COLUMN_HEADER", defaultMessage: "Start Date" })}
-                dateFormat={"d M Y"}
-                placeholder="DD MM YYYY"
-                value={formatDate(hostData?.drugOrder?.drugOrder?.scheduledDate)}
-                isDisabled={true}
-              />
+              <StartDateField hostData={hostData} intl={intl} />
             </div>
           </div>
         </>
@@ -129,51 +140,11 @@ export const DrugDetails = ({ hostData, intradayFrequencyName }) => {
                 isDisabled={true}
               />
             </div>
-            <div className="route">
-              <DropdownCarbon
-                id={"Dropdown"}
-                onChange={() => {}}
-                titleText={intl.formatMessage({ id: "ROUTE_COLUMN_HEADER", defaultMessage: "Route" })}
-                selectedValue={hostData?.drugOrder?.route}
-                options={[]}
-                isDisabled={true}
-              />
-            </div>
+            <RouteField hostData={hostData} intl={intl} />
           </div>
           <div className="inline-field">
-            <div className="duration-field-with-units">
-              <NumberInputCarbon
-                id={"Dropdown"}
-                onChange={() => {}}
-                label={intl.formatMessage({ id: "DRUG_CHART_MODAL_DURATION", defaultMessage: "Duration" })}
-                value={
-                  hostData?.drugOrder?.durationDisplayValue ??
-                  hostData?.drugOrder?.drugOrder?.duration
-                }
-                isDisabled={true}
-              />
-              <DropdownCarbon
-                id={"Dropdown"}
-                onChange={() => {}}
-                titleText={" "}
-                selectedValue={
-                  hostData?.drugOrder?.durationDisplayUnits ||
-                  hostData?.drugOrder?.drugOrder?.durationUnits
-                }
-                options={[]}
-                isDisabled={true}
-              />
-            </div>
-            <DatePickerCarbon
-              id={"Dropdown"}
-              onChange={() => {}}
-              titleText={intl.formatMessage({ id: "TREATMENTS_DATE_COLUMN_HEADER", defaultMessage: "Start Date" })}
-              title={intl.formatMessage({ id: "TREATMENTS_DATE_COLUMN_HEADER", defaultMessage: "Start Date" })}
-              dateFormat={"d M Y"}
-              placeholder="DD MM YYYY"
-              value={formatDate(hostData?.drugOrder?.drugOrder?.scheduledDate)}
-              isDisabled={true}
-            />
+            <DurationField hostData={hostData} intl={intl} />
+            <StartDateField hostData={hostData} intl={intl} />
           </div>
         </>
       )}
@@ -209,4 +180,19 @@ DrugDetails.propTypes = {
     }),
   }),
   intradayFrequencyName: PropTypes.string,
+};
+
+RouteField.propTypes = {
+  hostData: PropTypes.object,
+  intl: PropTypes.object,
+};
+
+DurationField.propTypes = {
+  hostData: PropTypes.object,
+  intl: PropTypes.object,
+};
+
+StartDateField.propTypes = {
+  hostData: PropTypes.object,
+  intl: PropTypes.object,
 };

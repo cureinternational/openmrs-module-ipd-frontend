@@ -13,7 +13,7 @@ import {
   fromUcumDurationUnit,
   fhirDosageToDisplayStage,
 } from "../../../../utils/FhirDosingUtils";
-import { formatIntradayDoseString } from "../../Treatments/utils/TreatmentsUtils";
+import { formatIntradayDoseString, isIntradayDosingInstruction } from "../../Treatments/utils/TreatmentsUtils";
 import moment from "moment";
 
 export const fetchMedicationNursingTasks = async (
@@ -83,7 +83,7 @@ export const ExtractMedicationNursingTasksData = (
           dosage = order.dose;
           doseType = order.doseUnits?.display;
         } else {
-          dosage = order.dose + order.doseUnits?.display;
+          dosage = order.dose + (order.doseUnits?.display ?? "");
         }
         const administrationInstructions = order.dosingInstructions
           ? JSON.parse(order.dosingInstructions)
@@ -92,13 +92,7 @@ export const ExtractMedicationNursingTasksData = (
           asNeeded: order.asNeeded,
           frequency: order.frequency?.display,
         };
-        if (
-          administrationInstructions &&
-          (administrationInstructions.morningDose != null ||
-            administrationInstructions.afternoonDose != null ||
-            administrationInstructions.eveningDose != null ||
-            administrationInstructions.nightDose != null)
-        ) {
+        if (administrationInstructions && isIntradayDosingInstruction(administrationInstructions)) {
           const intradayDose = {
             morning: administrationInstructions.morningDose,
             afternoon: administrationInstructions.afternoonDose,

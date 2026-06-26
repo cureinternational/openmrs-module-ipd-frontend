@@ -270,6 +270,14 @@ export const isDrugOrderStoppedWithoutAdministration = (drugOrderObject) => {
   );
 };
 
+export const INTRADAY_SLOTS = ["morning", "afternoon", "evening", "night"];
+
+export const isIntradayDosingInstruction = (parsed) =>
+  parsed?.morningDose != null ||
+  parsed?.afternoonDose != null ||
+  parsed?.eveningDose != null ||
+  parsed?.nightDose != null;
+
 export const formatIntradayDoseString = (intradayDose, doseUnits, route, frequency, duration, durationUnits) => {
   const toDisplay = (val) => (val != null ? val : 0);
   const doseString = [

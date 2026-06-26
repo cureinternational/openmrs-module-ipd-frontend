@@ -260,6 +260,11 @@ button[class*="bx--"]:disabled {
   min-width: 0;
 }
 
+.dose-field-with-units.intraday-dose-field {
+  width: 100%;
+  margin-right: 0;
+}
+
 .intraday-dose-field > *:not(.dropdown) {
   flex-grow: 1;
 }
