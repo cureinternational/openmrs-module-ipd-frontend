@@ -159,11 +159,22 @@ export const getShiftDetailsFromGlobalProperty = async () => {
       headers: { Accept: "text/plain" },
     });
     if (response.status !== 200) throw new Error(response.statusText);
-    return JSON.parse(response.data);
+    const shiftDetails = JSON.parse(response.data);
+    if (shiftDetails && Object.keys(shiftDetails).length > 0) {
+      return shiftDetails;
+    }
   } catch (error) {
-    console.error("Failed to fetch shift details from global property:", error);
-    return {};
+    console.warn(
+      "Failed to fetch shift details from Global Property 'ipd.shiftDetails'. " +
+        "Using default fallback timings. Please configure the Global Property for your region. Error:",
+      error.message
+    );
   }
+  // Default fallback
+  return {
+    1: { shiftStartTime: "08:00", shiftEndTime: "19:00" },
+    2: { shiftStartTime: "19:00", shiftEndTime: "08:00" },
+  };
 };
 
 export const getAllFormsInfo = async () => {
