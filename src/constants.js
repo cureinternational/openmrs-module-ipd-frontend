@@ -176,6 +176,9 @@ export const PROVIDER_URL = RESTWS_V1 + "/provider";
 export const CLINICAL_OBSERVATION_URL = (patientUuid) =>
   `/bahmni/clinical/#/default/patient/${patientUuid}/dashboard/concept-set-group/All%20Observation%20Templates`;
 
+export const CLINICAL_FORM_URL = (patientUuid, formUuid) =>
+  `/bahmni/clinical/index.html#/default/patient/${patientUuid}/dashboard/concept-set-group/observations/form/${formUuid}`;
+
 export const PRIVILEGE_CONSTANTS = {
   ADT: "Assign Beds",
   EDIT_MEDICATION_TASKS: "Edit Medication Tasks",

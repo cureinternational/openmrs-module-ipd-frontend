@@ -30,6 +30,7 @@ import {
   timeFormatFor24Hr,
   PRIVILEGE_CONSTANTS,
   nonMedicationTaskKey,
+  CLINICAL_FORM_URL,
 } from "../../../../constants";
 import DisplayTags from "../../../../components/DisplayTags/DisplayTags";
 import { IPDContext } from "../../../../context/IPDContext";
@@ -44,6 +45,7 @@ import {
   isSystemGeneratedTask,
   isUserPrivileged,
 } from "../../../../utils/CommonUtils";
+import { getLatestFormUuid } from "../utils/NursingTasksUtils";
 
 const UpdateNursingTasks = (props) => {
   const {
@@ -94,8 +96,13 @@ const UpdateNursingTasks = (props) => {
     setOpenConfirmationModal(false);
   };
 
-  const { config, handleAuditEvent, currentUser } = useContext(IPDContext);
-  const { nursingTasks = {}, enable24HourTime = {} } = config;
+  const { config, handleAuditEvent, currentUser, allFormsSummary } =
+    useContext(IPDContext);
+  const {
+    nursingTasks = {},
+    enable24HourTime = {},
+    taskToFormMapping = {},
+  } = config;
   const relevantTaskStatusWindowInSeconds =
     nursingTasks && nursingTasks.timeInMinutesFromNowToShowTaskAsRelevant * 60;
   const saveAdministeredTasks = (task) => {
@@ -197,6 +204,56 @@ const UpdateNursingTasks = (props) => {
         )}
       </div>
     );
+  };
+
+  const getTaskNameElement = (medicationTask) => {
+    const isSystemTask =
+      medicationTask?.taskType?.display === "nursing_activity_system";
+    const taskLabel = isSystemTask
+      ? getLocalizedLabel(
+          intl,
+          getTranslationKey(medicationTask.drugName, nonMedicationTaskKey),
+          medicationTask.drugName
+        )
+      : medicationTask.drugName;
+
+    console.log("[UpdateNursingTasks] getTaskNameElement", {
+      drugName: medicationTask.drugName,
+      isSystemTask,
+      taskLabel,
+      hasAllFormsSummary: !!allFormsSummary,
+      hasTaskToFormMapping: !!taskToFormMapping,
+    });
+
+    if (isSystemTask && allFormsSummary && taskToFormMapping) {
+      const mappedFormName = taskToFormMapping[medicationTask.drugName];
+      const formUuid = mappedFormName
+        ? getLatestFormUuid(mappedFormName, allFormsSummary)
+        : null;
+
+      console.log("[UpdateNursingTasks] form mapping", {
+        drugName: medicationTask.drugName,
+        mappedFormName,
+        formUuid,
+        patientId,
+      });
+
+      if (formUuid && patientId) {
+        return (
+          <a
+            href={CLINICAL_FORM_URL(patientId, formUuid)}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            style={{ color: "#0f62fe", textDecoration: "underline" }}
+          >
+            {taskLabel}
+          </a>
+        );
+      }
+    }
+
+    return taskLabel;
   };
   useEffect(() => {
     medicationTasks.map((medicationTask) => {
@@ -567,7 +624,7 @@ const UpdateNursingTasks = (props) => {
                         tasks[medicationTask.uuid]?.skipped && "red-text"
                       }`}
                     >
-                      {medicationTask.drugName}
+                      {getTaskNameElement(medicationTask)}
                     </div>
                   ) : (
                     <div
@@ -575,14 +632,7 @@ const UpdateNursingTasks = (props) => {
                         tasks[medicationTask.uuid]?.skipped && "red-text"
                       }`}
                     >
-                      {getLocalizedLabel(
-                        intl,
-                        getTranslationKey(
-                          medicationTask.drugName,
-                          nonMedicationTaskKey
-                        ),
-                        medicationTask.drugName
-                      )}
+                      {getTaskNameElement(medicationTask)}
                       {!isNonMedication ? (
                         <>
                           <FormattedMessage id={"AT"} defaultMessage={" at "} />

@@ -101,7 +101,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-wrap: wrap;
-  color: #393939;
   font-style: normal;
   padding-left: 4px;
   font-size: 14px;
@@ -111,6 +110,18 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+.task-form-link {
+  color: inherit;
+  text-decoration: underline;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.task-form-link:hover,
+.task-form-link:focus {
+  color: inherit;
 }
 
 .tile-content-subtext {
