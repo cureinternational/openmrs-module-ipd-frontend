@@ -162,11 +162,7 @@ export const getShiftDetailsFromGlobalProperty = async () => {
     return JSON.parse(response.data);
   } catch (error) {
     console.error("Failed to fetch shift details from global property:", error);
-    // Return default fallback
-    return {
-      1: { shiftStartTime: "08:00", shiftEndTime: "19:00" },
-      2: { shiftStartTime: "19:00", shiftEndTime: "08:00" },
-    };
+    return {};
   }
 };
 
