@@ -73,21 +73,6 @@ export default function TaskTile(props) {
       )
     : drugName;
   const isFormLink = isSystemTask && formUuid && patientId;
-  console.log("[TaskTile] render state", {
-    drugName,
-    isSystemTask,
-    formUuid,
-    patientId,
-    isFormLink,
-    href: isFormLink ? CLINICAL_FORM_URL(patientId, formUuid) : null,
-  });
-  console.log("[TaskTile] final render", {
-    isSystemTask,
-    isFormLink,
-    href: isFormLink ? CLINICAL_FORM_URL(patientId, formUuid) : null,
-    taskLabel,
-    taskLabelType: typeof taskLabel,
-  });
   const taskTitleStyle = isFormLink
     ? {
         color: "#0f62fe",

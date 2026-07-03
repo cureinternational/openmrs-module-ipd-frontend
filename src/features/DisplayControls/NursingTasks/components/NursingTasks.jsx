@@ -392,15 +392,6 @@ export default function NursingTasks(props) {
         task?.taskType?.display === "nursing_activity_system"
           ? getLatestFormUuid(taskToFormMapping[task.drugName], allFormsSummary)
           : null;
-      console.log("[NursingTasks] task tile", {
-        index,
-        drugName: task?.drugName,
-        taskType: task?.taskType?.display,
-        mappedFormName: taskToFormMapping[task?.drugName],
-        formUuid,
-        patientId,
-        allFormsSummaryCount: allFormsSummary?.length,
-      });
       return (
         <div key={index}>
           <div

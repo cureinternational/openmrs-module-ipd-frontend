@@ -217,26 +217,11 @@ const UpdateNursingTasks = (props) => {
         )
       : medicationTask.drugName;
 
-    console.log("[UpdateNursingTasks] getTaskNameElement", {
-      drugName: medicationTask.drugName,
-      isSystemTask,
-      taskLabel,
-      hasAllFormsSummary: !!allFormsSummary,
-      hasTaskToFormMapping: !!taskToFormMapping,
-    });
-
     if (isSystemTask && allFormsSummary && taskToFormMapping) {
       const mappedFormName = taskToFormMapping[medicationTask.drugName];
       const formUuid = mappedFormName
         ? getLatestFormUuid(mappedFormName, allFormsSummary)
         : null;
-
-      console.log("[UpdateNursingTasks] form mapping", {
-        drugName: medicationTask.drugName,
-        mappedFormName,
-        formUuid,
-        patientId,
-      });
 
       if (formUuid && patientId) {
         return (

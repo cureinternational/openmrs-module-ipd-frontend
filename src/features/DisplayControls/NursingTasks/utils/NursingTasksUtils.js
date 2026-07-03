@@ -491,15 +491,6 @@ export const disableDoneTogglePostNextTaskTime = (
 export const getLatestFormUuid = (formName, allFormsSummary) => {
   if (!formName || !allFormsSummary || !allFormsSummary.length) return null;
   const matches = allFormsSummary.filter((f) => f.name === formName);
-  console.log("[NursingTasksUtils] getLatestFormUuid", {
-    formName,
-    matchCount: matches.length,
-    matches: matches.map((f) => ({
-      name: f.name,
-      version: f.version,
-      uuid: f.uuid,
-    })),
-  });
   if (!matches.length) return null;
   return matches.sort((a, b) => parseInt(b.version) - parseInt(a.version))[0]
     .uuid;
