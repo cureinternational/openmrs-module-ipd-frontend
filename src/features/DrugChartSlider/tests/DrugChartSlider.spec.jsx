@@ -1152,7 +1152,6 @@ describe("DrugChartSlider", () => {
         expect(mockSaveMedication).toHaveBeenCalled();
       });
 
-      // No ascending order warning should be visible
       expect(
         screen.queryByText(/time entered is not in the correct order/i)
       ).not.toBeInTheDocument();

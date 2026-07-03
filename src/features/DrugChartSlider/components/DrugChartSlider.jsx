@@ -941,14 +941,18 @@ const DrugChartSlider = (props) => {
         setShowSubsequentDayScheduleNextDayWarning(nextDayFlags);
       }
 
-      const remSlots = scheduleTimings.remainingDaySlotsStartTime ?? [];
-      setFinalDaySchedules(remSlots);
-      if (remSlots.length > 1) {
+      const remainingSlots = scheduleTimings.remainingDaySlotsStartTime ?? [];
+      setFinalDaySchedules(remainingSlots);
+      if (remainingSlots.length > 1) {
         setShowFinalDayScheduleNextDayWarning(
-          remSlots.map((time, i) =>
+          remainingSlots.map((time, i) =>
             i === 0
               ? false
-              : isNextDayCrossing(time, remSlots[i - 1], enable24HourTimers)
+              : isNextDayCrossing(
+                  time,
+                  remainingSlots[i - 1],
+                  enable24HourTimers
+                )
           )
         );
       }
