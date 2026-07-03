@@ -68,13 +68,13 @@ const DrugChartSlider = (props) => {
       : null
     : null;
 
-  const enableStartTime = !intradayDose && (
-    hostData?.startTimeFrequencies?.includes(
+  const enableStartTime =
+    !intradayDose &&
+    (hostData?.startTimeFrequencies?.includes(
       hostData?.drugOrder?.uniformDosingType?.frequency
     ) ||
-    !hostData?.drugOrder?.uniformDosingType?.frequency ||
-    !hostData?.drugOrder?.drugOrder?.duration
-  );
+      !hostData?.drugOrder?.uniformDosingType?.frequency ||
+      !hostData?.drugOrder?.drugOrder?.duration);
   const enable24HourTimers = hostData?.enable24HourTimers || false;
   const timeFormat = enable24HourTimers ? timeFormatFor24Hr : timeFormatFor12Hr;
   const isEdit = Boolean(hostData?.drugOrder?.drugOrderSchedule);
@@ -553,7 +553,8 @@ const DrugChartSlider = (props) => {
   const handleScheduleWarnings = async () => {
     const { isValid, warningType } = await validateSchedules(
       schedules,
-      timeFormat
+      timeFormat,
+      showSubsequentDayScheduleNextDayWarning
     );
     setShowEmptyScheduleWarning(!isValid && warningType === "empty");
     setShowScheduleOrderWarning(!isValid && warningType === "passed");
@@ -573,11 +574,20 @@ const DrugChartSlider = (props) => {
   };
 
   const handleFirstDayScheduleWarnings = async () => {
+    const filteredSchedules = firstDaySchedules.filter(
+      (s) => s !== UNSET_SCHEDULE_TIME
+    );
+    const filteredNextDayFlags = firstDaySchedules.reduce(
+      (flags, schedule, i) =>
+        schedule !== UNSET_SCHEDULE_TIME
+          ? [...flags, showFirstDayScheduleNextDayWarning[i] || false]
+          : flags,
+      []
+    );
     const { isValid, warningType } = await validateSchedules(
-      firstDaySchedules.filter(
-        (firstDaySchedule) => firstDaySchedule != UNSET_SCHEDULE_TIME
-      ),
-      timeFormat
+      filteredSchedules,
+      timeFormat,
+      filteredNextDayFlags
     );
     setShowEmptyFirstDayScheduleWarning(!isValid && warningType === "empty");
     setShowFirstDayScheduleOrderWarning(!isValid && warningType === "passed");
@@ -597,7 +607,8 @@ const DrugChartSlider = (props) => {
   const handleFinalDayScheduleWarnings = async () => {
     const { isValid, warningType } = await validateSchedules(
       finalDaySchedules,
-      timeFormat
+      timeFormat,
+      showFinalDayScheduleNextDayWarning
     );
     setShowEmptyFinalDayScheduleWarning(!isValid && warningType === "empty");
     setShowFinalDayScheduleOrderWarning(!isValid && warningType === "passed");
@@ -724,16 +735,12 @@ const DrugChartSlider = (props) => {
         });
 
         const finalDaySchedulesUTCTimeEpoch = finalDaySchedules?.map(
-          (schedule, i) => {
-            const epoch = getUTCTimeEpoch(
+          (schedule) =>
+            getUTCTimeEpoch(
               schedule,
               enable24HourTimers,
               hostData?.drugOrder?.drugOrder?.scheduledDate
-            );
-            return showFinalDayScheduleNextDayWarning[i]
-              ? epoch + nextScheduleDate
-              : epoch;
-          }
+            )
         );
 
         payload.firstDaySlotsStartTime =
@@ -934,7 +941,17 @@ const DrugChartSlider = (props) => {
         setShowSubsequentDayScheduleNextDayWarning(nextDayFlags);
       }
 
-      setFinalDaySchedules(scheduleTimings.remainingDaySlotsStartTime);
+      const remSlots = scheduleTimings.remainingDaySlotsStartTime ?? [];
+      setFinalDaySchedules(remSlots);
+      if (remSlots.length > 1) {
+        setShowFinalDayScheduleNextDayWarning(
+          remSlots.map((time, i) =>
+            i === 0
+              ? false
+              : isNextDayCrossing(time, remSlots[i - 1], enable24HourTimers)
+          )
+        );
+      }
     }
   }, [isEdit, enable24HourTimers, enableSchedule]);
 
@@ -989,7 +1006,10 @@ const DrugChartSlider = (props) => {
     <I18nProvider>
       <SideBarPanel title={sliderTitle} closeSideBar={handleClose}>
         <div style={{ padding: "20px", paddingBottom: "120px" }}>
-          <DrugDetails hostData={hostData} intradayFrequencyName={enableSchedule?.name} />
+          <DrugDetails
+            hostData={hostData}
+            intradayFrequencyName={enableSchedule?.name}
+          />
           {!hostData?.drugOrder?.drugOrder?.dosingInstructions?.asNeeded && (
             <>
               <ScheduleSection
