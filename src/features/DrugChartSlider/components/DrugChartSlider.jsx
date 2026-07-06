@@ -707,16 +707,16 @@ const DrugChartSlider = (props) => {
         const firstDaySchedulesUTCTimeEpoch = firstDaySchedules.reduce(
           (result, schedule, i) => {
             if (schedule !== UNSET_SCHEDULE_TIME) {
-              const epoch = getUTCTimeEpoch(
-                schedule,
-                enable24HourTimers,
-                hostData?.drugOrder?.drugOrder?.scheduledDate
-              );
-              result.push(
-                showFirstDayScheduleNextDayWarning[i]
-                  ? epoch + nextScheduleDate
-                  : epoch
-              );
+              // CRITICAL FIX: Only include NON-crossing slots in firstDaySlotsStartTime
+              // Crossing slots should go to dayWiseSlotsStartTime instead
+              if (!showFirstDayScheduleNextDayWarning[i]) {
+                const epoch = getUTCTimeEpoch(
+                  schedule,
+                  enable24HourTimers,
+                  hostData?.drugOrder?.drugOrder?.scheduledDate
+                );
+                result.push(epoch);
+              }
             }
             return result;
           },
@@ -726,16 +726,88 @@ const DrugChartSlider = (props) => {
         const hasDayWiseOffset = firstDaySchedules.some(
           (schedule) => schedule == UNSET_SCHEDULE_TIME
         );
-        const schedulesUTCTimeEpoch = schedules?.map((schedule, i) => {
-          const epoch = getUTCTimeEpoch(
-            schedule,
-            enable24HourTimers,
-            hostData?.drugOrder?.drugOrder?.scheduledDate
-          );
-          return !hasDayWiseOffset && showSubsequentDayScheduleNextDayWarning[i]
-            ? epoch + nextScheduleDate
-            : epoch;
-        });
+
+        const toDayWiseEpoch = (epoch, isCrossing) => {
+          if (hasDayWiseOffset) return epoch + nextScheduleDate;
+          return isCrossing ? epoch + nextScheduleDate : epoch;
+        };
+
+        // First-day crossings should become the leading slots for subsequent days.
+        const firstDayCrossingEpochs = firstDaySchedules.reduce(
+          (result, schedule, i) => {
+            if (
+              schedule !== UNSET_SCHEDULE_TIME &&
+              showFirstDayScheduleNextDayWarning[i]
+            ) {
+              const epoch = getUTCTimeEpoch(
+                schedule,
+                enable24HourTimers,
+                hostData?.drugOrder?.drugOrder?.scheduledDate
+              );
+              result.push(toDayWiseEpoch(epoch, true));
+            }
+            return result;
+          },
+          []
+        );
+
+        const dayWiseScheduleEpochs = (schedules || []).reduce(
+          (result, schedule, i) => {
+            if (schedule !== UNSET_SCHEDULE_TIME) {
+              const isCrossing = !!showSubsequentDayScheduleNextDayWarning[i];
+              const epoch = getUTCTimeEpoch(
+                schedule,
+                enable24HourTimers,
+                hostData?.drugOrder?.drugOrder?.scheduledDate
+              );
+              result.push({
+                epoch: toDayWiseEpoch(epoch, isCrossing),
+                isCrossing,
+              });
+            }
+            return result;
+          },
+          []
+        );
+
+        // When dayWise gets prepended with first-day crossings, trim matching
+        // trailing crossing slots to preserve the expected frequency count.
+        const dayWiseRegularEpochs = [...dayWiseScheduleEpochs];
+        let crossingsToDrop = firstDayCrossingEpochs.length;
+        for (
+          let i = dayWiseRegularEpochs.length - 1;
+          i >= 0 && crossingsToDrop > 0;
+          i -= 1
+        ) {
+          if (dayWiseRegularEpochs[i]?.isCrossing) {
+            dayWiseRegularEpochs.splice(i, 1);
+            crossingsToDrop -= 1;
+          }
+        }
+
+        const dayWiseSlotsWithCrossings = [
+          ...firstDayCrossingEpochs,
+          ...dayWiseRegularEpochs.map((slot) => slot.epoch),
+        ];
+
+        // Subsequent-day crossing slots become the leading slots for final day.
+        const subsequentDayCrossingEpochs = (schedules || []).reduce(
+          (result, schedule, i) => {
+            if (
+              schedule !== UNSET_SCHEDULE_TIME &&
+              showSubsequentDayScheduleNextDayWarning[i]
+            ) {
+              const epoch = getUTCTimeEpoch(
+                schedule,
+                enable24HourTimers,
+                hostData?.drugOrder?.drugOrder?.scheduledDate
+              );
+              result.push(epoch);
+            }
+            return result;
+          },
+          []
+        );
 
         const finalDaySchedulesUTCTimeEpoch = finalDaySchedules?.map(
           (schedule) =>
@@ -746,22 +818,20 @@ const DrugChartSlider = (props) => {
             )
         );
 
+        // Prepend subsequent day crossing slots to final day
+        const finalDaySchedulesWithCrossings = [
+          ...subsequentDayCrossingEpochs,
+          ...(finalDaySchedulesUTCTimeEpoch || []),
+        ];
+
         payload.firstDaySlotsStartTime =
           firstDaySlotsMissed > 0 ? firstDaySchedulesUTCTimeEpoch : [];
-        payload.dayWiseSlotsStartTime = hasDayWiseOffset
-          ? schedulesUTCTimeEpoch?.map(
-              (schedules) => schedules + nextScheduleDate
-            )
-          : schedulesUTCTimeEpoch;
-        const remainingDaySlotsStartTime = finalDaySchedulesUTCTimeEpoch?.map(
+        payload.dayWiseSlotsStartTime = dayWiseSlotsWithCrossings;
+        const remainingDaySlotsStartTime = finalDaySchedulesWithCrossings?.map(
           (schedules) => schedules + finalScheduleDate
         );
 
-        const remainingDaySlotsTime = remainingDaySlotsStartTime?.slice(
-          0,
-          firstDaySlotsMissed
-        );
-        payload.remainingDaySlotsStartTime = remainingDaySlotsTime;
+        payload.remainingDaySlotsStartTime = remainingDaySlotsStartTime;
         payload.medicationFrequency =
           medicationFrequency.FIXED_SCHEDULE_FREQUENCY;
       }
