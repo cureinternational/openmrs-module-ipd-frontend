@@ -707,8 +707,6 @@ const DrugChartSlider = (props) => {
         const firstDaySchedulesUTCTimeEpoch = firstDaySchedules.reduce(
           (result, schedule, i) => {
             if (schedule !== UNSET_SCHEDULE_TIME) {
-              // CRITICAL FIX: Only include NON-crossing slots in firstDaySlotsStartTime
-              // Crossing slots should go to dayWiseSlotsStartTime instead
               if (!showFirstDayScheduleNextDayWarning[i]) {
                 const epoch = getUTCTimeEpoch(
                   schedule,
@@ -727,12 +725,11 @@ const DrugChartSlider = (props) => {
           (schedule) => schedule == UNSET_SCHEDULE_TIME
         );
 
-        const toDayWiseEpoch = (epoch, isCrossing) => {
+        const getDayWiseEpoch = (epoch, isCrossing) => {
           if (hasDayWiseOffset) return epoch + nextScheduleDate;
           return isCrossing ? epoch + nextScheduleDate : epoch;
         };
 
-        // First-day crossings should become the leading slots for subsequent days.
         const firstDayCrossingEpochs = firstDaySchedules.reduce(
           (result, schedule, i) => {
             if (
@@ -744,7 +741,7 @@ const DrugChartSlider = (props) => {
                 enable24HourTimers,
                 hostData?.drugOrder?.drugOrder?.scheduledDate
               );
-              result.push(toDayWiseEpoch(epoch, true));
+              result.push(getDayWiseEpoch(epoch, true));
             }
             return result;
           },
@@ -761,7 +758,7 @@ const DrugChartSlider = (props) => {
                 hostData?.drugOrder?.drugOrder?.scheduledDate
               );
               result.push({
-                epoch: toDayWiseEpoch(epoch, isCrossing),
+                epoch: getDayWiseEpoch(epoch, isCrossing),
                 isCrossing,
               });
             }
@@ -770,8 +767,6 @@ const DrugChartSlider = (props) => {
           []
         );
 
-        // When dayWise gets prepended with first-day crossings, trim matching
-        // trailing crossing slots to preserve the expected frequency count.
         const dayWiseRegularEpochs = [...dayWiseScheduleEpochs];
         let crossingsToDrop = firstDayCrossingEpochs.length;
         for (
@@ -790,7 +785,6 @@ const DrugChartSlider = (props) => {
           ...dayWiseRegularEpochs.map((slot) => slot.epoch),
         ];
 
-        // Subsequent-day crossing slots become the leading slots for final day.
         const subsequentDayCrossingEpochs = (schedules || []).reduce(
           (result, schedule, i) => {
             if (
@@ -818,7 +812,6 @@ const DrugChartSlider = (props) => {
             )
         );
 
-        // Prepend subsequent day crossing slots to final day
         const finalDaySchedulesWithCrossings = [
           ...subsequentDayCrossingEpochs,
           ...(finalDaySchedulesUTCTimeEpoch || []),
@@ -828,7 +821,7 @@ const DrugChartSlider = (props) => {
           firstDaySlotsMissed > 0 ? firstDaySchedulesUTCTimeEpoch : [];
         payload.dayWiseSlotsStartTime = dayWiseSlotsWithCrossings;
         const remainingDaySlotsStartTime = finalDaySchedulesWithCrossings?.map(
-          (schedules) => schedules + finalScheduleDate
+          (scheduleEpoch) => scheduleEpoch + finalScheduleDate
         );
 
         payload.remainingDaySlotsStartTime = remainingDaySlotsStartTime;
