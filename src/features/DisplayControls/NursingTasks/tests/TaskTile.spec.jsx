@@ -16,6 +16,7 @@ import {
 } from "../../../../utils/CommonUtils";
 import { IPDContext } from "../../../../context/IPDContext";
 import { IntlProvider } from "react-intl";
+import { NURSING_ACTIVITY_SYSTEM } from "../../../../constants";
 
 describe("TaskTile", () => {
   beforeEach(() => {
@@ -149,7 +150,7 @@ describe("TaskTile", () => {
         serviceType: "NonMedicationRequest",
         isANonMedicationTask: true,
         creator: { display: "superman" },
-        taskType: { display: "nursing_activity_system" },
+        taskType: { display: NURSING_ACTIVITY_SYSTEM },
       },
     ];
 

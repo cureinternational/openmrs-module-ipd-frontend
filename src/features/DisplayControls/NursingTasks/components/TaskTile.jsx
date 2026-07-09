@@ -17,6 +17,8 @@ import {
   timeFormatFor24Hr,
   nonMedicationTaskKey,
   CLINICAL_FORM_URL,
+  TASK_COLORS,
+  NURSING_ACTIVITY_SYSTEM,
 } from "../../../../constants";
 import { FormattedMessage, useIntl } from "react-intl";
 import {
@@ -64,7 +66,7 @@ export default function TaskTile(props) {
     nursingTasks
   );
 
-  const isSystemTask = taskType?.display === "nursing_activity_system";
+  const isSystemTask = taskType?.display === NURSING_ACTIVITY_SYSTEM;
   const taskLabel = isSystemTask
     ? getLocalizedLabel(
         intl,
@@ -73,14 +75,19 @@ export default function TaskTile(props) {
       )
     : drugName;
   const isFormLink = isSystemTask && formUuid && patientId;
+  const fontWeight = !isANonMedicationTask && isRelevantTask ? 500 : 400;
   const taskTitleStyle = isFormLink
     ? {
-        color: "#0f62fe",
-        fontWeight: !isANonMedicationTask && isRelevantTask ? 500 : 400,
+        color: TASK_COLORS.LINK_BLUE,
+        fontWeight,
       }
     : {
-        color: stopTime ? "#FF0000" : isRelevantTask ? "#393939" : "#525252",
-        fontWeight: !isANonMedicationTask && isRelevantTask ? 500 : 400,
+        color: stopTime
+          ? TASK_COLORS.STOP_RED
+          : isRelevantTask
+          ? TASK_COLORS.RELEVANT_DARK
+          : TASK_COLORS.NON_RELEVANT_GRAY,
+        fontWeight,
       };
 
   const creatorName = (creator) => {

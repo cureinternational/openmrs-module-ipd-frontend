@@ -31,6 +31,7 @@ import {
   PRIVILEGE_CONSTANTS,
   nonMedicationTaskKey,
   CLINICAL_FORM_URL,
+  NURSING_ACTIVITY_SYSTEM,
 } from "../../../../constants";
 import DisplayTags from "../../../../components/DisplayTags/DisplayTags";
 import { IPDContext } from "../../../../context/IPDContext";
@@ -208,7 +209,7 @@ const UpdateNursingTasks = (props) => {
 
   const getTaskNameElement = (medicationTask) => {
     const isSystemTask =
-      medicationTask?.taskType?.display === "nursing_activity_system";
+      medicationTask?.taskType?.display === NURSING_ACTIVITY_SYSTEM;
     const taskLabel = isSystemTask
       ? getLocalizedLabel(
           intl,
