@@ -169,22 +169,6 @@ export const updateDrugOrderList = (drugOrderList) => {
       ipdDrugOrder.additives = administrationInstructions.additives || null;
       ipdDrugOrder.isDischargeMedication =
         administrationInstructions.isDischargeMedication || false;
-
-      const { morningDose, afternoonDose, eveningDose, nightDose } =
-        administrationInstructions;
-      if (
-        morningDose != null ||
-        afternoonDose != null ||
-        eveningDose != null ||
-        nightDose != null
-      ) {
-        ipdDrugOrder.intradayDose = {
-          morning: morningDose,
-          afternoon: afternoonDose,
-          evening: eveningDose,
-          night: nightDose,
-        };
-      }
     }
   });
   return drugOrderList;
@@ -272,23 +256,7 @@ export const isDrugOrderStoppedWithoutAdministration = (drugOrderObject) => {
   );
 };
 
-const formatIntradayDose = (intradayDose, doseUnits, route, frequency, duration, durationUnits) => {
-  const toDisplay = (val) => (val != null ? val : 0);
-  const doseString = [
-    toDisplay(intradayDose.morning),
-    toDisplay(intradayDose.afternoon),
-    toDisplay(intradayDose.evening),
-    toDisplay(intradayDose.night),
-  ].join("-");
-
-  let result = doseString + " " + (doseUnits || "");
-  if (route) result += " - " + route;
-  if (frequency) result += " - " + frequency;
-  if (duration) result += " - for " + duration + " " + (durationUnits || "");
-  return result;
-};
-
-export const setDosingInstructions = (drugOrder, intradayDose) => {
+export const setDosingInstructions = (drugOrder) => {
   if (isVariableDoseOrder(drugOrder.dosingInstructionType)) {
     return (
       <div className={drugOrder.dateStopped ? "strike-through" : ""}>
@@ -296,23 +264,6 @@ export const setDosingInstructions = (drugOrder, intradayDose) => {
           id="VARIABLE_DOSAGE_PROTOCOL"
           defaultMessage="Variable Dosage Protocol"
         />
-      </div>
-    );
-  }
-
-  if (intradayDose) {
-    const { doseUnits, route, frequency } = drugOrder.dosingInstructions;
-    const dosingInstructions = formatIntradayDose(
-      intradayDose,
-      doseUnits,
-      route,
-      frequency,
-      drugOrder.duration,
-      drugOrder.durationUnits
-    );
-    return (
-      <div className={drugOrder.dateStopped ? "strike-through" : ""}>
-        {dosingInstructions}
       </div>
     );
   }
