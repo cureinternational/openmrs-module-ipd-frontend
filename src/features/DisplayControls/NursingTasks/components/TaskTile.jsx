@@ -16,7 +16,6 @@ import {
   timeFormatFor12Hr,
   timeFormatFor24Hr,
   nonMedicationTaskKey,
-  CLINICAL_FORM_URL,
   TASK_COLORS,
   NURSING_ACTIVITY_SYSTEM,
 } from "../../../../constants";
@@ -26,6 +25,7 @@ import {
   getTranslationKey,
   isSystemGeneratedTask,
 } from "../../../../utils/CommonUtils";
+import TaskFormLink from "./TaskFormLink";
 
 export default function TaskTile(props) {
   const { medicationNursingTask, formUuid, patientId } = props;
@@ -136,17 +136,15 @@ export default function TaskTile(props) {
                   }
                 >
                   {isFormLink ? (
-                    <a
-                      href={CLINICAL_FORM_URL(patientId, formUuid)}
-                      className="task-form-link"
-                      target="_blank"
-                      rel="noreferrer"
+                    <TaskFormLink
+                      patientId={patientId}
+                      formUuid={formUuid}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <span className="drug-title" style={taskTitleStyle}>
                         {taskLabel}
                       </span>
-                    </a>
+                    </TaskFormLink>
                   ) : (
                     drugNameText
                   )}

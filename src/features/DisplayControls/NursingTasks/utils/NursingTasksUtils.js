@@ -492,6 +492,7 @@ export const getLatestFormUuid = (formName, allFormsSummary) => {
   if (!formName || !allFormsSummary || !allFormsSummary.length) return null;
   const matches = allFormsSummary.filter((f) => f.name === formName);
   if (!matches.length) return null;
-  return matches.sort((a, b) => parseInt(b.version) - parseInt(a.version))[0]
-    .uuid;
+  return matches.sort(
+    (a, b) => parseFloat(b.version) - parseFloat(a.version)
+  )[0].uuid;
 };

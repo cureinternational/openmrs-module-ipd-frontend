@@ -30,7 +30,6 @@ import {
   timeFormatFor24Hr,
   PRIVILEGE_CONSTANTS,
   nonMedicationTaskKey,
-  CLINICAL_FORM_URL,
   NURSING_ACTIVITY_SYSTEM,
 } from "../../../../constants";
 import DisplayTags from "../../../../components/DisplayTags/DisplayTags";
@@ -47,6 +46,7 @@ import {
   isUserPrivileged,
 } from "../../../../utils/CommonUtils";
 import { getLatestFormUuid } from "../utils/NursingTasksUtils";
+import TaskFormLink from "./TaskFormLink";
 
 const UpdateNursingTasks = (props) => {
   const {
@@ -226,15 +226,13 @@ const UpdateNursingTasks = (props) => {
 
       if (formUuid && patientId) {
         return (
-          <a
-            href={CLINICAL_FORM_URL(patientId, formUuid)}
-            target="_blank"
-            rel="noreferrer"
+          <TaskFormLink
+            patientId={patientId}
+            formUuid={formUuid}
             onClick={(e) => e.stopPropagation()}
-            style={{ color: "#0f62fe", textDecoration: "underline" }}
           >
             {taskLabel}
-          </a>
+          </TaskFormLink>
         );
       }
     }
