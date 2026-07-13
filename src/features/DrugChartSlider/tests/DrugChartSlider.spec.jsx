@@ -1133,5 +1133,132 @@ describe("DrugChartSlider", () => {
         );
       });
     });
+
+    it("Duration=2: save payload keeps remaining-day one day after day-wise slots", async () => {
+      MockDate.set("2010-12-22T20:00:00.000Z");
+      mockSaveMedication.mockClear();
+      const thriceFrequencies = [
+        {
+          name: "Thrice a day",
+          frequencyPerDay: 3,
+          scheduleTiming: ["06:00", "14:00", "22:00"],
+        },
+      ];
+      const duration2DrugOrder = {
+        ...mockScheduleDrugOrder,
+        uniformDosingType: {
+          ...mockScheduleDrugOrder.uniformDosingType,
+          frequency: "Thrice a day",
+        },
+        drugOrder: {
+          ...mockScheduleDrugOrder.drugOrder,
+          duration: 2,
+        },
+      };
+
+      render(
+        <IntlProvider locale="en">
+          <SliderContext.Provider value={mockSliderContext}>
+            <IPDContext.Provider
+              value={{ config: mockConfig, handleAuditEvent: jest.fn() }}
+            >
+              <DrugChartSlider
+                hostData={{
+                  enable24HourTimers: true,
+                  scheduleFrequencies: thriceFrequencies,
+                  startTimeFrequencies: mockStartTimeFrequencies,
+                  drugOrder: duration2DrugOrder,
+                }}
+                hostApi={{}}
+                title=""
+                drugChartNotes=""
+                setDrugChartNotes={jest.fn()}
+              />
+            </IPDContext.Provider>
+          </SliderContext.Provider>
+        </IntlProvider>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: "Save" })).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      await waitFor(() => {
+        expect(mockSaveMedication).toHaveBeenCalled();
+      });
+
+      const payload = mockSaveMedication.mock.calls[0][0];
+      expect(payload.dayWiseSlotsStartTime.length).toBe(3);
+      expect(payload.remainingDaySlotsStartTime.length).toBe(2);
+      expect(
+        payload.remainingDaySlotsStartTime[0] - payload.dayWiseSlotsStartTime[0]
+      ).toBe(24 * 3600);
+      MockDate.reset();
+    });
+
+    it("Duration=2 edit-load: reconstructs subsequent slots when API sends dayWise as null", async () => {
+      const fourTimesFrequencies = [
+        {
+          name: "Four times a day",
+          frequencyPerDay: 4,
+          scheduleTiming: ["00:45", "06:45", "12:45", "18:30"],
+        },
+      ];
+      const editDrugOrderMergedRemaining = {
+        ...mockScheduleDrugOrder,
+        uniformDosingType: {
+          ...mockScheduleDrugOrder.uniformDosingType,
+          frequency: "Four times a day",
+        },
+        drugOrder: {
+          ...mockScheduleDrugOrder.drugOrder,
+          duration: 2,
+        },
+        drugOrderSchedule: {
+          firstDaySlotsStartTime: [1783947600],
+          dayWiseSlotsStartTime: null,
+          remainingDaySlotsStartTime: [
+            1783970100,
+            1783991700,
+            1784013300,
+            1783970100,
+            1783991700,
+            1784013300,
+            1784034000,
+          ],
+          slotStartTime: null,
+          medicationAdministrationStarted: false,
+        },
+      };
+
+      renderWithProviders(
+        <DrugChartSlider
+          hostData={{
+            enable24HourTimers: true,
+            scheduleFrequencies: fourTimesFrequencies,
+            startTimeFrequencies: mockStartTimeFrequencies,
+            drugOrder: editDrugOrderMergedRemaining,
+          }}
+          hostApi={{}}
+          title=""
+          drugChartNotes=""
+          setDrugChartNotes={jest.fn()}
+        />
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Schedule time (subsequent, 24 hrs format)")
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText("Schedule time (remainder, 24 hrs format)")
+        ).toBeInTheDocument();
+      });
+
+      // 4 start-date + 4 subsequent + 3 remainder
+      expect(document.querySelectorAll("#time-selector").length).toBe(11);
+    });
   });
 });
