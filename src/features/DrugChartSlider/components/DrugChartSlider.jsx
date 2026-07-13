@@ -712,7 +712,8 @@ const DrugChartSlider = (props) => {
       if (enableSchedule) {
         const nextScheduleDate = 24 * 60 * 60;
         const finalScheduleDate =
-          nextScheduleDate * hostData?.drugOrder?.drugOrder?.duration;
+          nextScheduleDate *
+          Math.max(0, (hostData?.drugOrder?.drugOrder?.duration || 0) - 1);
 
         const firstDaySchedulesUTCTimeEpoch = firstDaySchedules.reduce(
           (result, schedule, i) => {
@@ -722,16 +723,29 @@ const DrugChartSlider = (props) => {
                 enable24HourTimers,
                 hostData?.drugOrder?.drugOrder?.scheduledDate
               );
-              result.push(
-                showFirstDayScheduleNextDayWarning[i]
-                  ? epoch + nextScheduleDate
-                  : epoch
-              );
+              // EXCLUDE midnight-crossing slots from firstDay payload
+              // They will be saved in dayWise with +nextScheduleDate offset
+              if (!showFirstDayScheduleNextDayWarning[i]) {
+                result.push(epoch);
+              }
             }
             return result;
           },
           []
         );
+        
+        // Collect first day's midnight-crossing slots to add to dayWise
+        const firstDayMidnightCrossingSlots = [];
+        firstDaySchedules.forEach((schedule, i) => {
+          if (schedule !== UNSET_SCHEDULE_TIME && showFirstDayScheduleNextDayWarning[i]) {
+            const epoch = getUTCTimeEpoch(
+              schedule,
+              enable24HourTimers,
+              hostData?.drugOrder?.drugOrder?.scheduledDate
+            );
+            firstDayMidnightCrossingSlots.push(epoch);
+          }
+        });
 
         const hasDayWiseOffset = firstDaySchedules.some(
           (schedule) => schedule == UNSET_SCHEDULE_TIME
@@ -742,9 +756,8 @@ const DrugChartSlider = (props) => {
             enable24HourTimers,
             hostData?.drugOrder?.drugOrder?.scheduledDate
           );
-          return !hasDayWiseOffset && showSubsequentDayScheduleNextDayWarning[i]
-            ? epoch + nextScheduleDate
-            : epoch;
+          // Don't add offset here - detection needs slots in same-day context
+          return epoch;
         });
 
         const finalDaySchedulesUTCTimeEpoch = finalDaySchedules?.map(
@@ -762,20 +775,46 @@ const DrugChartSlider = (props) => {
 
         payload.firstDaySlotsStartTime =
           firstDaySlotsMissed > 0 ? firstDaySchedulesUTCTimeEpoch : [];
+        
+        // Build dayWiseSlotsStartTime with midnight-crossing slots at the beginning.
+        const dayWiseSlots = [...firstDayMidnightCrossingSlots];
+        const subsequentDayMidnightCrossingSlots = [];
+
+        // Same approach as first-day handling: rely on next-day warning flags.
+        schedulesUTCTimeEpoch.forEach((epoch, i) => {
+          if (showSubsequentDayScheduleNextDayWarning[i]) {
+            subsequentDayMidnightCrossingSlots.push(epoch);
+          } else {
+            dayWiseSlots.push(epoch);
+          }
+        });
+        
+        // De-duplicate while preserving order to avoid overlap payloads.
+        const uniqueDayWiseSlots = [...new Set(dayWiseSlots)];
+
+        // If hasDayWiseOffset, shift all slots to next day
         payload.dayWiseSlotsStartTime = hasDayWiseOffset
-          ? schedulesUTCTimeEpoch?.map(
-              (schedules) => schedules + nextScheduleDate
-            )
-          : schedulesUTCTimeEpoch;
+          ? uniqueDayWiseSlots.map((slot) => slot + nextScheduleDate)
+          : uniqueDayWiseSlots;
+        
+        // Build remainingDaySlotsStartTime with subsequent day's midnight-crossing at BEGINNING
         const remainingDaySlotsStartTime = finalDaySchedulesUTCTimeEpoch?.map(
           (schedules) => schedules + finalScheduleDate
         );
-
-        const remainingDaySlotsTime = remainingDaySlotsStartTime?.slice(
-          0,
-          firstDaySlotsMissed
+        
+        // Prepend subsequent day's midnight-crossing to remainingDay.
+        // Use remaining-day date basis so carried slots don't get saved on an earlier day.
+        const shiftedSubsequentCrossings = subsequentDayMidnightCrossingSlots.map(
+          (slot) => slot + finalScheduleDate
         );
-        payload.remainingDaySlotsStartTime = remainingDaySlotsTime;
+        if (subsequentDayMidnightCrossingSlots.length > 0) {
+          payload.remainingDaySlotsStartTime = [
+            ...shiftedSubsequentCrossings,
+            ...(remainingDaySlotsStartTime || [])
+          ];
+        } else {
+          payload.remainingDaySlotsStartTime = remainingDaySlotsStartTime;
+        }
         payload.medicationFrequency =
           medicationFrequency.FIXED_SCHEDULE_FREQUENCY;
       }
@@ -933,6 +972,7 @@ const DrugChartSlider = (props) => {
         ? [...scheduleTimings.dayWiseSlotsStartTime]
         : [];
 
+      const nextScheduleDate = 24 * 60 * 60;
       if (
         firstDayFromApi.length > 0 &&
         dayWiseFromApi.length > 0 &&
@@ -942,7 +982,13 @@ const DrugChartSlider = (props) => {
           enable24HourTimers
         )
       ) {
-        firstDayFromApi.push(dayWiseFromApi.shift());
+        // Midnight-crossing is at beginning of dayWiseFromApi (from backend)
+        // 1. Add it to firstDay for display
+        firstDayFromApi.push(dayWiseFromApi[0]);
+        
+        // 2. Move it from beginning to END of dayWise for UI display
+        const crossingSlot = dayWiseFromApi.shift();
+        dayWiseFromApi.push(crossingSlot);
       }
 
       const frequency = enableSchedule?.frequencyPerDay || 0;
@@ -970,6 +1016,32 @@ const DrugChartSlider = (props) => {
         setShowFirstDayScheduleNextDayWarning(firstDayFlags);
       }
 
+      const remainingDayFromApi = scheduleTimings.remainingDaySlotsStartTime
+        ? [...scheduleTimings.remainingDaySlotsStartTime]
+        : [];
+
+      // Backend keeps subsequent-day midnight carry at the start of remaining-day
+      // payload. For edit UI, if that same time already exists as the last
+      // subsequent-day slot, avoid rendering it again in remaining-day.
+      if (dayWiseFromApi.length > 0 && remainingDayFromApi.length > 0) {
+        const dayWiseLast = dayWiseFromApi[dayWiseFromApi.length - 1];
+        const remainingFirst = remainingDayFromApi[0];
+        const dayWiseLastM = enable24HourTimers
+          ? moment(dayWiseLast, "HH:mm", true)
+          : moment(dayWiseLast, timeFormatFor12Hr, true);
+        const remainingFirstM = enable24HourTimers
+          ? moment(remainingFirst, "HH:mm", true)
+          : moment(remainingFirst, timeFormatFor12Hr, true);
+        if (
+          dayWiseLastM.isValid() &&
+          remainingFirstM.isValid() &&
+          dayWiseLastM.hours() === remainingFirstM.hours() &&
+          dayWiseLastM.minutes() === remainingFirstM.minutes()
+        ) {
+          remainingDayFromApi.shift();
+        }
+      }
+
       setSchedules(dayWiseFromApi);
       if (dayWiseFromApi.length > 1) {
         const loadedTimes = dayWiseFromApi;
@@ -984,9 +1056,9 @@ const DrugChartSlider = (props) => {
         setShowSubsequentDayScheduleNextDayWarning(nextDayFlags);
       }
 
-      setFinalDaySchedules(scheduleTimings.remainingDaySlotsStartTime);
-      if (scheduleTimings.remainingDaySlotsStartTime?.length > 1) {
-        const loadedFinalDayTimes = scheduleTimings.remainingDaySlotsStartTime;
+      setFinalDaySchedules(remainingDayFromApi);
+      if (remainingDayFromApi.length > 1) {
+        const loadedFinalDayTimes = remainingDayFromApi;
         const finalDayFlags = loadedFinalDayTimes.map((time, i) => {
           if (i === 0) return false;
           return isNextDayCrossing(
