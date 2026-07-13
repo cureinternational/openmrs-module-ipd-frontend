@@ -213,7 +213,6 @@ export const computeShiftedSchedules = (
 };
 
 export const isNextDayCrossing = (newTime, prevTime, enable24HourTimers) => {
-  // Payload building passes epoch seconds; compare directly in that case.
   if (typeof newTime === "number" && typeof prevTime === "number") {
     return newTime < prevTime;
   }
