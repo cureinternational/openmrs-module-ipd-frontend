@@ -1260,5 +1260,121 @@ describe("DrugChartSlider", () => {
       // 4 start-date + 4 subsequent + 3 remainder
       expect(document.querySelectorAll("#time-selector").length).toBe(11);
     });
+
+    it("Edit-load non-midnight flow: keeps first-day and day-wise buckets unchanged", async () => {
+      const thriceFrequencies = [
+        {
+          name: "Thrice a day",
+          frequencyPerDay: 3,
+          scheduleTiming: ["06:00", "14:00", "22:00"],
+        },
+      ];
+      const editDrugOrderNonMidnight = {
+        ...mockScheduleDrugOrder,
+        uniformDosingType: {
+          ...mockScheduleDrugOrder.uniformDosingType,
+          frequency: "Thrice a day",
+        },
+        drugOrder: {
+          ...mockScheduleDrugOrder.drugOrder,
+          duration: 3,
+        },
+        drugOrderSchedule: {
+          firstDaySlotsStartTime: [1704117600],
+          dayWiseSlotsStartTime: [1704088800, 1704117600, 1704146400],
+          remainingDaySlotsStartTime: [1704175200, 1704204000],
+          slotStartTime: null,
+          medicationAdministrationStarted: false,
+        },
+      };
+
+      renderWithProviders(
+        <DrugChartSlider
+          hostData={{
+            enable24HourTimers: true,
+            scheduleFrequencies: thriceFrequencies,
+            startTimeFrequencies: mockStartTimeFrequencies,
+            drugOrder: editDrugOrderNonMidnight,
+          }}
+          hostApi={{}}
+          title=""
+          drugChartNotes=""
+          setDrugChartNotes={jest.fn()}
+        />
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Schedule time (subsequent, 24 hrs format)")
+        ).toBeInTheDocument();
+      });
+
+      const inputs = document.querySelectorAll("#time-selector");
+      expect(inputs.length).toBe(8);
+      expect(inputs[2].value).toBe("14:00");
+      expect(inputs[3].value).toBe("06:00");
+      expect(inputs[4].value).toBe("14:00");
+      expect(inputs[5].value).toBe("22:00");
+    });
+
+    it("Edit-load midnight flow: carries crossing slot into first day and rotates day-wise", async () => {
+      const fourTimesFrequencies = [
+        {
+          name: "Four times a day",
+          frequencyPerDay: 4,
+          scheduleTiming: ["01:45", "08:00", "14:00", "20:00"],
+        },
+      ];
+      const editDrugOrderMidnight = {
+        ...mockScheduleDrugOrder,
+        uniformDosingType: {
+          ...mockScheduleDrugOrder.uniformDosingType,
+          frequency: "Four times a day",
+        },
+        drugOrder: {
+          ...mockScheduleDrugOrder.drugOrder,
+          duration: 3,
+        },
+        drugOrderSchedule: {
+          firstDaySlotsStartTime: [1783951200, 1783972800],
+          dayWiseSlotsStartTime: [1783993500, 1784016000, 1784037600, 1784059200],
+          remainingDaySlotsStartTime: [1784079900, 1784102400],
+          slotStartTime: null,
+          medicationAdministrationStarted: false,
+        },
+      };
+
+      renderWithProviders(
+        <DrugChartSlider
+          hostData={{
+            enable24HourTimers: true,
+            scheduleFrequencies: fourTimesFrequencies,
+            startTimeFrequencies: mockStartTimeFrequencies,
+            drugOrder: editDrugOrderMidnight,
+          }}
+          hostApi={{}}
+          title=""
+          drugChartNotes=""
+          setDrugChartNotes={jest.fn()}
+        />
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Schedule time (subsequent, 24 hrs format)")
+        ).toBeInTheDocument();
+      });
+
+      const inputs = document.querySelectorAll("#time-selector");
+      expect(inputs.length).toBe(9);
+      expect(inputs[1].value).toBe("14:00");
+      expect(inputs[2].value).toBe("20:00");
+      expect(inputs[3].value).toBe("01:45");
+      expect(inputs[4].value).toBe("08:00");
+      expect(inputs[5].value).toBe("14:00");
+      expect(inputs[6].value).toBe("20:00");
+      expect(inputs[7].value).toBe("01:45");
+      expect(inputs[8].value).toBe("08:00");
+    });
   });
 });

@@ -814,23 +814,6 @@ const DrugChartSlider = (props) => {
         } else {
           payload.remainingDaySlotsStartTime = remainingDaySlotsStartTime;
         }
-        // Debug: Save payload schedule split for HIVE-108755
-        console.log("[HIVE-108755][SAVE][SCHEDULE_SPLIT]", {
-          orderUuid: payload.orderUuid,
-          duration: orderDuration,
-          hasDayWiseOffset,
-          firstDaySlotsMissed,
-          firstDaySchedules,
-          schedules,
-          finalDaySchedules,
-          showFirstDayScheduleNextDayWarning,
-          showSubsequentDayScheduleNextDayWarning,
-          showFinalDayScheduleNextDayWarning,
-          firstDayMidnightCrossingSlots,
-          dayWiseSlots: payload.dayWiseSlotsStartTime,
-          shiftedSubsequentCrossings,
-          remainingDaySlotsStartTime: payload.remainingDaySlotsStartTime,
-        });
         payload.medicationFrequency =
           medicationFrequency.FIXED_SCHEDULE_FREQUENCY;
       }
@@ -972,17 +955,9 @@ const DrugChartSlider = (props) => {
   useEffect(() => {
     if (isEdit) {
       const drugOrderSchedule = hostData?.drugOrder?.drugOrderSchedule;
-      console.log("[HIVE-108755][EDIT][API_SCHEDULE]", {
-        orderUuid: hostData?.drugOrder?.drugOrder?.uuid,
-        rawDrugOrderSchedule: drugOrderSchedule,
-      });
       const scheduleTimings = enable24HourTimers
         ? setDrugOrderScheduleIn24HourFormat(drugOrderSchedule)
         : setDrugOrderScheduleIn12HourFormat(drugOrderSchedule);
-      console.log("[HIVE-108755][EDIT][SCHEDULE_TIMINGS]", {
-        orderUuid: hostData?.drugOrder?.drugOrder?.uuid,
-        scheduleTimings,
-      });
 
       if (Object.keys(scheduleTimings).length === 0) {
         const startTimeValue = enable24HourTimers
@@ -997,49 +972,54 @@ const DrugChartSlider = (props) => {
         ? [...scheduleTimings.dayWiseSlotsStartTime]
         : [];
       const orderDuration = hostData?.drugOrder?.drugOrder?.duration || 0;
+      const frequency = enableSchedule?.frequencyPerDay || 0;
 
-      const nextScheduleDate = 24 * 60 * 60;
       if (firstDayFromApi.length > 0 && dayWiseFromApi.length > 0) {
-        if (orderDuration === 2) {
-          const firstDayLast = firstDayFromApi[firstDayFromApi.length - 1];
-          const wrapIndex = dayWiseFromApi.findIndex((time, index) => {
-            if (index === 0) return false;
-            return isNextDayCrossing(
-              time,
-              dayWiseFromApi[index - 1],
-              enable24HourTimers
-            );
-          });
-          const crossingSlot =
-            wrapIndex !== -1
-              ? dayWiseFromApi[wrapIndex]
-              : isNextDayCrossing(dayWiseFromApi[0], firstDayLast, enable24HourTimers)
-              ? dayWiseFromApi[0]
-              : null;
-          if (crossingSlot !== null) {
-            firstDayFromApi.push(crossingSlot);
-            const crossingIndex = dayWiseFromApi.findIndex(
-              (time) => time === crossingSlot
-            );
-            if (crossingIndex !== -1) {
-              dayWiseFromApi.splice(crossingIndex, 1);
-              dayWiseFromApi.push(crossingSlot);
+        const firstDayLast = firstDayFromApi[firstDayFromApi.length - 1];
+        const parseTimeToMinutes = (time) => {
+          const parsed = moment.isMoment(time)
+            ? time.clone()
+            : moment(
+                time,
+                [
+                  timeFormatFor24Hr,
+                  timeFormatFor12Hr,
+                  "H:mm",
+                  "h:mm A",
+                  "h:mm a",
+                  "hh:mm a",
+                ],
+                false
+              );
+          if (!parsed.isValid()) return null;
+          return parsed.hours() * 60 + parsed.minutes();
+        };
+        const firstDayLastMinutes = parseTimeToMinutes(firstDayLast);
+        const firstDayWrapMinutes = parseTimeToMinutes(dayWiseFromApi[0]);
+        const hasAnyDayWiseSlotAfterFirstDayLast = dayWiseFromApi.some(
+          (time) => {
+            const currentMinutes = parseTimeToMinutes(time);
+            if (currentMinutes === null || firstDayLastMinutes === null) {
+              return false;
             }
+            return currentMinutes > firstDayLastMinutes;
           }
-        } else if (
-          isNextDayCrossing(
-            dayWiseFromApi[0],
-            firstDayFromApi[firstDayFromApi.length - 1],
-            enable24HourTimers
-          )
-        ) {
+        );
+        const isCrossingFromFirstDayToDayWise =
+          firstDayWrapMinutes !== null &&
+          firstDayLastMinutes !== null &&
+          firstDayWrapMinutes < firstDayLastMinutes;
+        const isMidnightCrossingFlow =
+          isCrossingFromFirstDayToDayWise &&
+          !hasAnyDayWiseSlotAfterFirstDayLast;
+
+        if (isMidnightCrossingFlow) {
           firstDayFromApi.push(dayWiseFromApi[0]);
-          const crossingSlot = dayWiseFromApi.shift();
-          dayWiseFromApi.push(crossingSlot);
+          const shiftedSlot = dayWiseFromApi.shift();
+          dayWiseFromApi.push(shiftedSlot);
         }
       }
 
-      const frequency = enableSchedule?.frequencyPerDay || 0;
       const firstDaySlotsMissedCount = Math.max(
         0,
         frequency - firstDayFromApi.length
@@ -1073,58 +1053,80 @@ const DrugChartSlider = (props) => {
         dayWiseFromApi.length === 0 &&
         remainingDayFromApi.length > 0
       ) {
-        const reconstructedRemainder = remainingDayFromApi.slice(
-          0,
-          firstDaySlotsMissedCount
-        );
-        const firstDayLastSlot = firstDayFromApi[firstDayFromApi.length - 1];
-        const reconstructedDayWise = [...reconstructedRemainder];
-        if (
-          firstDayLastSlot &&
-          reconstructedDayWise.length < (enableSchedule?.frequencyPerDay || 0)
-        ) {
-          reconstructedDayWise.push(firstDayLastSlot);
-        }
-        dayWiseFromApi.push(...reconstructedDayWise);
-        remainingDayFromApi.splice(
-          0,
-          remainingDayFromApi.length,
-          ...reconstructedRemainder
-        );
-      }
-      console.log("[HIVE-108755][EDIT][REBALANCE_BEFORE]", {
-        orderUuid: hostData?.drugOrder?.drugOrder?.uuid,
-        duration: orderDuration,
-        firstDayFromApi: [...firstDayFromApi],
-        dayWiseFromApi: [...dayWiseFromApi],
-        remainingDayFromApi: [...remainingDayFromApi],
-      });
+        const expectedDayWiseCount = frequency;
+        const expectedRemainderCount = firstDaySlotsMissedCount;
+        const minMergedLength = expectedDayWiseCount + expectedRemainderCount;
 
+        if (
+          expectedDayWiseCount > 0 &&
+          expectedRemainderCount >= 0 &&
+          remainingDayFromApi.length >= minMergedLength
+        ) {
+          const reconstructedDayWise = remainingDayFromApi.slice(
+            remainingDayFromApi.length - expectedDayWiseCount
+          );
+          const reconstructedRemainder = remainingDayFromApi.slice(
+            0,
+            expectedRemainderCount
+          );
+          dayWiseFromApi.push(...reconstructedDayWise);
+          remainingDayFromApi.splice(
+            0,
+            remainingDayFromApi.length,
+            ...reconstructedRemainder
+          );
+        } else {
+          const reconstructedRemainder = remainingDayFromApi.slice(
+            0,
+            firstDaySlotsMissedCount
+          );
+          const firstDayLastSlot = firstDayFromApi[firstDayFromApi.length - 1];
+          const reconstructedDayWise = [...reconstructedRemainder];
+          if (
+            firstDayLastSlot &&
+            reconstructedDayWise.length < (enableSchedule?.frequencyPerDay || 0)
+          ) {
+            reconstructedDayWise.push(firstDayLastSlot);
+          }
+          dayWiseFromApi.push(...reconstructedDayWise);
+          remainingDayFromApi.splice(
+            0,
+            remainingDayFromApi.length,
+            ...reconstructedRemainder
+          );
+        }
+      }
       if (dayWiseFromApi.length > 0 && remainingDayFromApi.length > 0) {
         const dayWiseLast = dayWiseFromApi[dayWiseFromApi.length - 1];
         const remainingFirst = remainingDayFromApi[0];
-        const dayWiseLastM = enable24HourTimers
-          ? moment(dayWiseLast, "HH:mm", true)
-          : moment(dayWiseLast, timeFormatFor12Hr, true);
-        const remainingFirstM = enable24HourTimers
-          ? moment(remainingFirst, "HH:mm", true)
-          : moment(remainingFirst, timeFormatFor12Hr, true);
+        const parseTimeToMinutes = (time) => {
+          const parsed = moment.isMoment(time)
+            ? time.clone()
+            : moment(
+                time,
+                [
+                  timeFormatFor24Hr,
+                  timeFormatFor12Hr,
+                  "H:mm",
+                  "h:mm A",
+                  "h:mm a",
+                  "hh:mm a",
+                ],
+                false
+              );
+          if (!parsed.isValid()) return null;
+          return parsed.hours() * 60 + parsed.minutes();
+        };
+        const dayWiseLastMinutes = parseTimeToMinutes(dayWiseLast);
+        const remainingFirstMinutes = parseTimeToMinutes(remainingFirst);
         if (
-          dayWiseLastM.isValid() &&
-          remainingFirstM.isValid() &&
-          dayWiseLastM.hours() === remainingFirstM.hours() &&
-          dayWiseLastM.minutes() === remainingFirstM.minutes()
+          dayWiseLastMinutes !== null &&
+          remainingFirstMinutes !== null &&
+          dayWiseLastMinutes === remainingFirstMinutes
         ) {
           remainingDayFromApi.shift();
         }
       }
-      console.log("[HIVE-108755][EDIT][REBALANCE_AFTER]", {
-        orderUuid: hostData?.drugOrder?.drugOrder?.uuid,
-        duration: orderDuration,
-        firstDayFromApi,
-        dayWiseFromApi,
-        remainingDayFromApi,
-      });
 
       setSchedules(dayWiseFromApi);
       if (dayWiseFromApi.length > 1) {
