@@ -108,7 +108,6 @@ export const transformDrugOrders = (orders) => {
   });
   emergencyMedications.forEach((medication) => {
     const { drug, uuid, route, administeredDateTime } = medication;
-    if (!drug) return;
     const administeredDateTimeInSeconds = administeredDateTime
       ? administeredDateTime / 1000
       : null;

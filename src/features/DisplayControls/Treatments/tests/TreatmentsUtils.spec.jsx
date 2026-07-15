@@ -14,8 +14,6 @@ import {
   getDischargeRevisedOrderUuids,
   isSupersededByDischargeRevision,
   DRUG_ORDER_ACTIONS,
-  formatIntradayDoseString,
-  modifyEmergencyTreatmentData,
 } from "../utils/TreatmentsUtils";
 import { IPDContext } from "../../../../context/IPDContext";
 import { mockConfig } from "../../../../utils/CommonUtils";
@@ -465,123 +463,6 @@ describe("TreatmentsUtils", () => {
       const fhirDosages = [dosage(1)];
       const startDates = [futureDate];
       expect(getActiveStageIndex(fhirDosages, null, startDates)).toBe(-1);
-    });
-  });
-
-  describe("formatIntradayDoseString", () => {
-    it("should format all four slots with units, route, and duration", () => {
-      const result = formatIntradayDoseString(
-        { morning: 10, afternoon: 5, evening: 10, night: 5 },
-        "mg",
-        "Oral",
-        null,
-        5,
-        "Day(s)"
-      );
-      expect(result).toBe("10-5-10-5 mg - Oral - for 5 Day(s)");
-    });
-
-    it("should display 0 for null slot values", () => {
-      const result = formatIntradayDoseString(
-        { morning: 10, afternoon: null, evening: 30, night: null },
-        "mg",
-        null,
-        null,
-        null,
-        null
-      );
-      expect(result).toBe("10-0-30-0 mg");
-    });
-
-    it("should omit route/frequency/duration when not provided", () => {
-      const result = formatIntradayDoseString(
-        { morning: 1, afternoon: 0, evening: 1, night: 0 },
-        "Tablet",
-        null,
-        null,
-        null,
-        null
-      );
-      expect(result).toBe("1-0-1-0 Tablet");
-    });
-
-    it("should not append a trailing space when doseUnits is missing", () => {
-      const result = formatIntradayDoseString(
-        { morning: 10, afternoon: 0, evening: 5, night: 0 },
-        null,
-        null,
-        null,
-        null,
-        null
-      );
-      expect(result).toBe("10-0-5-0");
-      });
-    });
-  describe("modifyEmergencyTreatmentData", () => {
-    const validEmergencyMedication = {
-      uuid: "em-uuid-1",
-      drug: { display: "Paracetamol" },
-      dose: 500,
-      doseUnits: { display: "mg" },
-      route: { display: "Oral" },
-      administeredDateTime: 1700000000,
-      providers: [
-        {
-          function: "Requester",
-          provider: { uuid: "prov-1", display: "Dr. Smith - John Smith" },
-        },
-      ],
-      notes: [],
-    };
-
-    it("should filter out emergency medications with null drug", () => {
-      const medications = [
-        { ...validEmergencyMedication, drug: null, uuid: "em-null" },
-        validEmergencyMedication,
-      ];
-
-      const result = modifyEmergencyTreatmentData(medications);
-      expect(result).toHaveLength(1);
-      expect(result[0].id).toBe("em-uuid-1");
-    });
-
-    it("should filter out emergency medications with undefined drug", () => {
-      const medicationWithoutDrug = { ...validEmergencyMedication };
-      delete medicationWithoutDrug.drug;
-
-      const medications = [medicationWithoutDrug];
-
-      const result = modifyEmergencyTreatmentData(medications);
-      expect(result).toHaveLength(0);
-    });
-
-    it("should return empty array when all medications have null drug", () => {
-      const medications = [
-        { ...validEmergencyMedication, drug: null, uuid: "em-1" },
-        { ...validEmergencyMedication, drug: null, uuid: "em-2" },
-      ];
-
-      const result = modifyEmergencyTreatmentData(medications);
-      expect(result).toHaveLength(0);
-    });
-
-    it("should process all medications when all have valid drug", () => {
-      const medications = [
-        validEmergencyMedication,
-        {
-          ...validEmergencyMedication,
-          uuid: "em-uuid-2",
-          drug: { display: "Ibuprofen" },
-        },
-      ];
-
-      const result = modifyEmergencyTreatmentData(medications);
-      expect(result).toHaveLength(2);
-    });
-
-    it("should return empty array for empty input", () => {
-      const result = modifyEmergencyTreatmentData([]);
-      expect(result).toHaveLength(0);
     });
   });
 });

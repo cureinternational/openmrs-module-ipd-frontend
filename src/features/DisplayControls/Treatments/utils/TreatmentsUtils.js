@@ -413,9 +413,8 @@ export const getEncounterType = async (encounterType) => {
 };
 
 export const modifyEmergencyTreatmentData = (emergencyMedications) => {
-  const emergencyTreatments = emergencyMedications
-    .filter((medicationAdministration) => medicationAdministration.drug != null)
-    .map((medicationAdministration) => {
+  const emergencyTreatments = emergencyMedications.map(
+    (medicationAdministration) => {
       const dosingInstructions = { emergency: true };
       const approver = medicationAdministration.providers.find(
         (provider) =>
@@ -483,7 +482,8 @@ export const modifyEmergencyTreatmentData = (emergencyMedications) => {
           startTimeForSort: medicationAdministration.administeredDateTime,
         },
       };
-    });
+    }
+  );
   return emergencyTreatments;
 };
 
