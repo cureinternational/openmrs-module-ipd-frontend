@@ -134,3 +134,25 @@ export const mapObservationsToInstructions = (observations, formConcepts) => {
     return result;
   }, []);
 };
+
+/**
+ * Filters instructions to identify those belonging to the previous shift.
+ * An instruction belongs to the previous shift if its encounterDateTime falls
+ * before the current shift start time.
+ *
+ * @param {Array} instructions - The array of instruction objects with encounterDateTime
+ * @param {number} currentShiftStartTime - The start time of the current shift (milliseconds)
+ * @returns {Array} - Instructions that belong to the previous shift
+ */
+export const filterPreviousShiftInstructions = (
+  instructions,
+  currentShiftStartTime
+) => {
+  if (!instructions || instructions.length === 0) {
+    return [];
+  }
+
+  return instructions.filter(
+    (instruction) => instruction.encounterDateTime < currentShiftStartTime
+  );
+};
