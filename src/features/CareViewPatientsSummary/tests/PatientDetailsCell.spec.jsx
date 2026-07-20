@@ -536,7 +536,7 @@ describe("PatientDetailsCell", () => {
 
     await waitFor(() => {
       expect(queryByTestId("previous-shift-care-instructions-notification")).toBeTruthy();
-      expect(queryByText(/2 Care Instruction\(s\) from Previous Shift/)).toBeTruthy();
+      expect(queryByText(/(Includes 2 from Previous Shift)/)).toBeTruthy();
     });
   });
 
@@ -629,7 +629,7 @@ describe("PatientDetailsCell", () => {
     );
 
     await waitFor(() => {
-      expect(queryByText(/3 Care Instruction\(s\) from Previous Shift/)).toBeTruthy();
+      expect(queryByText(/(Includes 3 from Previous Shift)/)).toBeTruthy();
     });
   });
 

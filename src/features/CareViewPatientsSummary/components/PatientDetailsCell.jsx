@@ -185,13 +185,13 @@ export const PatientDetailsCell = ({
                       <div
                         className="care-instructions-previous-shift"
                         data-testid="previous-shift-care-instructions-notification"
-                        style={{ marginLeft: "20px" }}
+                        style={{ marginLeft: "20px", color: "red", fontStyle: "italic" }}
                       >
-                        &bull; {previousShiftCareInstructionsCount + " "}
+
                         <FormattedMessage
                           id={"PREVIOUS_SHIFT_CARE_INSTRUCTIONS"}
-                          defaultMessage={"Care Instruction(s) from Previous Shift"}
-                        />
+                          defaultMessage={`(Includes ${previousShiftCareInstructionsCount} from Previous Shift)`}
+                        />{" "}
                       </div>
                     )}
                   </div>
@@ -263,7 +263,7 @@ PatientDetailsCell.propTypes = {
   navHourEpoch: propTypes.object.isRequired,
   visitDetails: propTypes.object.isRequired,
   newTreatments: propTypes.number.isRequired,
-  unacknowledgedCareInstructions: propTypes.array,
-  previousShiftCareInstructions: propTypes.array,
+  unacknowledgedCareInstructions: propTypes.array.isRequired,
+  previousShiftCareInstructions: propTypes.array.isRequired,
   previousShiftPendingTasks: propTypes.array.isRequired,
 };

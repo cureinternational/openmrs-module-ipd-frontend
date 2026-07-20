@@ -881,7 +881,7 @@ describe("CareViewPatientsSummary", () => {
           "previous-shift-care-instructions-notification"
         );
         expect(notification).toBeTruthy();
-        expect(notification).toHaveTextContent(/2 Care Instruction\(s\) from Previous Shift/);
+        expect(notification).toHaveTextContent(/(Includes 2 from Previous Shift)/);
       });
     });
 
