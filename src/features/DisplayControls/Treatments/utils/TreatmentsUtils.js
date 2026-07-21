@@ -352,7 +352,7 @@ export const getDrugName = (drugOrderObject) => {
   const drugOrder = drugOrderObject.drugOrder;
   const drugNonCoded = drugOrder.drugNonCoded || null;
   const hasNoteContent =
-    drugOrder.drug &&
+    (drugOrder.drug || drugNonCoded) &&
     (drugOrderObject.instructions ||
       drugOrderObject.additionalInstructions ||
       drugOrderObject.rate ||
@@ -470,8 +470,9 @@ export const getEncounterType = async (encounterType) => {
 };
 
 export const modifyEmergencyTreatmentData = (emergencyMedications) => {
-  const emergencyTreatments = emergencyMedications.map(
-    (medicationAdministration) => {
+  const emergencyTreatments = emergencyMedications
+    .filter((medicationAdministration) => medicationAdministration.drug != null)
+    .map((medicationAdministration) => {
       const dosingInstructions = { emergency: true };
       const approver = medicationAdministration.providers.find(
         (provider) =>
@@ -539,8 +540,7 @@ export const modifyEmergencyTreatmentData = (emergencyMedications) => {
           startTimeForSort: medicationAdministration.administeredDateTime,
         },
       };
-    }
-  );
+    });
   return emergencyTreatments;
 };
 
@@ -618,7 +618,7 @@ export const buildStageDrugOrder = (
     durationDisplayUnits: stageInfo.isLoadingDose ? LOADING_DOSE_DURATION_DISPLAY : null,
     drugOrder: {
       ...drugOrderObject.drugOrder,
-      duration: stageInfo.durationDays || 0,
+      duration: stageInfo.isLoadingDose ? 0 : (dosage.timing?.repeat?.duration || 0),
       durationUnits: fromUcumDurationUnit(dosage.timing?.repeat?.durationUnit),
       ...(stageStartDate != null && { scheduledDate: stageStartDate }),
     },

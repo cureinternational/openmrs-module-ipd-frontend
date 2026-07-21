@@ -3,6 +3,7 @@ import {
   GetUTCEpochForDate,
   ExtractMedicationNursingTasksData,
   saveAdministeredMedication,
+  getLatestFormUuid,
 } from "../utils/NursingTasksUtils";
 import axios from "axios";
 import {
@@ -303,6 +304,156 @@ describe("NursingTasksUtils", () => {
         data: { error: "Internal Server Error" },
       });
     });
+
+    it("should return fallback object when error has no response property", async () => {
+      const administeredMedication = [
+        {
+          patientUuid: "4399dcf6-0e47-42a0-8eb1-ee5b06de4bdc",
+          orderUuid: "e19c0bbf-a960-4ccc-8f82-923be87c5784",
+          providers: [
+            {
+              providerUuid: "c1c26908-3f10-11e4-adec-0800271c1b75",
+              function: "Performer",
+            },
+          ],
+          notes: [],
+          status: "completed",
+          slotUuid: "f22b1b11-ae2f-40d9-bc25-a0233ffd9435",
+          administeredDateTime: 1703670985,
+        },
+      ];
+
+      axios.post.mockRejectedValueOnce(new Error("Network Error"));
+
+      const response = await saveAdministeredMedication(administeredMedication);
+
+      expect(response).toEqual({ status: null, data: null });
+    });
+
+    it("should return fallback object when error is null/undefined", async () => {
+      const administeredMedication = [
+        {
+          patientUuid: "4399dcf6-0e47-42a0-8eb1-ee5b06de4bdc",
+          orderUuid: "e19c0bbf-a960-4ccc-8f82-923be87c5784",
+          providers: [
+            {
+              providerUuid: "c1c26908-3f10-11e4-adec-0800271c1b75",
+              function: "Performer",
+            },
+          ],
+          notes: [],
+          status: "completed",
+          slotUuid: "f22b1b11-ae2f-40d9-bc25-a0233ffd9435",
+          administeredDateTime: 1703670985,
+        },
+      ];
+
+      axios.post.mockRejectedValueOnce(null);
+
+      const response = await saveAdministeredMedication(administeredMedication);
+
+      expect(response).toEqual({ status: null, data: null });
+    });
+  });
+
+  describe("ExtractMedicationNursingTasksData - null safety", () => {
+    it("should handle COMPLETED slot with null medicationAdministration", () => {
+      const mockData = [
+        {
+          id: 1,
+          uuid: "schedule-uuid",
+          serviceType: "Medication Administration",
+          comment: "some comment",
+          startDate: 1690906304,
+          endDate: 1691165503,
+          patient: { uuid: "patient-uuid" },
+          slots: [
+            {
+              id: 1,
+              uuid: "slot-uuid-1",
+              order: {
+                uuid: "order-uuid-1",
+                drug: { display: "Paracetamol" },
+                route: { display: "Oral" },
+                dose: 500,
+                doseUnits: { display: "mg" },
+                duration: 3,
+                durationUnits: { display: "Day(s)" },
+                asNeeded: true,
+                frequency: { display: "PRN" },
+                dateStopped: null,
+                autoExpireDate: "2024-01-10T00:00:00.000Z",
+                drugNonCoded: null,
+              },
+              serviceType: "AsNeededPlaceholder",
+              status: "COMPLETED",
+              startTime: 1690906550,
+              medicationAdministration: null,
+            },
+          ],
+        },
+      ];
+
+      const result = ExtractMedicationNursingTasksData(mockData, {
+        id: "allTasks",
+        text: "All Tasks",
+      });
+      const slot = result.find((group) =>
+        group.some((item) => item.uuid === "slot-uuid-1")
+      );
+      expect(slot).toBeDefined();
+      const slotItem = slot.find((item) => item.uuid === "slot-uuid-1");
+      expect(slotItem).toBeDefined();
+    });
+
+    it("should handle slot with order having null drug (uses drugNonCoded)", () => {
+      const mockData = [
+        {
+          id: 1,
+          uuid: "schedule-uuid",
+          serviceType: "Medication Administration",
+          comment: "some comment",
+          startDate: 1690906304,
+          endDate: 1691165503,
+          patient: { uuid: "patient-uuid" },
+          slots: [
+            {
+              id: 1,
+              uuid: "slot-uuid-2",
+              order: {
+                uuid: "order-uuid-2",
+                drug: null,
+                drugNonCoded: "Custom Drug Name",
+                route: { display: "Oral" },
+                dose: 250,
+                doseUnits: { display: "mg" },
+                duration: null,
+                durationUnits: null,
+                asNeeded: false,
+                frequency: { display: "Twice a day" },
+                dateStopped: null,
+                autoExpireDate: "2024-01-10T00:00:00.000Z",
+              },
+              serviceType: "MedicationRequest",
+              status: "SCHEDULED",
+              startTime: 1690906550,
+              medicationAdministration: null,
+            },
+          ],
+        },
+      ];
+
+      const result = ExtractMedicationNursingTasksData(mockData, {
+        id: "pending",
+        text: "Pending",
+      });
+      const slot = result.find((group) =>
+        group.some((item) => item.uuid === "slot-uuid-2")
+      );
+      expect(slot).toBeDefined();
+      const slotItem = slot.find((item) => item.uuid === "slot-uuid-2");
+      expect(slotItem.drugName).toBe("Custom Drug Name");
+    });
   });
 
   describe("ExtractMedicationNursingTasksData - intraday orders", () => {
@@ -340,9 +491,15 @@ describe("NursingTasksUtils", () => {
       ];
 
       const filterValue = { id: "pending" };
-      const result = ExtractMedicationNursingTasksData(intradayTaskData, filterValue, false);
+      const result = ExtractMedicationNursingTasksData(
+        intradayTaskData,
+        filterValue,
+        false
+      );
       const slotInfo = result[0][0];
-      expect(slotInfo.intradayDoseString).toBe("10-0-30-10 mg - Oral - for 5 Day(s)");
+      expect(slotInfo.intradayDoseString).toBe(
+        "10-0-30-10 mg - Oral - for 5 Day(s)"
+      );
     });
 
     it("sets intradayDoseString to null for non-intraday orders", () => {
@@ -366,7 +523,9 @@ describe("NursingTasksUtils", () => {
                 autoExpireDate: 1691791200000,
                 asNeeded: false,
                 frequency: { display: "Once a day" },
-                dosingInstructions: JSON.stringify({ instructions: "After meals" }),
+                dosingInstructions: JSON.stringify({
+                  instructions: "After meals",
+                }),
               },
             },
           ],
@@ -374,9 +533,71 @@ describe("NursingTasksUtils", () => {
       ];
 
       const filterValue = { id: "pending" };
-      const result = ExtractMedicationNursingTasksData(regularTaskData, filterValue, false);
+      const result = ExtractMedicationNursingTasksData(
+        regularTaskData,
+        filterValue,
+        false
+      );
       const slotInfo = result[0][0];
       expect(slotInfo.intradayDoseString).toBeNull();
+    });
+  });
+
+  describe("getLatestFormUuid", () => {
+    it("should return latest uuid when multiple versions exist", () => {
+      const allFormsSummary = [
+        { name: "Nursing Initial Assessment", version: "1", uuid: "uuid-v1" },
+        { name: "Nursing Initial Assessment", version: "3", uuid: "uuid-v3" },
+        { name: "Nursing Initial Assessment", version: "2", uuid: "uuid-v2" },
+      ];
+
+      expect(
+        getLatestFormUuid("Nursing Initial Assessment", allFormsSummary)
+      ).toBe("uuid-v3");
+    });
+
+    it("should return null when form is not found", () => {
+      const allFormsSummary = [
+        { name: "Vitals", version: "1", uuid: "uuid-1" },
+      ];
+      expect(
+        getLatestFormUuid("Nursing Initial Assessment", allFormsSummary)
+      ).toBeNull();
+    });
+
+    it("should return null for null or undefined inputs", () => {
+      expect(getLatestFormUuid(null, [])).toBeNull();
+      expect(getLatestFormUuid("Form A", null)).toBeNull();
+      expect(getLatestFormUuid("Form A", undefined)).toBeNull();
+      expect(
+        getLatestFormUuid(undefined, [
+          { name: "Form A", version: "1", uuid: "uuid-a" },
+        ])
+      ).toBeNull();
+    });
+
+    it("should handle decimal version strings and return the highest version", () => {
+      const allFormsSummary = [
+        {
+          name: "Nursing Initial Assessment",
+          version: "1.5",
+          uuid: "uuid-v1-5",
+        },
+        {
+          name: "Nursing Initial Assessment",
+          version: "1.9",
+          uuid: "uuid-v1-9",
+        },
+        {
+          name: "Nursing Initial Assessment",
+          version: "1.7",
+          uuid: "uuid-v1-7",
+        },
+      ];
+
+      expect(
+        getLatestFormUuid("Nursing Initial Assessment", allFormsSummary)
+      ).toBe("uuid-v1-9");
     });
   });
 });

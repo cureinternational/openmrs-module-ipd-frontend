@@ -176,6 +176,9 @@ export const PROVIDER_URL = RESTWS_V1 + "/provider";
 export const CLINICAL_OBSERVATION_URL = (patientUuid) =>
   `/bahmni/clinical/#/default/patient/${patientUuid}/dashboard/concept-set-group/All%20Observation%20Templates`;
 
+export const CLINICAL_FORM_URL = (patientUuid, formUuid) =>
+  `/bahmni/clinical/index.html#/default/patient/${patientUuid}/dashboard/concept-set-group/observations/form/${formUuid}`;
+
 export const PRIVILEGE_CONSTANTS = {
   ADT: "Assign Beds",
   EDIT_MEDICATION_TASKS: "Edit Medication Tasks",
@@ -199,3 +202,12 @@ export const LOADING_DOSE_SEQUENCE_OFFSET = 1;
 export const NO_LOADING_DOSE_SEQUENCE_OFFSET = 0;
 export const ATTR_NAME = "Can acknowledge emergency medication";
 export const ATTR_VALUE = true;
+
+export const TASK_COLORS = {
+  LINK_BLUE: "#0f62fe",
+  STOP_RED: "#FF0000",
+  RELEVANT_DARK: "#393939",
+  NON_RELEVANT_GRAY: "#525252",
+};
+
+export const NURSING_ACTIVITY_SYSTEM = "nursing_activity_system";
