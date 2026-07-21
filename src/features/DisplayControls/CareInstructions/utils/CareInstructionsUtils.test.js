@@ -213,5 +213,14 @@ describe('CareInstructionsUtils - filterPreviousShiftInstructions', () => {
 
             expect(instructions).toHaveLength(originalLength);
         });
+
+        test('should exclude instruction edited in current shift (previousVersionUuid + current-shift encounterDateTime)', () => {
+            const instructions = [{
+                observationUuid: 'edited-in-current-shift',
+                encounterDateTime: 1704070000000, // after shift start — edited in current shift
+                previousVersionUuid: 'original-prev-uuid',
+            }];
+            expect(filterPreviousShiftInstructions(instructions, currentShiftStartTime)).toHaveLength(0);
+        });
     });
 });

@@ -185,13 +185,13 @@ export const PatientDetailsCell = ({
                       <div
                         className="care-instructions-previous-shift"
                         data-testid="previous-shift-care-instructions-notification"
-                        style={{ marginLeft: "20px", color: "red", fontStyle: "italic" }}
                       >
 
                         <FormattedMessage
                           id={"PREVIOUS_SHIFT_CARE_INSTRUCTIONS"}
-                          defaultMessage={`(Includes ${previousShiftCareInstructionsCount} from Previous Shift)`}
-                        />{" "}
+                          defaultMessage={"(Includes {count} from Previous Shift)"}
+                          values={{ count: previousShiftCareInstructionsCount }}
+                        />
                       </div>
                     )}
                   </div>
