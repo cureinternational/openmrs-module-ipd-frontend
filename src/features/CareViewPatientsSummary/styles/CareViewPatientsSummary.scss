@@ -40,7 +40,7 @@
       margin-top: 4px;
     }
     .warning-icon-20 {
-      fill: #da1e28;
+      fill: $red;
     }
 
     .result-new-icon-20 {
@@ -184,7 +184,7 @@
   }
 }
 .care-instructions-previous-shift {
-  margin-left: 20px;
-  color: #da1e28;
+  margin-left: 25px;
+  color: $red;
   font-style: italic;
 }
