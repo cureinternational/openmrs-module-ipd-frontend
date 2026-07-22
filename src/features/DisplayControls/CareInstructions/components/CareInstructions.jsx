@@ -31,7 +31,7 @@ import "../styles/CareInstructions.scss";
 const SKELETON_ROW_COUNT = 3;
 const EMPTY_FORM_CONCEPTS = [];
 const getInitialTaskName = (instructionType, instruction) =>
-  [instructionType, instruction].filter(Boolean).join("-");
+  [instructionType, instruction].filter(Boolean).join(" - ");
 
 const CareInstructions = (props) => {
   const { patientId, config: { formConcepts = EMPTY_FORM_CONCEPTS } = {} } =

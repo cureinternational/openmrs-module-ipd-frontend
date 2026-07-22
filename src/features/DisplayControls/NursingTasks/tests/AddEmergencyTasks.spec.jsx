@@ -575,7 +575,7 @@ describe("AddEmergencyTasks", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Add More +")).toBeInTheDocument();
+      expect(screen.getByText("Add Task +")).toBeInTheDocument();
     });
     expect(screen.getAllByText("Task Name").length).toEqual(1);
 
@@ -584,8 +584,8 @@ describe("AddEmergencyTasks", () => {
       "Instruction for the Ward-Neurovascular observations 2hrs only"
     );
 
-    // Click Add More
-    fireEvent.click(screen.getByText("Add More +"));
+    // Click Add Task
+    fireEvent.click(screen.getByText("Add Task +"));
 
     await waitFor(() => {
       expect(screen.getAllByText("Task Name").length).toEqual(2);
@@ -621,9 +621,9 @@ describe("AddEmergencyTasks", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Add More +")).toBeInTheDocument();
+      expect(screen.getByText("Add Task +")).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByText("Add More +"));
+    fireEvent.click(screen.getByText("Add Task +"));
     await waitFor(() =>
       expect(screen.getAllByText("Task Name").length).toEqual(2)
     );

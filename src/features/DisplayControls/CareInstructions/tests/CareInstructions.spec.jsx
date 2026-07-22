@@ -614,7 +614,7 @@ describe("CareInstructions", () => {
     );
     expect(slider.getAttribute("data-order-uuid")).toBe("order-uuid-1");
     expect(slider.getAttribute("data-initial-task-name")).toBe(
-      "Instruction for the Ward-Patient should rest"
+      "Instruction for the Ward - Patient should rest"
     );
   });
 

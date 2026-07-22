@@ -867,7 +867,7 @@ const AddEmergencyTasks = (props) => {
                       >
                         <FormattedMessage
                           id={"ADD_MORE_TASK"}
-                          defaultMessage={"Add More"}
+                          defaultMessage={"Add Task"}
                         />
                         {" +"}
                       </Button>
@@ -880,20 +880,6 @@ const AddEmergencyTasks = (props) => {
                         index > 0 ? "replicated-task-section" : ""
                       }`}
                     >
-                      {index > 0 && (
-                        <button
-                          type="button"
-                          className="replicated-task-remove-button"
-                          onClick={() =>
-                            removeNonMedicationTask(taskDetails.id)
-                          }
-                        >
-                          <FormattedMessage
-                            id={"REMOVE"}
-                            defaultMessage={"Remove"}
-                          />
-                        </button>
-                      )}
                       <TextArea
                         labelText={
                           <Title text={TASK_NAME_LABEL} isRequired={true} />
@@ -1010,6 +996,23 @@ const AddEmergencyTasks = (props) => {
                           />
                         )}
                       </div>
+                      {index > 0 && (
+                        <>
+                          <button
+                            type="button"
+                            className="replicated-task-remove-button"
+                            onClick={() =>
+                              removeNonMedicationTask(taskDetails.id)
+                            }
+                          >
+                            <FormattedMessage
+                              id={"REMOVE"}
+                              defaultMessage={"Remove"}
+                            />
+                          </button>
+                          <div className="replicated-task-separator" />
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>

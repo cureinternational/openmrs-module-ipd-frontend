@@ -33,13 +33,13 @@
     justify-content: space-between;
     align-items: flex-end;
     gap: 24px;
-    margin-bottom: 4px;
+    margin-bottom: 20px;
   }
 
   .instruction-label {
     font-size: 0.875rem;
     font-weight: 600;
-    margin: 0 0 4px;
+    margin: 0 0 8px;
   }
 
   .instruction-value {
@@ -62,27 +62,46 @@
     line-height: 1.5rem;
     justify-content: center;
     flex-shrink: 0;
+    background-color: transparent !important;
+    color: #0f62fe !important;
+    border: 1px solid #0f62fe !important;
 
     &:hover {
-      background-color: transparent !important;
-      color: #0353e9 !important;
+      background-color: #0f62fe !important;
+      color: #ffffff !important;
+      border: 1px solid #0f62fe !important;
     }
 
     &:active {
-      background-color: transparent !important;
+      background-color: #0f62fe !important;
+      color: #ffffff !important;
+      border: 1px solid #0f62fe !important;
+    }
+
+    &:focus {
+      background-color: #0f62fe !important;
+      color: #ffffff !important;
+      border: 1px solid #0f62fe !important;
+      outline: 2px solid #0f62fe;
+      outline-offset: 2px;
+      box-shadow: none !important;
     }
   }
 
   .non-medication-task-section {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
   }
 
-  .non-medication-task-section.replicated-task-section {
-    border-top: 1px solid #e0e0e0;
-    padding-top: 20px;
-    margin-top: 4px;
+  .replicated-task-section {
+    padding-top: 0;
+    margin-top: 0;
+
+    .bx--label,
+    .bx--text-area__label-wrapper {
+      margin-top: 5px;
+    }
   }
 
   .replicated-task-remove-button {
@@ -90,11 +109,20 @@
     border: none;
     color: #0f62fe;
     cursor: pointer;
-    font-size: 1rem;
-    line-height: 1.5rem;
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.125rem;
     padding: 0;
-    margin: 0 0 4px;
+    margin: 12px 0 8px 0;
     align-self: flex-start;
+  }
+
+  .replicated-task-separator {
+    width: 100%;
+    height: 1px;
+    background-color: #e0e0e0;
+    margin: 0;
   }
 
   button {
