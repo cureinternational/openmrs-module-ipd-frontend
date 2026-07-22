@@ -613,8 +613,9 @@ describe("CareInstructions", () => {
       "obs-uuid-with-order"
     );
     expect(slider.getAttribute("data-order-uuid")).toBe("order-uuid-1");
-    // Commit 1: No prepopulation yet
-    expect(slider.getAttribute("data-initial-task-name")).toBe("");
+    expect(slider.getAttribute("data-initial-task-name")).toBe(
+      "Instruction for the Ward-Patient should rest"
+    );
   });
 
   it("should add edited-instruction-row class when obs has previousVersionUuid set by backend", async () => {

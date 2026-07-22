@@ -565,6 +565,10 @@ describe("AddEmergencyTasks", () => {
             setNotificationMessage={mockSetNotificationMessage}
             setNotificationStatus={mockSetNotificationStatus}
             hideMedicationTab={true}
+            instruction={"Neurovascular observations 2hrs only"}
+            initialTaskName={
+              "Instruction for the Ward-Neurovascular observations 2hrs only"
+            }
           />
         </IPDContext.Provider>
       </IntlProvider>
@@ -575,18 +579,10 @@ describe("AddEmergencyTasks", () => {
     });
     expect(screen.getAllByText("Task Name").length).toEqual(1);
 
-    // Initially empty
-    expect(document.querySelectorAll("textarea")[0].value).toEqual("");
-
-    // User types in first task
-    const firstTaskNameField = document.querySelectorAll("textarea")[0];
-    fireEvent.change(firstTaskNameField, {
-      target: { value: "Test Task Name" },
-    });
-
-    await waitFor(() => {
-      expect(firstTaskNameField.value).toEqual("Test Task Name");
-    });
+    // Prepopulated from initialTaskName prop
+    expect(document.querySelectorAll("textarea")[0].value).toEqual(
+      "Instruction for the Ward-Neurovascular observations 2hrs only"
+    );
 
     // Click Add More
     fireEvent.click(screen.getByText("Add More +"));
@@ -596,7 +592,7 @@ describe("AddEmergencyTasks", () => {
       expect(screen.getByText("Remove")).toBeInTheDocument();
       // Replicated task should copy the first task's name
       expect(document.querySelectorAll("textarea")[1].value).toEqual(
-        "Test Task Name"
+        "Instruction for the Ward-Neurovascular observations 2hrs only"
       );
     });
   });

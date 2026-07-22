@@ -68,6 +68,8 @@ const AddEmergencyTasks = (props) => {
     hideMedicationTab = false,
     observationUuid,
     orderUuid,
+    instruction,
+    initialTaskName,
   } = props;
 
   const [isSaveDisabled, setIsSaveDisabled] = useState(true);
@@ -85,6 +87,7 @@ const AddEmergencyTasks = (props) => {
   const { providerFilter = {} } = config;
   const { attrName, attrValue } = providerFilter;
   const { enable24HourTime = {}, nonMedicationTaskTypes = [] } = config;
+  const MAX_TASK_NAME_LENGTH = 255;
 
   const [selectedDrug, setSelectedDrug] = useState({});
   const [doseUnits, setDoseUnits] = useState({});
@@ -107,7 +110,7 @@ const AddEmergencyTasks = (props) => {
     return [
       {
         id: createTaskRowId(),
-        taskName: "",
+        taskName: initialTaskName || "",
         scheduleTime: defaultScheduleTime,
         taskType: null,
       },
@@ -119,6 +122,8 @@ const AddEmergencyTasks = (props) => {
   const [nonMedicationInvalidTexts, setNonMedicationInvalidTexts] = useState(
     {}
   );
+  const [nonMedicationInvalidTaskNames, setNonMedicationInvalidTaskNames] =
+    useState({});
   const [emergencyTask, setEmergencyTask] = useState({});
   const [popupMedicationData, setPopupMedicationData] = useState({});
   const [showWarningNotification, setShowWarningNotification] = useState(false);
@@ -476,6 +481,9 @@ const AddEmergencyTasks = (props) => {
     const hasInvalidTime = nonMedicationTasks.some(
       (taskDetails) => nonMedicationInvalidTimes[taskDetails.id]
     );
+    const hasInvalidTaskName = nonMedicationTasks.some(
+      (taskDetails) => nonMedicationInvalidTaskNames[taskDetails.id]
+    );
     const hasEmptyRequiredField = nonMedicationTasks.some(
       (taskDetails) =>
         _.isEmpty(taskDetails.taskName?.trim()) ||
@@ -483,6 +491,7 @@ const AddEmergencyTasks = (props) => {
     );
     if (
       !hasInvalidTime &&
+      !hasInvalidTaskName &&
       !hasEmptyRequiredField &&
       nonMedicationTasks.length > 0
     ) {
@@ -498,13 +507,12 @@ const AddEmergencyTasks = (props) => {
   };
 
   const appendNonMedicationTask = () => {
-    const firstTask = nonMedicationTasks[0];
     const sourceTask = nonMedicationTasks[nonMedicationTasks.length - 1];
     setNonMedicationTasks((prev) => [
       ...prev,
       {
         id: createTaskRowId(),
-        taskName: firstTask?.taskName || "",
+        taskName: initialTaskName || "",
         scheduleTime: sourceTask?.scheduleTime || "",
         taskType: sourceTask?.taskType || null,
       },
@@ -521,6 +529,11 @@ const AddEmergencyTasks = (props) => {
       return updated;
     });
     setNonMedicationInvalidTexts((prev) => {
+      const updated = { ...prev };
+      delete updated[taskId];
+      return updated;
+    });
+    setNonMedicationInvalidTaskNames((prev) => {
       const updated = { ...prev };
       delete updated[taskId];
       return updated;
@@ -543,6 +556,23 @@ const AddEmergencyTasks = (props) => {
     setNonMedicationInvalidTimes((prev) => ({ ...prev, [taskId]: invalid }));
     if (text) {
       setNonMedicationInvalidTexts((prev) => ({ ...prev, [taskId]: text }));
+    }
+  };
+
+  const validateTaskName = (taskId, taskName) => {
+    if (taskName && taskName.length > MAX_TASK_NAME_LENGTH) {
+      setNonMedicationInvalidTaskNames((prev) => ({
+        ...prev,
+        [taskId]: `Task name cannot exceed ${MAX_TASK_NAME_LENGTH} characters (current: ${taskName.length})`,
+      }));
+      return false;
+    } else {
+      setNonMedicationInvalidTaskNames((prev) => {
+        const updated = { ...prev };
+        delete updated[taskId];
+        return updated;
+      });
+      return true;
     }
   };
 
@@ -595,7 +625,11 @@ const AddEmergencyTasks = (props) => {
 
   useEffect(() => {
     handleNonMedicationSaveButton();
-  }, [nonMedicationTasks, nonMedicationInvalidTimes]);
+  }, [
+    nonMedicationTasks,
+    nonMedicationInvalidTimes,
+    nonMedicationInvalidTaskNames,
+  ]);
 
   useEffect(() => {
     customValidation(administrationTime);
@@ -817,8 +851,14 @@ const AddEmergencyTasks = (props) => {
                   </div>
                 )}
                 <div className="emergency-task-slider-content">
-                  {hideMedicationTab && (
+                  {(instruction || hideMedicationTab) && (
                     <div className="instruction-header-container">
+                      <div>
+                        <p className="instruction-label">Instruction</p>
+                        <p className="instruction-value">
+                          {instruction || "-"}
+                        </p>
+                      </div>
                       <Button
                         kind={"tertiary"}
                         size="sm"
@@ -859,14 +899,22 @@ const AddEmergencyTasks = (props) => {
                           <Title text={TASK_NAME_LABEL} isRequired={true} />
                         }
                         onChange={(e) => {
+                          const newValue = e.target.value;
                           updateNonMedicationTask(taskDetails.id, {
-                            taskName: e.target.value,
+                            taskName: newValue,
                           });
+                          validateTaskName(taskDetails.id, newValue);
                         }}
                         value={taskDetails.taskName}
                         placeholder={TASK_NAME_PLACEHOLDER}
                         maxCount={10}
                         rows={1}
+                        invalid={Boolean(
+                          nonMedicationInvalidTaskNames[taskDetails.id]
+                        )}
+                        invalidText={
+                          nonMedicationInvalidTaskNames[taskDetails.id]
+                        }
                       />
                       {nonMedicationTaskTypeOptions &&
                         nonMedicationTaskTypeOptions.length > 0 && (
@@ -1042,5 +1090,7 @@ AddEmergencyTasks.propTypes = {
   hideMedicationTab: PropTypes.bool,
   observationUuid: PropTypes.string,
   orderUuid: PropTypes.string,
+  instruction: PropTypes.string,
+  initialTaskName: PropTypes.string,
 };
 export default AddEmergencyTasks;
