@@ -4,7 +4,14 @@ import SaveAndCloseButtons from "../../../SaveAndCloseButtons/components/SaveAnd
 import SideBarPanel from "../../../SideBarPanel/components/SideBarPanel";
 import { SideBarPanelClose } from "../../../SideBarPanel/components/SideBarPanelClose";
 import PropTypes from "prop-types";
-import { Loading, Tab, Tabs, TextArea, Modal } from "carbon-components-react";
+import {
+  Button,
+  Loading,
+  Tab,
+  Tabs,
+  TextArea,
+  Modal,
+} from "carbon-components-react";
 import "../styles/EmergencyTasks.scss";
 import {
   fetchMedicationConfig,
@@ -13,7 +20,7 @@ import {
   saveEmergencyMedication,
   getEncounterUuid,
   getEncounterType,
-  saveNonMedicationTask,
+  saveBulkNonMedicationTasks,
 } from "../utils/EmergencyTasksUtils";
 import {
   NumberInputCarbon,
@@ -46,6 +53,9 @@ import AdministeredMedicationList from "./AdministeredMedicationList";
 import { IPDContext } from "../../../../context/IPDContext";
 import { getCookies, isUserPrivileged } from "../../../../utils/CommonUtils";
 import { useIntl } from "react-intl";
+
+const createTaskRowId = () =>
+  `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
 const AddEmergencyTasks = (props) => {
   const {
@@ -85,19 +95,30 @@ const AddEmergencyTasks = (props) => {
       enable24HourTime ? timeFormatFor24Hr : timeFormatFor12Hr
     )
   );
-  const [scheduleTime, setScheduleTime] = useState(
-    formatDate(
-      new Date(),
-      enable24HourTime ? timeFormatFor24Hr : timeFormatFor12Hr
-    )
-  );
-
   const [requestedProvider, setRequestedProvider] = useState({});
   const [routes, setRoutes] = useState({});
   const [dosage, setDosage] = useState(undefined);
   const [notes, setNotes] = useState("");
-  const [task, setTask] = useState("");
-  const [nonMedicationTaskType, setNonMedicationTaskType] = useState();
+  const [nonMedicationTasks, setNonMedicationTasks] = useState(() => {
+    const defaultScheduleTime = formatDate(
+      new Date(),
+      enable24HourTime ? timeFormatFor24Hr : timeFormatFor12Hr
+    );
+    return [
+      {
+        id: createTaskRowId(),
+        taskName: "",
+        scheduleTime: defaultScheduleTime,
+        taskType: null,
+      },
+    ];
+  });
+  const [nonMedicationInvalidTimes, setNonMedicationInvalidTimes] = useState(
+    {}
+  );
+  const [nonMedicationInvalidTexts, setNonMedicationInvalidTexts] = useState(
+    {}
+  );
   const [emergencyTask, setEmergencyTask] = useState({});
   const [popupMedicationData, setPopupMedicationData] = useState({});
   const [showWarningNotification, setShowWarningNotification] = useState(false);
@@ -325,30 +346,44 @@ const AddEmergencyTasks = (props) => {
     return emergencyMedicationPayload;
   };
 
-  const createNonMedicationTaskPayload = async () => {
+  const getNonMedicationEncounterUuid = async () => {
     const cookies = getCookies();
     const { uuid: encounterTypeUuid } = await getEncounterType("Consultation");
-    const { uuid: locationUuid } = JSON.parse(cookies["bahmni.user.location"]);
+    let locationUuid;
+    try {
+      const locationCookie = cookies["bahmni.user.location"];
+      const location = locationCookie ? JSON.parse(locationCookie) : null;
+      locationUuid = location?.uuid;
+    } catch (error) {
+      locationUuid = undefined;
+    }
+    if (!encounterTypeUuid || !locationUuid) {
+      return null;
+    }
     const activeEncounterPayload = {
       patientUuid: patientId,
       locationUuid: locationUuid,
       encounterTypeUuid: encounterTypeUuid,
     };
-    const encounterUuid = await getEncounterUuid(activeEncounterPayload);
-    const scheduleTimein24Hour = convertTo24Hour(scheduleTime);
+    const encounter = await getEncounterUuid(activeEncounterPayload);
+    return encounter?.encounterUuid;
+  };
+
+  const createNonMedicationTaskPayload = (taskDetails, encounterUuid) => {
+    const scheduleTimein24Hour = convertTo24Hour(taskDetails.scheduleTime);
     const scheduleDate = new Date();
     const time = scheduleTimein24Hour.split(":");
     scheduleDate.setHours(time[0]);
     scheduleDate.setMinutes(time[1]);
     const utcTimeEpoch = dateTimeToEpochUTCTime(scheduleDate);
-    const nonMedicationPayload = {
-      name: task,
+    return {
+      name: taskDetails.taskName,
       requestedStartTime: utcTimeEpoch * 1000,
       requestedEndTime: utcTimeEpoch * 1000,
       patientUuid: patientId,
-      encounterUuid: encounterUuid.encounterUuid,
+      encounterUuid: encounterUuid,
       intent: "ORDER",
-      taskType: nonMedicationTaskType ? nonMedicationTaskType : null,
+      taskType: taskDetails.taskType ? taskDetails.taskType : null,
       status: "REQUESTED",
       ...(observationUuid && {
         focus: {
@@ -363,7 +398,6 @@ const AddEmergencyTasks = (props) => {
         },
       }),
     };
-    return nonMedicationPayload;
   };
 
   const handlePrimaryButtonClick = async () => {
@@ -399,8 +433,21 @@ const AddEmergencyTasks = (props) => {
       setEmergencyTask(createEmergencyMedicationPayload());
       setOpenConfirmationModal(true);
     } else {
-      const nonMedicationTaskPayload = await createNonMedicationTaskPayload();
-      const response = await saveNonMedicationTask(nonMedicationTaskPayload);
+      const encounterUuid = await getNonMedicationEncounterUuid();
+      if (!encounterUuid) {
+        setIsSaveDisabled(false);
+        updateNonMedicationTasksNotification(
+          "error",
+          "NON_MEDICATION_TASK_SAVE_MESSAGE_FAILED"
+        );
+        return;
+      }
+      const nonMedicationTaskPayloads = nonMedicationTasks.map((taskDetails) =>
+        createNonMedicationTaskPayload(taskDetails, encounterUuid)
+      );
+      const response = await saveBulkNonMedicationTasks(
+        nonMedicationTaskPayloads
+      );
       if (response.status === 200) {
         setIsSaveDisabled(false);
         handleAuditEvent("CREATE_NON_MEDICATION_TASK");
@@ -426,14 +473,76 @@ const AddEmergencyTasks = (props) => {
   }, []);
 
   const handleNonMedicationSaveButton = () => {
-    if (task && scheduleTime && !(_.isEmpty(task) || _.isEmpty(scheduleTime))) {
+    const hasInvalidTime = nonMedicationTasks.some(
+      (taskDetails) => nonMedicationInvalidTimes[taskDetails.id]
+    );
+    const hasEmptyRequiredField = nonMedicationTasks.some(
+      (taskDetails) =>
+        _.isEmpty(taskDetails.taskName?.trim()) ||
+        _.isEmpty(taskDetails.scheduleTime)
+    );
+    if (
+      !hasInvalidTime &&
+      !hasEmptyRequiredField &&
+      nonMedicationTasks.length > 0
+    ) {
       setIsSaveDisabled(false);
     } else {
       setIsSaveDisabled(true);
-      setAtleastOneFieldFilled(false);
-      if (task) {
-        setAtleastOneFieldFilled(true);
-      }
+    }
+    setAtleastOneFieldFilled(
+      nonMedicationTasks.some(
+        (taskDetails) => !_.isEmpty(taskDetails.taskName?.trim())
+      ) || nonMedicationTasks.length > 1
+    );
+  };
+
+  const appendNonMedicationTask = () => {
+    const firstTask = nonMedicationTasks[0];
+    const sourceTask = nonMedicationTasks[nonMedicationTasks.length - 1];
+    setNonMedicationTasks((prev) => [
+      ...prev,
+      {
+        id: createTaskRowId(),
+        taskName: firstTask?.taskName || "",
+        scheduleTime: sourceTask?.scheduleTime || "",
+        taskType: sourceTask?.taskType || null,
+      },
+    ]);
+  };
+
+  const removeNonMedicationTask = (taskId) => {
+    setNonMedicationTasks((prev) =>
+      prev.filter((taskDetails) => taskDetails.id !== taskId)
+    );
+    setNonMedicationInvalidTimes((prev) => {
+      const updated = { ...prev };
+      delete updated[taskId];
+      return updated;
+    });
+    setNonMedicationInvalidTexts((prev) => {
+      const updated = { ...prev };
+      delete updated[taskId];
+      return updated;
+    });
+  };
+
+  const updateNonMedicationTask = (taskId, updates) => {
+    setNonMedicationTasks((prev) =>
+      prev.map((taskDetails) =>
+        taskDetails.id === taskId ? { ...taskDetails, ...updates } : taskDetails
+      )
+    );
+  };
+
+  const setNonMedicationTaskType = (taskId, selectedItem) => {
+    updateNonMedicationTask(taskId, { taskType: selectedItem?.value || null });
+  };
+
+  const updateNonMedicationInvalidState = (taskId, invalid, text = null) => {
+    setNonMedicationInvalidTimes((prev) => ({ ...prev, [taskId]: invalid }));
+    if (text) {
+      setNonMedicationInvalidTexts((prev) => ({ ...prev, [taskId]: text }));
     }
   };
 
@@ -486,7 +595,7 @@ const AddEmergencyTasks = (props) => {
 
   useEffect(() => {
     handleNonMedicationSaveButton();
-  }, [task, scheduleTime, nonMedicationTaskType]);
+  }, [nonMedicationTasks, nonMedicationInvalidTimes]);
 
   useEffect(() => {
     customValidation(administrationTime);
@@ -512,7 +621,7 @@ const AddEmergencyTasks = (props) => {
     }
   };
 
-  const customNonMedicationTaskValidation = (time) => {
+  const customNonMedicationTaskValidation = (taskId, time) => {
     if (time) {
       if (
         isTimeInFuture(
@@ -523,10 +632,9 @@ const AddEmergencyTasks = (props) => {
           )
         )
       ) {
-        setIsInvalidTime(false);
+        updateNonMedicationInvalidState(taskId, false);
       } else {
-        setIsInvalidTime(true);
-        setInvalidText(invalidPastTimeText);
+        updateNonMedicationInvalidState(taskId, true, invalidPastTimeText);
       }
     }
   };
@@ -534,6 +642,11 @@ const AddEmergencyTasks = (props) => {
   const actionForInvalidTime = (invalid) => {
     setIsInvalidTime(invalid);
     setInvalidText(invalidTimeText24Hour);
+    setIsSaveDisabled(true);
+  };
+
+  const actionForNonMedicationInvalidTime = (taskId, invalid) => {
+    updateNonMedicationInvalidState(taskId, invalid, invalidTimeText24Hour);
     setIsSaveDisabled(true);
   };
 
@@ -704,64 +817,153 @@ const AddEmergencyTasks = (props) => {
                   </div>
                 )}
                 <div className="emergency-task-slider-content">
-                  <TextArea
-                    labelText={
-                      <Title text={TASK_NAME_LABEL} isRequired={true} />
-                    }
-                    onChange={(e) => {
-                      setTask(e.target.value);
-                    }}
-                    placeholder={TASK_NAME_PLACEHOLDER}
-                    maxCount={10}
-                    rows={1}
-                  />
-                  {nonMedicationTaskTypeOptions &&
-                    nonMedicationTaskTypeOptions.length > 0 && (
-                      <Dropdown
-                        id={"non-medication-task-type-dropdown"}
-                        onChange={(selectedItem) => {
-                          setNonMedicationTaskType(selectedItem?.value);
-                        }}
-                        placeholder={"Select Task Type"}
-                        titleText={"Task Type"}
-                        isRequired={false}
-                        options={nonMedicationTaskTypeOptions}
-                        width={"100%"}
-                      />
-                    )}
-                  <div className="time-info">
-                    {enable24HourTime ? (
-                      <TimePicker24Hour
-                        defaultTime={scheduleTime}
+                  {hideMedicationTab && (
+                    <div className="instruction-header-container">
+                      <Button
+                        kind={"tertiary"}
+                        size="sm"
+                        className="add-non-medication-task-button"
+                        onClick={appendNonMedicationTask}
+                      >
+                        <FormattedMessage
+                          id={"ADD_MORE_TASK"}
+                          defaultMessage={"Add More"}
+                        />
+                        {" +"}
+                      </Button>
+                    </div>
+                  )}
+                  {nonMedicationTasks.map((taskDetails, index) => (
+                    <div
+                      key={taskDetails.id}
+                      className={`non-medication-task-section ${
+                        index > 0 ? "replicated-task-section" : ""
+                      }`}
+                    >
+                      {index > 0 && (
+                        <button
+                          type="button"
+                          className="replicated-task-remove-button"
+                          onClick={() =>
+                            removeNonMedicationTask(taskDetails.id)
+                          }
+                        >
+                          <FormattedMessage
+                            id={"REMOVE"}
+                            defaultMessage={"Remove"}
+                          />
+                        </button>
+                      )}
+                      <TextArea
+                        labelText={
+                          <Title text={TASK_NAME_LABEL} isRequired={true} />
+                        }
                         onChange={(e) => {
-                          e != "" && setScheduleTime(e);
-                          setIsTimeChanged(true);
+                          updateNonMedicationTask(taskDetails.id, {
+                            taskName: e.target.value,
+                          });
                         }}
-                        labelText={SCHEDULE_TIME_LABEL_24}
-                        width={"250px"}
-                        isRequired={true}
-                        customValidation={customNonMedicationTaskValidation}
-                        actionForInvalidTime={actionForInvalidTime}
-                        invalid={isInvalidTime}
-                        invalidText={invalidText}
+                        value={taskDetails.taskName}
+                        placeholder={TASK_NAME_PLACEHOLDER}
+                        maxCount={10}
+                        rows={1}
                       />
-                    ) : (
-                      <TimePicker
-                        defaultTime={scheduleTime}
-                        onChange={(e) => {
-                          e != "" && setScheduleTime(e);
-                          setIsTimeChanged(true);
-                        }}
-                        labelText={SCHEDULE_TIME_LABEL_12}
-                        width={"155px"}
-                        isRequired={true}
-                        customValidation={customNonMedicationTaskValidation}
-                        actionForInvalidTime={actionForInvalidTime}
-                        invalid={isInvalidTime}
-                        invalidText={invalidText}
-                      />
-                    )}
-                  </div>
+                      {nonMedicationTaskTypeOptions &&
+                        nonMedicationTaskTypeOptions.length > 0 && (
+                          <Dropdown
+                            id={`non-medication-task-type-dropdown-${taskDetails.id}`}
+                            onChange={(selectedItem) => {
+                              setNonMedicationTaskType(
+                                taskDetails.id,
+                                selectedItem
+                              );
+                            }}
+                            placeholder={"Select Task Type"}
+                            titleText={"Task Type"}
+                            isRequired={false}
+                            options={nonMedicationTaskTypeOptions}
+                            width={"100%"}
+                            selectedValue={
+                              taskDetails.taskType
+                                ? {
+                                    label: taskDetails.taskType,
+                                    value: taskDetails.taskType,
+                                  }
+                                : null
+                            }
+                          />
+                        )}
+                      <div className="time-info">
+                        {enable24HourTime ? (
+                          <TimePicker24Hour
+                            defaultTime={taskDetails.scheduleTime}
+                            onChange={(time) => {
+                              if (time !== "") {
+                                updateNonMedicationTask(taskDetails.id, {
+                                  scheduleTime: time,
+                                });
+                              }
+                              setIsTimeChanged(true);
+                            }}
+                            labelText={SCHEDULE_TIME_LABEL_24}
+                            width={"250px"}
+                            isRequired={true}
+                            customValidation={(time) =>
+                              customNonMedicationTaskValidation(
+                                taskDetails.id,
+                                time
+                              )
+                            }
+                            actionForInvalidTime={(invalid) =>
+                              actionForNonMedicationInvalidTime(
+                                taskDetails.id,
+                                invalid
+                              )
+                            }
+                            invalid={Boolean(
+                              nonMedicationInvalidTimes[taskDetails.id]
+                            )}
+                            invalidText={
+                              nonMedicationInvalidTexts[taskDetails.id]
+                            }
+                          />
+                        ) : (
+                          <TimePicker
+                            defaultTime={taskDetails.scheduleTime}
+                            onChange={(time) => {
+                              if (time !== "") {
+                                updateNonMedicationTask(taskDetails.id, {
+                                  scheduleTime: time,
+                                });
+                              }
+                              setIsTimeChanged(true);
+                            }}
+                            labelText={SCHEDULE_TIME_LABEL_12}
+                            width={"155px"}
+                            isRequired={true}
+                            customValidation={(time) =>
+                              customNonMedicationTaskValidation(
+                                taskDetails.id,
+                                time
+                              )
+                            }
+                            actionForInvalidTime={(invalid) =>
+                              actionForNonMedicationInvalidTime(
+                                taskDetails.id,
+                                invalid
+                              )
+                            }
+                            invalid={Boolean(
+                              nonMedicationInvalidTimes[taskDetails.id]
+                            )}
+                            invalidText={
+                              nonMedicationInvalidTexts[taskDetails.id]
+                            }
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </Tab>
             )}

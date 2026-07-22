@@ -141,6 +141,7 @@
   "PATIENT_FEEDING_RECORD_HEADER_KEY": "Dossier d'alimentation du patient",
   "ADD_NURSING_TASK": "Ajouter une tâche de soins infirmiers",
   "ADD_TASK": "Ajouter une tâche",
+  "ADD_MORE_TASK": "Ajouter plus",
   "NON_MEDICATION": "Non médicamenteux",
   "MEDICATION": "Médicament",
   "DIAGNOSIS_COLUMN_HEADER": "Diagnostic",
