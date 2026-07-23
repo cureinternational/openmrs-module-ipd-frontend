@@ -31,9 +31,14 @@
   .instruction-header-container {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: flex-start;
     gap: 24px;
     margin-bottom: 5px;
+
+    > div:first-child {
+      flex: 1;
+      min-width: 0;
+    }
   }
 
   .instruction-label {
@@ -49,6 +54,9 @@
     font-weight: 400;
     line-height: 18px;
     letter-spacing: 0.16px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
   }
 
   .add-non-medication-task-button {
