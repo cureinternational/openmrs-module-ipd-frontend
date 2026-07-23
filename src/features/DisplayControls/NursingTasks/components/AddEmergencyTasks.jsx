@@ -851,14 +851,33 @@ const AddEmergencyTasks = (props) => {
                   </div>
                 )}
                 <div className="emergency-task-slider-content">
-                  {(instruction || hideMedicationTab) && (
+                  {instruction ? (
                     <div className="instruction-header-container">
                       <div>
                         <p className="instruction-label">Instruction</p>
-                        <p className="instruction-value">
-                          {instruction || "-"}
-                        </p>
+                        <p className="instruction-value">{instruction}</p>
                       </div>
+                      <Button
+                        kind={"tertiary"}
+                        size="sm"
+                        className="add-non-medication-task-button"
+                        onClick={appendNonMedicationTask}
+                      >
+                        <FormattedMessage
+                          id={"ADD_MORE_TASK"}
+                          defaultMessage={"Add Task"}
+                        />
+                        {" +"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        marginBottom: "5px",
+                      }}
+                    >
                       <Button
                         kind={"tertiary"}
                         size="sm"

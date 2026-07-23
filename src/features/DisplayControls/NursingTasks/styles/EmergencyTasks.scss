@@ -4,7 +4,7 @@
   .emergency-task-slider-content {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
 
     .bx--list-box__menu-item[disabled] .bx--list-box__menu-item__option {
       color: gray;
@@ -33,7 +33,7 @@
     justify-content: space-between;
     align-items: flex-end;
     gap: 24px;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
   }
 
   .instruction-label {
