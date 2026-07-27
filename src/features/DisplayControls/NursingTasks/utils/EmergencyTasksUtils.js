@@ -65,14 +65,6 @@ export const saveEmergencyMedication = async (emergencyMedication) => {
   }
 };
 
-export const saveNonMedicationTask = async (nonMedicationTask) => {
-  try {
-    return await axios.post(NON_MEDICATION_BASE_URL, nonMedicationTask);
-  } catch (error) {
-    return error.response;
-  }
-};
-
 export const saveBulkNonMedicationTasks = async (nonMedicationTasks) => {
   try {
     return await axios.post(

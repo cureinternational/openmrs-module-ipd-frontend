@@ -728,7 +728,7 @@ exports[`AddEmergencyTasks should render the component 1`] = `
             class="emergency-task-slider-content"
           >
             <div
-              style="display: flex; justify-content: flex-end; margin-bottom: 5px;"
+              class="add-more-task-button-container"
             >
               <button
                 class="add-non-medication-task-button bx--btn bx--btn--sm bx--btn--tertiary"
@@ -1684,7 +1684,7 @@ exports[`AddEmergencyTasks should render the component with loading state 1`] = 
             class="emergency-task-slider-content"
           >
             <div
-              style="display: flex; justify-content: flex-end; margin-bottom: 5px;"
+              class="add-more-task-button-container"
             >
               <button
                 class="add-non-medication-task-button bx--btn bx--btn--sm bx--btn--tertiary"

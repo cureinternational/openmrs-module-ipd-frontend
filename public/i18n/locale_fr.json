@@ -294,5 +294,7 @@
   "VARIABLE_DOSE_ACTIONS_COLUMN": "Actions",
   "IN_PROGRESS": "En cours",
   "VARIABLE_DOSAGE": "Dosage Variable",
-  "VARIABLE_DOSE_STAGES_DAYS": "{stages} Étapes - {days} Jours"
+  "VARIABLE_DOSE_STAGES_DAYS": "{stages} Étapes - {days} Jours",
+  "INSTRUCTION_LABEL": "Instruction",
+  "REMOVE": "Retirer"
 }

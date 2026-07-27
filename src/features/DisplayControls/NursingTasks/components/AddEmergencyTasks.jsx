@@ -56,6 +56,7 @@ import { useIntl } from "react-intl";
 
 let taskIdCounter = 0;
 const createTaskRowId = () => `task-${++taskIdCounter}`;
+const MAX_TASK_NAME_LENGTH = 255;
 
 const AddEmergencyTasks = (props) => {
   const {
@@ -87,7 +88,6 @@ const AddEmergencyTasks = (props) => {
   const { providerFilter = {} } = config;
   const { attrName, attrValue } = providerFilter;
   const { enable24HourTime = {}, nonMedicationTaskTypes = [] } = config;
-  const MAX_TASK_NAME_LENGTH = 255;
 
   const [selectedDrug, setSelectedDrug] = useState({});
   const [doseUnits, setDoseUnits] = useState({});
@@ -549,6 +549,13 @@ const AddEmergencyTasks = (props) => {
     setNonMedicationInvalidTimes((prev) => ({ ...prev, [taskId]: invalid }));
     if (text) {
       setNonMedicationInvalidTexts((prev) => ({ ...prev, [taskId]: text }));
+    } else if (!invalid) {
+      // Clear stale error text when marking valid
+      setNonMedicationInvalidTexts((prev) => {
+        const updated = { ...prev };
+        delete updated[taskId];
+        return updated;
+      });
     }
   };
 
@@ -847,7 +854,12 @@ const AddEmergencyTasks = (props) => {
                   {instruction ? (
                     <div className="instruction-header-container">
                       <div>
-                        <p className="instruction-label">Instruction</p>
+                        <p className="instruction-label">
+                          {intl.formatMessage({
+                            id: "INSTRUCTION_LABEL",
+                            defaultMessage: "Instruction",
+                          })}
+                        </p>
                         <p className="instruction-value">{instruction}</p>
                       </div>
                       <Button
@@ -864,13 +876,7 @@ const AddEmergencyTasks = (props) => {
                       </Button>
                     </div>
                   ) : (
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        marginBottom: "5px",
-                      }}
-                    >
+                    <div className="add-more-task-button-container">
                       <Button
                         kind={"tertiary"}
                         size="sm"
@@ -905,7 +911,7 @@ const AddEmergencyTasks = (props) => {
                         }}
                         value={taskDetails.taskName}
                         placeholder={TASK_NAME_PLACEHOLDER}
-                        maxCount={10}
+                        maxCount={MAX_TASK_NAME_LENGTH}
                         rows={1}
                         invalid={Boolean(
                           nonMedicationInvalidTaskNames[taskDetails.id]

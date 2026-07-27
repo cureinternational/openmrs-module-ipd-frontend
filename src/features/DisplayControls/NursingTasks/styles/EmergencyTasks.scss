@@ -1,3 +1,5 @@
+@import "~carbon-components/scss/globals/scss/vars";
+
 .emergency-task-slider {
   padding: 0 20px 120px;
 
@@ -21,7 +23,7 @@
   }
 
   .bx--label {
-    color: #161616;
+    color: $text-01;
   }
 
   .bx--tab-content {
@@ -49,7 +51,7 @@
 
   .instruction-value {
     margin: 0;
-    color: #161616;
+    color: $text-01;
     font-size: 14px;
     font-weight: 400;
     line-height: 18px;
@@ -71,26 +73,26 @@
     justify-content: center;
     flex-shrink: 0;
     background-color: transparent !important;
-    color: #0f62fe !important;
-    border: 1px solid #0f62fe !important;
+    color: $interactive-01 !important;
+    border: 1px solid $interactive-01 !important;
 
     &:hover {
-      background-color: #0f62fe !important;
-      color: #ffffff !important;
-      border: 1px solid #0f62fe !important;
+      background-color: $interactive-01 !important;
+      color: $inverse-01 !important;
+      border: 1px solid $interactive-01 !important;
     }
 
     &:active {
-      background-color: #0f62fe !important;
-      color: #ffffff !important;
-      border: 1px solid #0f62fe !important;
+      background-color: $interactive-01 !important;
+      color: $inverse-01 !important;
+      border: 1px solid $interactive-01 !important;
     }
 
     &:focus {
-      background-color: #0f62fe !important;
-      color: #ffffff !important;
-      border: 1px solid #0f62fe !important;
-      outline: 2px solid #0f62fe;
+      background-color: $interactive-01 !important;
+      color: $inverse-01 !important;
+      border: 1px solid $interactive-01 !important;
+      outline: 2px solid $interactive-01;
       outline-offset: 2px;
       box-shadow: none !important;
     }
@@ -115,7 +117,7 @@
   .replicated-task-remove-button {
     background: none;
     border: none;
-    color: #0f62fe;
+    color: $interactive-01;
     cursor: pointer;
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 0.875rem;
@@ -129,7 +131,7 @@
   .replicated-task-separator {
     width: 100%;
     height: 1px;
-    background-color: #e0e0e0;
+    background-color: $ui-03;
     margin: 0;
   }
 
