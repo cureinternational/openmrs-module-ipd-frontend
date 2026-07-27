@@ -54,8 +54,8 @@ import { IPDContext } from "../../../../context/IPDContext";
 import { getCookies, isUserPrivileged } from "../../../../utils/CommonUtils";
 import { useIntl } from "react-intl";
 
-const createTaskRowId = () =>
-  `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+let taskIdCounter = 0;
+const createTaskRowId = () => `task-${++taskIdCounter}`;
 
 const AddEmergencyTasks = (props) => {
   const {
@@ -68,8 +68,8 @@ const AddEmergencyTasks = (props) => {
     hideMedicationTab = false,
     observationUuid,
     orderUuid,
-    instruction,
-    initialTaskName,
+    instruction = null,
+    initialTaskName = null,
   } = props;
 
   const [isSaveDisabled, setIsSaveDisabled] = useState(true);
@@ -354,14 +354,7 @@ const AddEmergencyTasks = (props) => {
   const getNonMedicationEncounterUuid = async () => {
     const cookies = getCookies();
     const { uuid: encounterTypeUuid } = await getEncounterType("Consultation");
-    let locationUuid;
-    try {
-      const locationCookie = cookies["bahmni.user.location"];
-      const location = locationCookie ? JSON.parse(locationCookie) : null;
-      locationUuid = location?.uuid;
-    } catch (error) {
-      locationUuid = undefined;
-    }
+    const { uuid: locationUuid } = JSON.parse(cookies["bahmni.user.location"]);
     if (!encounterTypeUuid || !locationUuid) {
       return null;
     }
