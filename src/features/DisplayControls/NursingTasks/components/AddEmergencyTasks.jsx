@@ -20,6 +20,7 @@ import {
   saveEmergencyMedication,
   getEncounterUuid,
   getEncounterType,
+  saveNonMedicationTask,
   saveBulkNonMedicationTasks,
 } from "../utils/EmergencyTasksUtils";
 import {
@@ -87,7 +88,11 @@ const AddEmergencyTasks = (props) => {
   const { config = {}, handleAuditEvent, currentUser } = useContext(IPDContext);
   const { providerFilter = {} } = config;
   const { attrName, attrValue } = providerFilter;
-  const { enable24HourTime = {}, nonMedicationTaskTypes = [] } = config;
+  const {
+    enable24HourTime = {},
+    nonMedicationTaskTypes = [],
+    enableAddMultipleTask = false,
+  } = config;
 
   const [selectedDrug, setSelectedDrug] = useState({});
   const [doseUnits, setDoseUnits] = useState({});
@@ -443,9 +448,12 @@ const AddEmergencyTasks = (props) => {
       const nonMedicationTaskPayloads = nonMedicationTasks.map((taskDetails) =>
         createNonMedicationTaskPayload(taskDetails, encounterUuid)
       );
-      const response = await saveBulkNonMedicationTasks(
-        nonMedicationTaskPayloads
-      );
+      let response;
+      if (enableAddMultipleTask) {
+        response = await saveBulkNonMedicationTasks(nonMedicationTaskPayloads);
+      } else {
+        response = await saveNonMedicationTask(nonMedicationTaskPayloads[0]);
+      }
       if (response.status === 200) {
         setIsSaveDisabled(false);
         handleAuditEvent("CREATE_NON_MEDICATION_TASK");
@@ -500,13 +508,18 @@ const AddEmergencyTasks = (props) => {
   };
 
   const appendNonMedicationTask = () => {
+    if (!enableAddMultipleTask) return;
     const sourceTask = nonMedicationTasks[nonMedicationTasks.length - 1];
+    const currentTime = formatDate(
+      new Date(),
+      enable24HourTime ? timeFormatFor24Hr : timeFormatFor12Hr
+    );
     setNonMedicationTasks((prev) => [
       ...prev,
       {
-        id: createTaskRowId(),
+        id: crypto.randomUUID(),
         taskName: initialTaskName || "",
-        scheduleTime: sourceTask?.scheduleTime || "",
+        scheduleTime: currentTime,
         taskType: sourceTask?.taskType || null,
       },
     ]);
@@ -862,33 +875,37 @@ const AddEmergencyTasks = (props) => {
                         </p>
                         <p className="instruction-value">{instruction}</p>
                       </div>
-                      <Button
-                        kind={"tertiary"}
-                        size="sm"
-                        className="add-non-medication-task-button"
-                        onClick={appendNonMedicationTask}
-                      >
-                        <FormattedMessage
-                          id={"ADD_MORE_TASK"}
-                          defaultMessage={"Add Task"}
-                        />
-                        {" +"}
-                      </Button>
+                      {enableAddMultipleTask && (
+                        <Button
+                          kind={"tertiary"}
+                          size="sm"
+                          className="add-non-medication-task-button"
+                          onClick={appendNonMedicationTask}
+                        >
+                          <FormattedMessage
+                            id={"ADD_MORE_TASK"}
+                            defaultMessage={"Add Task"}
+                          />
+                          {" +"}
+                        </Button>
+                      )}
                     </div>
                   ) : (
                     <div className="add-more-task-button-container">
-                      <Button
-                        kind={"tertiary"}
-                        size="sm"
-                        className="add-non-medication-task-button"
-                        onClick={appendNonMedicationTask}
-                      >
-                        <FormattedMessage
-                          id={"ADD_MORE_TASK"}
-                          defaultMessage={"Add Task"}
-                        />
-                        {" +"}
-                      </Button>
+                      {enableAddMultipleTask && (
+                        <Button
+                          kind={"tertiary"}
+                          size="sm"
+                          className="add-non-medication-task-button"
+                          onClick={appendNonMedicationTask}
+                        >
+                          <FormattedMessage
+                            id={"ADD_MORE_TASK"}
+                            defaultMessage={"Add Task"}
+                          />
+                          {" +"}
+                        </Button>
+                      )}
                     </div>
                   )}
                   {nonMedicationTasks.map((taskDetails, index) => (
@@ -1014,7 +1031,7 @@ const AddEmergencyTasks = (props) => {
                           />
                         )}
                       </div>
-                      {index > 0 && (
+                      {index > 0 && enableAddMultipleTask && (
                         <>
                           <button
                             type="button"
