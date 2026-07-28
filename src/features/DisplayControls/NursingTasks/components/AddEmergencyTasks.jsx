@@ -22,7 +22,6 @@ import {
   getEncounterType,
   saveNonMedicationTask,
   saveBulkNonMedicationTasks,
-  getTaskSchedulingConfig,
 } from "../utils/EmergencyTasksUtils";
 import {
   NumberInputCarbon,
@@ -114,6 +113,7 @@ const AddEmergencyTasks = (props) => {
     enable24HourTime = {},
     nonMedicationTaskTypes = [],
     enableAddMultipleTask = false,
+    taskScheduling = { maxFutureDays: 90, allowPastDates: false },
   } = config;
 
   const [selectedDrug, setSelectedDrug] = useState({});
@@ -300,11 +300,10 @@ const AddEmergencyTasks = (props) => {
     setDosageConfig(await fetchMedicationConfig());
   };
 
-  const fetchTaskSchedulingConfigAndSetMaxDate = async () => {
-    const config = await getTaskSchedulingConfig();
-    if (config && config.maxFutureDays) {
+  const setMaxScheduleDateFromConfig = () => {
+    if (taskScheduling && taskScheduling.maxFutureDays) {
       const maxDate = getStartOfToday();
-      maxDate.setDate(maxDate.getDate() + config.maxFutureDays);
+      maxDate.setDate(maxDate.getDate() + taskScheduling.maxFutureDays);
       setMaxScheduleDate(getEndOfDay(maxDate));
     }
   };
@@ -508,8 +507,8 @@ const AddEmergencyTasks = (props) => {
     fetchDrugFormDefaults();
     fetchAllProviders();
     getNonMedicationTaskTypeOptions();
-    fetchTaskSchedulingConfigAndSetMaxDate();
-  }, []);
+    setMaxScheduleDateFromConfig();
+  }, [taskScheduling]);
 
   const handleNonMedicationSaveButton = () => {
     const hasInvalidTime = nonMedicationTasks.some(

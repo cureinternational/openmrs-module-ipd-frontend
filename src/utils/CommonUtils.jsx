@@ -325,6 +325,10 @@ export const mockConfig = {
   },
   enable24HourTime: true,
   enableAddMultipleTask: true,
+  taskScheduling: {
+    maxFutureDays: 90,
+    allowPastDates: false,
+  },
   medicationTags: {
     asNeeded: "Rx-PRN",
     "STAT (Immediately)": "Rx-STAT",
@@ -431,6 +435,10 @@ export const mockConfigFor12HourFormat = {
   },
   enable24HourTime: false,
   enableAddMultipleTask: true,
+  taskScheduling: {
+    maxFutureDays: 90,
+    allowPastDates: false,
+  },
   medicationTags: {
     asNeeded: "Rx-PRN",
     "STAT (Immediately)": "Rx-STAT",

@@ -24,24 +24,6 @@ export const getClinicalConfig = async () => {
   }
 };
 
-export const getTaskSchedulingConfig = async () => {
-  try {
-    const clinicalConfig = await getClinicalConfig();
-    return (
-      clinicalConfig?.config?.ipd?.taskScheduling || {
-        maxFutureDays: 90, // Default 3 months
-        allowPastDates: false,
-      }
-    );
-  } catch (e) {
-    console.error("Error fetching task scheduling config:", e);
-    return {
-      maxFutureDays: 90,
-      allowPastDates: false,
-    };
-  }
-};
-
 export const getDrugOrdersConfig = async () => {
   try {
     return await axios.get(DRUG_ORDERS_CONFIG_URL);

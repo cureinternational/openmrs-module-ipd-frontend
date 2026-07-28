@@ -27,7 +27,6 @@ const mockSaveBulkNonMedicationTasks = jest.fn();
 const mockGetEncounterUuid = jest.fn();
 const mockGetEncounterType = jest.fn();
 const mockHandleAuditEvent = jest.fn();
-const mockGetTaskSchedulingConfig = jest.fn();
 window.HTMLElement.prototype.scrollIntoView = jest.fn();
 
 // Mock crypto.randomUUID for tests
@@ -47,7 +46,6 @@ jest.mock("../utils/EmergencyTasksUtils", () => {
       mockSaveBulkNonMedicationTasks(payload),
     getEncounterUuid: (payload) => mockGetEncounterUuid(payload),
     getEncounterType: (type) => mockGetEncounterType(type),
-    getTaskSchedulingConfig: () => mockGetTaskSchedulingConfig(),
   };
 });
 
@@ -101,10 +99,6 @@ describe("AddEmergencyTasks", () => {
       encounterUuid: "__encounter_uuid__",
     });
     mockSaveBulkNonMedicationTasks.mockResolvedValue({ status: 200 });
-    mockGetTaskSchedulingConfig.mockResolvedValue({
-      maxFutureDays: 90,
-      allowPastDates: false,
-    });
   });
 
   beforeEach(() => {
