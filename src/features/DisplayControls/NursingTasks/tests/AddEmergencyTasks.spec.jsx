@@ -29,6 +29,13 @@ const mockGetEncounterType = jest.fn();
 const mockHandleAuditEvent = jest.fn();
 window.HTMLElement.prototype.scrollIntoView = jest.fn();
 
+// Mock crypto.randomUUID for tests
+let uuidCounter = 0;
+Object.defineProperty(global.crypto, 'randomUUID', {
+  value: () => `test-uuid-${++uuidCounter}`,
+  writable: true,
+});
+
 jest.mock("../utils/EmergencyTasksUtils", () => {
   return {
     getDrugOrdersConfig: () => mockGetDrugOrdersConfig(),
