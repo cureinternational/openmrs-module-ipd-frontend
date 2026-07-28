@@ -32,7 +32,7 @@ import { getDateTimeFromEpochTime } from "../../../../utils/DateTimeUtils";
 import AddEmergencyTasks from "../../NursingTasks/components/AddEmergencyTasks";
 import Notification from "../../../../components/Notification/Notification";
 import { isUserPrivileged } from "../../../../utils/CommonUtils";
-import { PRIVILEGE_CONSTANTS, componentKeys } from "../../../../constants";
+import { PRIVILEGE_CONSTANTS, componentKeys, getTaskDateRange } from "../../../../constants";
 import "../styles/CareInstructions.scss";
 
 const SKELETON_ROW_COUNT = 3;
@@ -183,14 +183,11 @@ const CareInstructions = (props) => {
     const fetchPendingTasks = async () => {
       if (!visit) return;
       try {
-        const now = Date.now();
-        const oneYearAgo = now - 365 * 24 * 60 * 60 * 1000;
-        const oneYearFuture = now + 365 * 24 * 60 * 60 * 1000;
-
+        const { taskWindowStart, taskWindowEnd } = getTaskDateRange();
         const nonMedicationTasks = await fetchNonMedicationTasks(
           visit,
-          oneYearAgo,
-          oneYearFuture
+          taskWindowStart,
+          taskWindowEnd
         );
         const pendingByObservation = {};
 

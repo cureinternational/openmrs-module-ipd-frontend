@@ -209,3 +209,12 @@ export const TASK_COLORS = {
 };
 
 export const NURSING_ACTIVITY_SYSTEM = "nursing_activity_system";
+
+export const MS_PER_YEAR = 365 * 24 * 60 * 60 * 1000;
+export const getTaskDateRange = () => {
+  const now = Date.now();
+  return {
+    taskWindowStart: now - MS_PER_YEAR,
+    taskWindowEnd: now + MS_PER_YEAR,
+  };
+};
