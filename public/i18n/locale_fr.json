@@ -142,6 +142,7 @@
   "ADD_NURSING_TASK": "Ajouter une tâche de soins infirmiers",
   "ADD_TASK": "Ajouter une tâche",
   "ADD_MORE_TASK": "Ajouter plus",
+  "SCHEDULED_DATE": "Scheduled Date",
   "NON_MEDICATION": "Non médicamenteux",
   "MEDICATION": "Médicament",
   "DIAGNOSIS_COLUMN_HEADER": "Diagnostic",

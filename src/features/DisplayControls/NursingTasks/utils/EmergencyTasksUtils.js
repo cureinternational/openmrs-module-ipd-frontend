@@ -9,7 +9,38 @@ import {
   NON_MEDICATION_BASE_URL,
   ATTR_NAME,
   ATTR_VALUE,
+  CLINICAL_CONFIG_URL,
 } from "../../../../constants";
+
+export const getClinicalConfig = async () => {
+  try {
+    const response = await axios.get(CLINICAL_CONFIG_URL);
+    if (response.status === 200) {
+      return response.data;
+    }
+  } catch (e) {
+    console.error("Error fetching clinical config:", e);
+    return null;
+  }
+};
+
+export const getTaskSchedulingConfig = async () => {
+  try {
+    const clinicalConfig = await getClinicalConfig();
+    return (
+      clinicalConfig?.config?.ipd?.taskScheduling || {
+        maxFutureDays: 90, // Default 3 months
+        allowPastDates: false,
+      }
+    );
+  } catch (e) {
+    console.error("Error fetching task scheduling config:", e);
+    return {
+      maxFutureDays: 90,
+      allowPastDates: false,
+    };
+  }
+};
 
 export const getDrugOrdersConfig = async () => {
   try {
