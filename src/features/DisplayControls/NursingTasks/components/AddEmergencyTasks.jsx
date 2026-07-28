@@ -55,8 +55,6 @@ import { IPDContext } from "../../../../context/IPDContext";
 import { getCookies, isUserPrivileged } from "../../../../utils/CommonUtils";
 import { useIntl } from "react-intl";
 
-let taskIdCounter = 0;
-const createTaskRowId = () => `task-${++taskIdCounter}`;
 const MAX_TASK_NAME_LENGTH = 255;
 
 const AddEmergencyTasks = (props) => {
@@ -114,7 +112,7 @@ const AddEmergencyTasks = (props) => {
     );
     return [
       {
-        id: createTaskRowId(),
+        id: crypto.randomUUID(),
         taskName: initialTaskName || "",
         scheduleTime: defaultScheduleTime,
         taskType: null,
