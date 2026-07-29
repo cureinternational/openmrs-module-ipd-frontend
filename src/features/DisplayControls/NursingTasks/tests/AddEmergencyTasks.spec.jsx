@@ -726,9 +726,8 @@ describe("AddEmergencyTasks", () => {
     const scheduledDateInput = container.querySelector(
       ".bx--date-picker__input"
     );
-    expect(scheduledDateInput.value).toMatch(
-      new RegExp(`^0?${moment().format("M")}/0?${moment().format("D")}/\\d{4}$`)
-    );
+    const expectedDateFormat = moment().format("DD MMM YYYY");
+    expect(scheduledDateInput.value).toMatch(expectedDateFormat);
   });
 
   describe("non-medication task payload", () => {
@@ -882,7 +881,7 @@ describe("AddEmergencyTasks", () => {
     it("should persist the selected scheduled date in non-medication payload", async () => {
       await renderNonMedicationTab(
         {},
-        { scheduleDateInput: "01/03/2024", scheduleTimeInput: "9:00" }
+        { scheduleDateInput: "03 Jan 2024", scheduleTimeInput: "9:00" }
       );
 
       await waitFor(() => {
@@ -890,8 +889,8 @@ describe("AddEmergencyTasks", () => {
       });
 
       const payload = mockSaveBulkNonMedicationTasks.mock.calls[0][0][0];
-      const expectedDateTime = new Date(2024, 0, 3, 9, 0, 0, 0);
-      const expectedEpochMillis = moment.utc(expectedDateTime).unix() * 1000;
+      const expectedDateTime = moment("03 Jan 2024 9:00", "DD MMM YYYY H:mm");
+      const expectedEpochMillis = expectedDateTime.unix() * 1000;
 
       expect(payload.requestedStartTime).toEqual(expectedEpochMillis);
       expect(payload.requestedEndTime).toEqual(expectedEpochMillis);

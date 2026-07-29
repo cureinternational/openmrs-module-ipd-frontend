@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import PropTypes from "prop-types";
 import SVGIcon from "../../../SVGIcon/SVGIcon";
 import Clock from "../../../../icons/clock.svg";
+import { Calendar16 } from "@carbon/icons-react";
 import {
   getTime,
   getRelevantTaskStatus,
@@ -25,6 +26,7 @@ import {
   getTranslationKey,
   isSystemGeneratedTask,
 } from "../../../../utils/CommonUtils";
+import { formatDate } from "../../../../utils/DateTimeUtils";
 import TaskFormLink from "./TaskFormLink";
 
 export default function TaskTile(props) {
@@ -56,6 +58,8 @@ export default function TaskTile(props) {
     creator,
     taskType,
     intradayDoseString,
+    requestedStartTime,
+    medicationStartDate,
   } = newMedicationNursingTask;
   const intl = useIntl();
 
@@ -198,30 +202,41 @@ export default function TaskTile(props) {
           ) && (
             <div className="tile-content-footer">
               <div className="tile-date-time">
-                <Clock />
-                <div className="tile-content-subtext-time">
-                  &nbsp;
-                  {enable24HourTime
-                    ? getTime(
-                        administeredTimeInEpochSeconds,
-                        startTime,
-                        "hh:mm",
-                        timeFormatFor24Hr
-                      )
-                    : getTime(
-                        administeredTimeInEpochSeconds,
-                        startTime,
-                        "hh:mm",
-                        timeFormatFor12Hr
-                      )}
-                </div>
-                &nbsp;
-                {creator &&
-                  !isSystemGeneratedTask(newMedicationNursingTask) && (
-                    <span style={{ textTransform: "capitalize" }}>
-                      {creatorName(creator.display)}
+                <div className="date-time-container">
+                  <div className="date-row">
+                    <Calendar16 />
+                    <span className="tile-content-subtext-date">
+                      &nbsp;
+                      {formatDate(new Date(startTimeInEpochSeconds * 1000), "DD MMMM YYYY")}
                     </span>
-                  )}
+                  </div>
+                  <div className="time-row">
+                    <Clock />
+                    <div className="tile-content-subtext-time">
+                      &nbsp;
+                      {enable24HourTime
+                        ? getTime(
+                            administeredTimeInEpochSeconds,
+                            startTime,
+                            "hh:mm",
+                            timeFormatFor24Hr
+                          )
+                        : getTime(
+                            administeredTimeInEpochSeconds,
+                            startTime,
+                            "hh:mm",
+                            timeFormatFor12Hr
+                          )}
+                    </div>
+                    &nbsp;
+                    {creator &&
+                      !isSystemGeneratedTask(newMedicationNursingTask) && (
+                        <span style={{ textTransform: "capitalize" }}>
+                          {creatorName(creator.display)}
+                        </span>
+                      )}
+                  </div>
+                </div>
               </div>
               {isGroupedTask && (
                 <div>

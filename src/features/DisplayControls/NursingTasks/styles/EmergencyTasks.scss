@@ -43,6 +43,12 @@
     }
   }
 
+  .add-more-task-button-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 5px;
+  }
+
   .instruction-label {
     font-size: 0.875rem;
     font-weight: 600;

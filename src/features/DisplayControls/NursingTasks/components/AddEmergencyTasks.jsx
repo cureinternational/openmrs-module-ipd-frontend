@@ -854,8 +854,7 @@ const AddEmergencyTasks = (props) => {
                         value={administrationDate}
                         dateFormat={"d M Y"}
                         placeholder={"DD MMM YYYY"}
-                        minDate={new Date()}
-                        maxDate={maxScheduleDate}
+                        maxDate={new Date()}
                       />
                       {enable24HourTime ? (
                         <TimePicker24Hour
@@ -1037,12 +1036,12 @@ const AddEmergencyTasks = (props) => {
                             id: "SCHEDULED_DATE",
                             defaultMessage: "Scheduled Date",
                           })}
-                          dateFormat="m/d/Y"
+                          dateFormat="d M Y"
                           value={toValidDate(taskDetails.scheduleDate)}
                           onChange={(e) => handleDateChange(taskDetails.id, e)}
                           isRequired={true}
                           width={"250px"}
-                          placeholder="mm/dd/yyyy"
+                          placeholder="DD MMM YYYY"
                           minDate={getStartOfToday()}
                           maxDate={maxScheduleDate}
                         />
