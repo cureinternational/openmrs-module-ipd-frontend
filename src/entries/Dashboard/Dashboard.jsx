@@ -21,6 +21,7 @@ import {
   getAllFormsInfo,
   getAppLandingPageUrl,
   getDashboardConfig,
+  getFormDraftFeatureEnabled,
   getPatientDashboardUrl,
   getShiftDetailsFromGlobalProperty,
   isUserPrivileged,
@@ -110,6 +111,9 @@ export default function Dashboard(props) {
     // Always fetch shift details from Global Property
     const shiftDetails = await getShiftDetailsFromGlobalProperty();
     config.shiftDetails = shiftDetails;
+
+    config.config = config.config || {};
+    config.config.enableFormDraftFeature = await getFormDraftFeatureEnabled();
 
     setDashboardConfig(config);
     setIsConfigLoaded(true);
