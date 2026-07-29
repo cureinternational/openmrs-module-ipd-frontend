@@ -1139,7 +1139,7 @@ describe("UpdateNursingTasksSlider", function () {
     expect(screen.queryByText("Stop Task")).toBeNull();
   });
 
-  it("should send REJECTED status for stopped tasks with [STOPPED] comment prefix", () => {
+  it("should hide the Done toggle when Stop Task is clicked", () => {
     const { container } = render(
       <IntlProvider locale="en">
         <IPDContext.Provider

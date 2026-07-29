@@ -436,31 +436,23 @@ const UpdateNursingTasks = (props) => {
           });
         }
         if (tasks[key].skipped) {
-          setSkippedTasks((prev) => ({
-            ...prev,
-            [key]: { ...tasks[key], status: "not-done" },
-          }));
-          const utcTimeEpoch = moment.utc().unix() * 1000;
-          nonMedicationPayload.push({
-            uuid: key,
-            executionEndTime: utcTimeEpoch,
-            comment: tasks[key].notes,
-            status: "REJECTED",
-          });
+          const payload = updateTaskStatusAndPayload(
+            key,
+            "not-done",
+            "REJECTED",
+            setSkippedTasks
+          );
+          nonMedicationPayload.push(payload);
         }
         if (tasks[key].stopped) {
           saveDisabled = false;
-          setStoppedTasks((prev) => ({
-            ...prev,
-            [key]: { ...tasks[key], status: "stopped" },
-          }));
-          const utcTimeEpoch = moment.utc().unix() * 1000;
-          nonMedicationPayload.push({
-            uuid: key,
-            executionEndTime: utcTimeEpoch,
-            comment: tasks[key].notes,
-            status: "CANCELLED",
-          });
+          const payload = updateTaskStatusAndPayload(
+            key,
+            "stopped",
+            "CANCELLED",
+            setStoppedTasks
+          );
+          nonMedicationPayload.push(payload);
         }
       });
       updateIsSaveDisabled(saveDisabled || isInvalidTime);
@@ -499,42 +491,49 @@ const UpdateNursingTasks = (props) => {
     updateShowErrors(false);
   };
 
-  const handleSkipDrug = (medicationTask, skipped) => {
+  const handleTaskAction = (medicationTask, taskProperty, isActive) => {
     updateTasks({
       ...tasks,
       [medicationTask.uuid]: {
         ...tasks[medicationTask.uuid],
-        skipped: skipped,
+        [taskProperty]: isActive,
         scheduledTime: medicationTask.startTimeInEpochSeconds,
       },
     });
-    if (skipped && !tasks[medicationTask.uuid].notes) {
+    if (isActive && !tasks[medicationTask.uuid].notes) {
       updateErrors({
         ...errors,
-        [medicationTask.uuid]: skipped,
+        [medicationTask.uuid]: isActive,
       });
     } else {
       delete errors[medicationTask.uuid];
     }
   };
 
+  const handleSkipDrug = (medicationTask, skipped) => {
+    handleTaskAction(medicationTask, "skipped", skipped);
+  };
+
   const handleStopTask = (medicationTask, stopped) => {
-    updateTasks({
-      ...tasks,
-      [medicationTask.uuid]: {
-        ...tasks[medicationTask.uuid],
-        stopped: stopped,
-        scheduledTime: medicationTask.startTimeInEpochSeconds,
-      },
-    });
-    if (stopped && !tasks[medicationTask.uuid].notes) {
-      updateErrors({
-        ...errors,
-        [medicationTask.uuid]: stopped,
-      });
-    } else {
-      delete errors[medicationTask.uuid];
-    }
+    handleTaskAction(medicationTask, "stopped", stopped);
+  };
+
+  const updateTaskStatusAndPayload = (
+    taskKey,
+    displayStatus,
+    apiStatus,
+    setter
+  ) => {
+    setter((prev) => ({
+      ...prev,
+      [taskKey]: { ...tasks[taskKey], status: displayStatus },
+    }));
+    return {
+      uuid: taskKey,
+      executionEndTime: Date.now(),
+      comment: tasks[taskKey].notes,
+      status: apiStatus,
+    };
   };
 
   const sliderCloseActions = {

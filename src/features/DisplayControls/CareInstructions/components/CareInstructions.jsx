@@ -22,17 +22,17 @@ import RefreshDisplayControl from "../../../../context/RefreshDisplayControl";
 import {
   fetchAcknowledgedObservationUuids,
   fetchCareInstructionsObs,
+  fetchTasksByObservationUuids,
   mapObservationsToInstructions,
 } from "../utils/CareInstructionsUtils.jsx";
 import {
-  fetchNonMedicationTasks,
   updateNonMedicationTask,
 } from "../../NursingTasks/utils/NursingTasksUtils";
 import { getDateTimeFromEpochTime } from "../../../../utils/DateTimeUtils";
 import AddEmergencyTasks from "../../NursingTasks/components/AddEmergencyTasks";
 import Notification from "../../../../components/Notification/Notification";
 import { isUserPrivileged } from "../../../../utils/CommonUtils";
-import { PRIVILEGE_CONSTANTS, componentKeys, getTaskDateRange } from "../../../../constants";
+import { PRIVILEGE_CONSTANTS, componentKeys } from "../../../../constants";
 import "../styles/CareInstructions.scss";
 
 const SKELETON_ROW_COUNT = 3;
@@ -74,9 +74,8 @@ const CareInstructions = (props) => {
   const [selectedInstruction, setSelectedInstruction] = useState({ observationUuid: null, orderUuid: null });
   const [isLoading, setIsLoading] = useState(false);
   const [isAcknowledgedLoading, setIsAcknowledgedLoading] = useState(false);
-  const [pendingTasksByOrder, setPendingTasksByOrder] = useState({});
+  const [pendingTaskUuidsByObservation, setPendingTaskUuidsByObservation] = useState({});
   const [isStoppingTasks, setIsStoppingTasks] = useState(false);
-  const [allNonMedicationTasks, setAllNonMedicationTasks] = useState([]);
 
   const careInstructionsHeaders = useMemo(
     () => [
@@ -181,73 +180,57 @@ const CareInstructions = (props) => {
 
   useEffect(() => {
     const fetchPendingTasks = async () => {
-      if (!visit) return;
+      if (instructions.length === 0) return;
       try {
-        const { taskWindowStart, taskWindowEnd } = getTaskDateRange();
-        const nonMedicationTasks = await fetchNonMedicationTasks(
-          visit,
-          taskWindowStart,
-          taskWindowEnd
-        );
-        const pendingByObservation = {};
-
-        nonMedicationTasks?.forEach((task) => {
-          // Only count REQUESTED tasks (truly pending/not started)
-          if (task.status === "REQUESTED") {
-            // Tasks created from care instructions store the observationUuid in focus.reference
-            const focusReference = task.focus?.reference; // e.g., "Observation/{observationUuid}"
-
-            if (focusReference && focusReference.includes("Observation/")) {
-              const observationUuid = focusReference.split("/")[1];
-              if (observationUuid) {
-                pendingByObservation[observationUuid] = (pendingByObservation[observationUuid] || 0) + 1;
-              }
-            }
+        const observationUuids = new Set();
+        instructions.forEach((instruction) => {
+          observationUuids.add(instruction.observationUuid);
+          if (instruction.previousVersionUuid) {
+            observationUuids.add(instruction.previousVersionUuid);
           }
         });
 
-        // Store all tasks for later use (when confirming stop tasks)
-        setAllNonMedicationTasks(nonMedicationTasks || []);
-        setPendingTasksByOrder(pendingByObservation);
+        const pendingTasks = await fetchTasksByObservationUuids(
+          Array.from(observationUuids),
+          'requested'
+        );
+
+        const taskUuidsByObservation = {};
+        pendingTasks?.forEach((task) => {
+          const observationUuid = task.observationUuid;
+          if (observationUuid) {
+            if (!taskUuidsByObservation[observationUuid]) {
+              taskUuidsByObservation[observationUuid] = [];
+            }
+            taskUuidsByObservation[observationUuid].push(task.uuid);
+          }
+        });
+
+        setPendingTaskUuidsByObservation(taskUuidsByObservation);
       } catch (error) {
         console.error("Failed to fetch pending tasks", error);
       }
     };
 
     fetchPendingTasks();
-  }, [visit]);
+  }, [instructions]);
 
-  const enrichInstructionsWithPendingTasks = (instructionsList) =>
-    instructionsList.map((instruction) => {
-      // Count pending tasks for current version and previous version (if edited)
-      const currentVersionCount = pendingTasksByOrder[instruction.observationUuid] || 0;
-      const previousVersionCount = instruction.previousVersionUuid
-        ? pendingTasksByOrder[instruction.previousVersionUuid] || 0
-        : 0;
-
-      return {
-        ...instruction,
-        pendingTasksCount: currentVersionCount + previousVersionCount,
-      };
-    });
+  const getPendingTaskCount = (instruction) => {
+    const currentVersionCount = pendingTaskUuidsByObservation[instruction.observationUuid]?.length || 0;
+    const previousVersionCount = instruction.previousVersionUuid
+      ? pendingTaskUuidsByObservation[instruction.previousVersionUuid]?.length || 0
+      : 0;
+    return currentVersionCount + previousVersionCount;
+  };
 
   const notAcknowledgedInstructions = useMemo(
-    () => {
-      const filtered = instructions.filter(
-        (row) => !acknowledgedObsUuids.has(row.observationUuid)
-      );
-      return enrichInstructionsWithPendingTasks(filtered);
-    },
-    [instructions, acknowledgedObsUuids, pendingTasksByOrder]
+    () => instructions.filter((row) => !acknowledgedObsUuids.has(row.observationUuid)),
+    [instructions, acknowledgedObsUuids]
   );
+
   const acknowledgedInstructions = useMemo(
-    () => {
-      const filtered = instructions.filter((row) =>
-        acknowledgedObsUuids.has(row.observationUuid)
-      );
-      return enrichInstructionsWithPendingTasks(filtered);
-    },
-    [instructions, acknowledgedObsUuids, pendingTasksByOrder]
+    () => instructions.filter((row) => acknowledgedObsUuids.has(row.observationUuid)),
+    [instructions, acknowledgedObsUuids]
   );
 
   const renderInstructionRows = (rows) => (
@@ -292,13 +275,12 @@ const CareInstructions = (props) => {
               )}
             </TableCell>
             <TableCell className="stop-tasks-cell">
-              {row.pendingTasksCount > 0 && isUserPrivileged(currentUser, PRIVILEGE_CONSTANTS.ADD_TASKS) && (
+              {getPendingTaskCount(row) > 0 && isUserPrivileged(currentUser, PRIVILEGE_CONSTANTS.EDIT_TASKS) && (
                 <Link
                   style={{ whiteSpace: "nowrap" }}
                   onClick={() => {
                     setSelectedInstruction({
                       observationUuid: row.observationUuid,
-                      orderUuid: row.orderUuid,
                       previousVersionUuid: row.previousVersionUuid,
                     });
                     setIsStoppingTasks(true);
@@ -430,41 +412,21 @@ const CareInstructions = (props) => {
           })}
           onRequestSubmit={async () => {
             try {
-              // Filter cached tasks for the selected instruction and its previous version (if edited)
-              const tasksToStop = allNonMedicationTasks.filter((task) => {
-                if (task.status !== "REQUESTED" || !task.focus?.reference) return false;
+              const currentVersionTaskUuids = pendingTaskUuidsByObservation[selectedInstruction.observationUuid] || [];
+              const previousVersionTaskUuids = selectedInstruction.previousVersionUuid
+                ? pendingTaskUuidsByObservation[selectedInstruction.previousVersionUuid] || []
+                : [];
 
-                const observationUuidMatch = task.focus.reference.includes(
-                  `Observation/${selectedInstruction.observationUuid}`
-                );
-                const previousVersionMatch = selectedInstruction.previousVersionUuid
-                  ? task.focus.reference.includes(
-                      `Observation/${selectedInstruction.previousVersionUuid}`
-                    )
-                  : false;
+              const taskUuidsToStop = [...currentVersionTaskUuids, ...previousVersionTaskUuids];
 
-                return observationUuidMatch || previousVersionMatch;
-              });
-
-              console.log("DEBUG: Tasks to stop:", tasksToStop);
-              console.log("DEBUG: Selected instruction:", selectedInstruction);
-
-              // Build payload array with only required fields
-              const utcTimeEpoch = moment.utc().unix() * 1000;
-              const updatePayload = tasksToStop.map((task) => ({
-                uuid: task.uuid,
-                executionEndTime: utcTimeEpoch,
+              const updatePayload = taskUuidsToStop.map((taskUuid) => ({
+                uuid: taskUuid,
+                executionEndTime: Date.now(),
                 status: "CANCELLED",
               }));
 
-              console.log("DEBUG: Update payload:", updatePayload);
-              console.log("DEBUG: Tasks to stop count:", tasksToStop.length);
               const response = await updateNonMedicationTask(updatePayload);
-              console.log("DEBUG: Update response:", response);
-              console.log("DEBUG: Response status:", response?.status);
-              console.log("DEBUG: Response data:", response?.data);
 
-              // Check if response is successful
               if (response?.status === 200) {
                 setNotificationDirectMessage(intl.formatMessage({
                   id: "ALL_PENDING_TASKS_STOPPED_SUCCESSFULLY",
@@ -479,9 +441,6 @@ const CareInstructions = (props) => {
 
               setIsStoppingTasks(false);
             } catch (error) {
-              console.error("Failed to stop tasks - Error object:", error);
-              console.error("Failed to stop tasks - Error message:", error?.message);
-              console.error("Failed to stop tasks - Full error:", JSON.stringify(error));
               setIsStoppingTasks(false);
               setNotificationDirectMessage(intl.formatMessage({
                 id: "FAILED_TO_STOP_TASKS",
