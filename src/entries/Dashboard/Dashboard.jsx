@@ -309,7 +309,11 @@ export default function Dashboard(props) {
                     {isUserPrivileged(
                       currentUser,
                       PRIVILEGE_CONSTANTS.OBSERVATION_TAB
-                    ) && <DraftIndicator providerUuid={provider?.uuid} />}
+                    ) &&
+                      dashboardConfig?.config &&
+                      dashboardConfig.config.enableFormDraftFeature && (
+                        <DraftIndicator providerUuid={provider?.uuid} />
+                      )}
                     <ProviderActions onLogOut={hostApi.onLogOut} />
                   </HeaderGlobalBar>
                 </Header>

@@ -91,7 +91,11 @@ const CareViewDashboard = (props) => {
             {isUserPrivileged(
               currentUser,
               PRIVILEGE_CONSTANTS.OBSERVATION_TAB
-            ) && <DraftIndicator providerUuid={hostData.provider?.uuid} />}
+            ) &&
+              ipdConfig?.config &&
+              ipdConfig.config.enableFormDraftFeature && (
+                <DraftIndicator providerUuid={hostData.provider?.uuid} />
+              )}
             <ProviderActions onLogOut={onLogOut} />
           </div>
         </Header>
