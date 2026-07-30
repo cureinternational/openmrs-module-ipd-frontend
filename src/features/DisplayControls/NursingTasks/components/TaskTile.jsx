@@ -59,7 +59,6 @@ export default function TaskTile(props) {
     taskType,
     intradayDoseString,
     requestedStartTime,
-    medicationStartDate,
   } = newMedicationNursingTask;
   const intl = useIntl();
 

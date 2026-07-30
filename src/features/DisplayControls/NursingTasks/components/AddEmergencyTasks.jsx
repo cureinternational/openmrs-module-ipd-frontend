@@ -59,7 +59,7 @@ import { useIntl } from "react-intl";
 
 const MAX_TASK_NAME_LENGTH = 255;
 
-const DEFAULT_TASK_SCHEDULING = {
+const DEFAULT_NURSING_TASK_SCHEDULING = {
   enableDateSelection: true,
   maxFutureDaysAllowed: 90,
 };
@@ -69,11 +69,11 @@ const toValidDate = (value, fallback = getStartOfToday()) => {
   return Number.isNaN(parsedDate.getTime()) ? fallback : parsedDate;
 };
 
-const getMaxScheduleDate = (taskScheduling) => {
+const getMaxScheduleDate = (nursingTaskScheduling) => {
   const maxDate = getStartOfToday();
   const maxDays =
-    taskScheduling?.maxFutureDaysAllowed ??
-    DEFAULT_TASK_SCHEDULING.maxFutureDaysAllowed;
+    nursingTaskScheduling?.maxFutureDaysAllowed ??
+    DEFAULT_NURSING_TASK_SCHEDULING.maxFutureDaysAllowed;
   maxDate.setDate(maxDate.getDate() + maxDays);
   return getEndOfDay(maxDate);
 };
@@ -111,12 +111,12 @@ const AddEmergencyTasks = (props) => {
     enable24HourTime = {},
     nonMedicationTaskTypes = [],
     enableAddMultipleTask = false,
-    taskScheduling = DEFAULT_TASK_SCHEDULING,
+    nursingTaskScheduling = DEFAULT_NURSING_TASK_SCHEDULING,
   } = config;
 
   const maxScheduleDate = useMemo(
-    () => getMaxScheduleDate(taskScheduling),
-    [taskScheduling?.maxFutureDaysAllowed]
+    () => getMaxScheduleDate(nursingTaskScheduling),
+    [nursingTaskScheduling?.maxFutureDaysAllowed]
   );
 
   const [selectedDrug, setSelectedDrug] = useState({});
@@ -502,7 +502,6 @@ const AddEmergencyTasks = (props) => {
     fetchDrugFormDefaults();
     fetchAllProviders();
     getNonMedicationTaskTypeOptions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attrName, attrValue]);
 
   const handleNonMedicationSaveButton = () => {
@@ -1025,28 +1024,25 @@ const AddEmergencyTasks = (props) => {
                           />
                         )}
                       <div className="date-time-container">
-                        <DatePickerCarbon
-                          id={`date-picker-${index}`}
-                          title={intl.formatMessage({
-                            id: "SCHEDULED_DATE",
-                            defaultMessage: "Scheduled Date",
-                          })}
-                          dateFormat="d M Y"
-                          value={toValidDate(taskDetails.scheduleDate)}
-                          onChange={(e) => handleDateChange(taskDetails.id, e)}
-                          isRequired={true}
-                          width={"250px"}
-                          placeholder="DD MMM YYYY"
-                          minDate={getStartOfToday()}
-                          maxDate={
-                            taskScheduling?.enableDateSelection === false
-                              ? getStartOfToday()
-                              : maxScheduleDate
-                          }
-                          disabled={
-                            taskScheduling?.enableDateSelection === false
-                          }
-                        />
+                        {nursingTaskScheduling?.enableDateSelection !== false && (
+                          <DatePickerCarbon
+                            id={`date-picker-${index}`}
+                            title={intl.formatMessage({
+                              id: "SCHEDULED_DATE",
+                              defaultMessage: "Scheduled Date",
+                            })}
+                            dateFormat="d M Y"
+                            value={toValidDate(taskDetails.scheduleDate)}
+                            onChange={(e) =>
+                              handleDateChange(taskDetails.id, e)
+                            }
+                            isRequired={true}
+                            width={"250px"}
+                            placeholder="DD MMM YYYY"
+                            minDate={getStartOfToday()}
+                            maxDate={maxScheduleDate}
+                          />
+                        )}
                         {enable24HourTime ? (
                           <TimePicker24Hour
                             defaultTime={taskDetails.scheduleTime}

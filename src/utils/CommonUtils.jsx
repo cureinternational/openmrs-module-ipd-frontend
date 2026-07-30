@@ -325,7 +325,7 @@ export const mockConfig = {
   },
   enable24HourTime: true,
   enableAddMultipleTask: true,
-  taskScheduling: {
+  nursingTaskScheduling: {
     enableDateSelection: true,
     maxFutureDaysAllowed: 90,
   },
@@ -435,7 +435,7 @@ export const mockConfigFor12HourFormat = {
   },
   enable24HourTime: false,
   enableAddMultipleTask: true,
-  taskScheduling: {
+  nursingTaskScheduling: {
     enableDateSelection: true,
     maxFutureDaysAllowed: 90,
   },

@@ -174,7 +174,6 @@ export const ExtractMedicationNursingTasksData = (
           minute: "2-digit",
           hourCycle: "h23",
         }),
-        medicationStartDate: order?.dateCreated,
         endTimeInEpochSeconds:
           order?.dateStopped != null
             ? Math.floor(new Date(order?.dateStopped).getTime() / 1000) * 1000
