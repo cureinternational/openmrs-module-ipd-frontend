@@ -502,7 +502,8 @@ const AddEmergencyTasks = (props) => {
     fetchDrugFormDefaults();
     fetchAllProviders();
     getNonMedicationTaskTypeOptions();
-  }, [nonMedicationTaskTypes, attrName, attrValue]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attrName, attrValue]);
 
   const handleNonMedicationSaveButton = () => {
     const hasInvalidTime = nonMedicationTasks.some(
