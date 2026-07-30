@@ -266,8 +266,9 @@ describe("AddEmergencyTasks", () => {
       target: { value: moment().format("m/d/Y") },
     });
     fireEvent.blur(datePickerInput);
-    // Verify date input exists (actual value setting is tested in E2E/browser tests)
-    expect(datePickerInput).toBeTruthy();
+    // Verify the date picker reflects a selected date in the format the
+    // component renders (e.g. "05 Jan 2024") rather than just existing.
+    expect(datePickerInput.value).toMatch(/^\d{2} [A-Za-z]{3} \d{4}$/);
 
     //Set Administration Time
     const startTimeSelector = container.querySelector(

@@ -326,8 +326,8 @@ export const mockConfig = {
   enable24HourTime: true,
   enableAddMultipleTask: true,
   taskScheduling: {
-    maxFutureDays: 90,
-    allowPastDates: false,
+    enableDateSelection: true,
+    maxFutureDaysAllowed: 90,
   },
   medicationTags: {
     asNeeded: "Rx-PRN",
@@ -436,8 +436,8 @@ export const mockConfigFor12HourFormat = {
   enable24HourTime: false,
   enableAddMultipleTask: true,
   taskScheduling: {
-    maxFutureDays: 90,
-    allowPastDates: false,
+    enableDateSelection: true,
+    maxFutureDaysAllowed: 90,
   },
   medicationTags: {
     asNeeded: "Rx-PRN",

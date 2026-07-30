@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import SaveAndCloseButtons from "../../../SaveAndCloseButtons/components/SaveAndCloseButtons";
 import SideBarPanel from "../../../SideBarPanel/components/SideBarPanel";
@@ -49,6 +49,8 @@ import {
   areDatesSame,
   convertTo24Hour,
   isTimeInFuture,
+  getStartOfToday,
+  getEndOfDay,
 } from "../../../../utils/DateTimeUtils";
 import AdministeredMedicationList from "./AdministeredMedicationList";
 import { IPDContext } from "../../../../context/IPDContext";
@@ -57,21 +59,23 @@ import { useIntl } from "react-intl";
 
 const MAX_TASK_NAME_LENGTH = 255;
 
-const getStartOfToday = () => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return today;
-};
-
-const getEndOfDay = (date) => {
-  const endOfDay = new Date(date);
-  endOfDay.setHours(23, 59, 59, 999);
-  return endOfDay;
+const DEFAULT_TASK_SCHEDULING = {
+  enableDateSelection: true,
+  maxFutureDaysAllowed: 90,
 };
 
 const toValidDate = (value, fallback = getStartOfToday()) => {
-  const parsedDate = value instanceof Date ? new Date(value) : new Date(value);
+  const parsedDate = value instanceof Date ? value : new Date(value);
   return Number.isNaN(parsedDate.getTime()) ? fallback : parsedDate;
+};
+
+const getMaxScheduleDate = (taskScheduling) => {
+  const maxDate = getStartOfToday();
+  const maxDays =
+    taskScheduling?.maxFutureDaysAllowed ??
+    DEFAULT_TASK_SCHEDULING.maxFutureDaysAllowed;
+  maxDate.setDate(maxDate.getDate() + maxDays);
+  return getEndOfDay(maxDate);
 };
 
 const AddEmergencyTasks = (props) => {
@@ -95,12 +99,6 @@ const AddEmergencyTasks = (props) => {
   const [unitOptions, setUnitOptions] = useState([]);
   const [routeOptions, setRouteOptions] = useState([]);
   const [providerOptions, setProviderOptions] = useState([]);
-  const getMaxScheduleDate = () => {
-    const maxDate = getStartOfToday();
-    maxDate.setDate(maxDate.getDate() + 90);
-    return getEndOfDay(maxDate);
-  };
-  const [maxScheduleDate, setMaxScheduleDate] = useState(getMaxScheduleDate());
   const [activeTab, setActiveTab] = useState(
     hideMedicationTab ? "Non-Medication" : "Medication"
   );
@@ -113,8 +111,13 @@ const AddEmergencyTasks = (props) => {
     enable24HourTime = {},
     nonMedicationTaskTypes = [],
     enableAddMultipleTask = false,
-    taskScheduling = { maxFutureDays: 90, allowPastDates: false },
+    taskScheduling = DEFAULT_TASK_SCHEDULING,
   } = config;
+
+  const maxScheduleDate = useMemo(
+    () => getMaxScheduleDate(taskScheduling),
+    [taskScheduling?.maxFutureDaysAllowed]
+  );
 
   const [selectedDrug, setSelectedDrug] = useState({});
   const [doseUnits, setDoseUnits] = useState({});
@@ -298,14 +301,6 @@ const AddEmergencyTasks = (props) => {
 
   const fetchDrugFormDefaults = async () => {
     setDosageConfig(await fetchMedicationConfig());
-  };
-
-  const setMaxScheduleDateFromConfig = () => {
-    if (taskScheduling && taskScheduling.maxFutureDays) {
-      const maxDate = getStartOfToday();
-      maxDate.setDate(maxDate.getDate() + taskScheduling.maxFutureDays);
-      setMaxScheduleDate(getEndOfDay(maxDate));
-    }
   };
 
   const drugSearchHandler = (item) => {
@@ -507,8 +502,7 @@ const AddEmergencyTasks = (props) => {
     fetchDrugFormDefaults();
     fetchAllProviders();
     getNonMedicationTaskTypeOptions();
-    setMaxScheduleDateFromConfig();
-  }, [taskScheduling]);
+  }, [nonMedicationTaskTypes, attrName, attrValue]);
 
   const handleNonMedicationSaveButton = () => {
     const hasInvalidTime = nonMedicationTasks.some(
@@ -1043,7 +1037,14 @@ const AddEmergencyTasks = (props) => {
                           width={"250px"}
                           placeholder="DD MMM YYYY"
                           minDate={getStartOfToday()}
-                          maxDate={maxScheduleDate}
+                          maxDate={
+                            taskScheduling?.enableDateSelection === false
+                              ? getStartOfToday()
+                              : maxScheduleDate
+                          }
+                          disabled={
+                            taskScheduling?.enableDateSelection === false
+                          }
                         />
                         {enable24HourTime ? (
                           <TimePicker24Hour
