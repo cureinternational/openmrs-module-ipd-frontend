@@ -139,10 +139,17 @@
   }
 }
 
+.footer-right-section {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
 .date-time-container {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
 }
 
 .date-row {
@@ -161,6 +168,24 @@
 
 .tile-content-subtext-date {
   padding-left: 5px;
+}
+
+.creator-name {
+  text-transform: capitalize;
+  font-size: 12px;
+  font-weight: 400;
+  font-style: italic;
+  color: #393939;
+  letter-spacing: 0.12px;
+}
+
+.grouped-task-count {
+  margin-left: 8px;
+  font-size: 12px;
+  font-weight: 400;
+  font-style: italic;
+  color: #393939;
+  letter-spacing: 0.12px;
 }
 
 .nursing-task-icon-container {

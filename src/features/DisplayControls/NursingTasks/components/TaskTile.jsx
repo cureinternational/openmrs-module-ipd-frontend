@@ -62,7 +62,7 @@ export default function TaskTile(props) {
   } = newMedicationNursingTask;
   const intl = useIntl();
 
-  const more = <FormattedMessage id="TASK_TILE_MORE" defaultMessage="more" />;
+  const moreTask = <FormattedMessage id="TASK_TILE_MORE_TASK" defaultMessage="more task" />;
 
   const isRelevantTask = getRelevantTaskStatus(
     startTimeInEpochSeconds,
@@ -227,21 +227,22 @@ export default function TaskTile(props) {
                             timeFormatFor12Hr
                           )}
                     </div>
-                    &nbsp;
-                    {creator &&
-                      !isSystemGeneratedTask(newMedicationNursingTask) && (
-                        <span style={{ textTransform: "capitalize" }}>
-                          {creatorName(creator.display)}
-                        </span>
-                      )}
                   </div>
                 </div>
               </div>
-              {isGroupedTask && (
-                <div>
-                  ({taskCount} {more})
-                </div>
-              )}
+              <div className="footer-right-section">
+                {creator &&
+                  !isSystemGeneratedTask(newMedicationNursingTask) && (
+                    <span className="creator-name">
+                      {creatorName(creator.display)}
+                    </span>
+                  )}
+                {isGroupedTask && (
+                  <span className="grouped-task-count">
+                    ({taskCount} {moreTask})
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </div>
