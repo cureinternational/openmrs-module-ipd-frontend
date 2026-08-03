@@ -502,7 +502,7 @@ const AddEmergencyTasks = (props) => {
     fetchDrugFormDefaults();
     fetchAllProviders();
     getNonMedicationTaskTypeOptions();
-  }, [attrName, attrValue]);
+  }, []);
 
   const handleNonMedicationSaveButton = () => {
     const hasInvalidTime = nonMedicationTasks.some(
@@ -721,12 +721,17 @@ const AddEmergencyTasks = (props) => {
     const selectedDate = toValidDate(
       selectedDateInput || taskDetails?.scheduleDate
     );
-    const selectedDateWithoutTime = new Date(selectedDate);
-    selectedDateWithoutTime.setHours(0, 0, 0, 0);
+    const selectedDateOnly = new Date(selectedDate);
+    selectedDateOnly.setHours(0, 0, 0, 0);
     const today = getStartOfToday();
 
-    if (selectedDateWithoutTime > today) {
+    if (selectedDateOnly > today) {
       updateNonMedicationInvalidState(taskId, false);
+      return;
+    }
+
+    if (selectedDateOnly < today) {
+      updateNonMedicationInvalidState(taskId, true, invalidPastTimeText);
       return;
     }
 
@@ -1024,7 +1029,8 @@ const AddEmergencyTasks = (props) => {
                           />
                         )}
                       <div className="date-time-container">
-                        {nursingTaskScheduling?.enableDateSelection !== false && (
+                        {nursingTaskScheduling?.enableDateSelection !==
+                          false && (
                           <DatePickerCarbon
                             id={`date-picker-${index}`}
                             title={intl.formatMessage({
@@ -1037,7 +1043,7 @@ const AddEmergencyTasks = (props) => {
                               handleDateChange(taskDetails.id, e)
                             }
                             isRequired={true}
-                            width={"250px"}
+                            className="date-picker-carbon"
                             placeholder="DD MMM YYYY"
                             minDate={getStartOfToday()}
                             maxDate={maxScheduleDate}
