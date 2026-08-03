@@ -31,7 +31,10 @@ export const fetchCareInstructionsObs = async (visitUuid, conceptNames) => {
   }
 };
 
-export const fetchTasksByObservationUuids = async (observationUuids, status = null) => {
+export const fetchTasksByObservationUuids = async (
+  observationUuids,
+  status = null
+) => {
   if (!observationUuids || observationUuids.length === 0) return [];
   try {
     let url = `${FHIR_TASK_URL}?focus=${observationUuids
@@ -55,7 +58,6 @@ export const fetchTasksByObservationUuids = async (observationUuids, status = nu
   }
 };
 
-// Filter functions for task data
 export const getAcknowledgedObservationUuids = (allTasks) => {
   return new Set(allTasks.map((task) => task.observationUuid).filter(Boolean));
 };
@@ -76,7 +78,11 @@ export const fetchAcknowledgedObservationUuids = async (obsUuids) => {
   return getAcknowledgedObservationUuids(tasks);
 };
 
-export const fetchBatchObservations = async (visitUuids, concepts, filterObsWithOrders = false) => {
+export const fetchBatchObservations = async (
+  visitUuids,
+  concepts,
+  filterObsWithOrders = false
+) => {
   try {
     const request = {
       visitUuids,
@@ -152,7 +158,6 @@ export const mapObservationsToInstructions = (observations, formConcepts) => {
   }, []);
 };
 
-// Filters instructions from previous shifts.
 export const filterPreviousShiftInstructions = (
   instructions,
   currentShiftStartTime
