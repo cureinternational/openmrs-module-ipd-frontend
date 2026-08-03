@@ -61,7 +61,7 @@ const MAX_TASK_NAME_LENGTH = 255;
 
 const DEFAULT_NURSING_TASK_SCHEDULING = {
   enableDateSelection: true,
-  maxFutureDaysAllowed: 90,
+  maxFutureDaysAllowed: 60,
 };
 
 const toValidDate = (value, fallback = getStartOfToday()) => {
