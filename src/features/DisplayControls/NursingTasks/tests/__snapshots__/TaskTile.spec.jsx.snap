@@ -116,7 +116,7 @@ exports[`TaskTile should match the snapshot for grouped task 1`] = `
             <span
               class="grouped-task-count"
             >
-              (1 more task)
+              (1 more task(s))
             </span>
           </div>
         </div>

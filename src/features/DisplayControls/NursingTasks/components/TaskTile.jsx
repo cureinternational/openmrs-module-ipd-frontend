@@ -62,7 +62,7 @@ export default function TaskTile(props) {
   } = newMedicationNursingTask;
   const intl = useIntl();
 
-  const moreTask = <FormattedMessage id="TASK_TILE_MORE_TASK" defaultMessage="more task" />;
+  const moreTask = <FormattedMessage id="TASK_TILE_MORE" defaultMessage="more task(s)" />;
 
   const isRelevantTask = getRelevantTaskStatus(
     startTimeInEpochSeconds,
