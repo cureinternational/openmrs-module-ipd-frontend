@@ -1,5 +1,4 @@
 import React, {
-  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -55,14 +54,11 @@ const CareInstructions = (props) => {
   const refreshDisplayControl = useContext(RefreshDisplayControl);
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
-  const [notificationDirectMessage, setNotificationDirectMessage] =
-    useState("");
   const [notificationStatus, setNotificationStatus] = useState("");
   const providerUuid = provider?.uuid;
 
   const handleSetNotificationMessage = (msg) => {
     setNotificationMessage(msg);
-    setNotificationDirectMessage("");
   };
 
   const updateCareInstructionsTasksSlider = (value) => {
@@ -81,6 +77,8 @@ const CareInstructions = (props) => {
   const [selectedInstruction, setSelectedInstruction] = useState({
     observationUuid: null,
     orderUuid: null,
+    instruction: "",
+    initialTaskName: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isTasksLoading, setIsTasksLoading] = useState(false);
@@ -187,36 +185,36 @@ const CareInstructions = (props) => {
     loadInstructions();
   }, [visit, formConcepts]);
 
-  const refetchTasks = useCallback(async () => {
-    if (instructions.length === 0) {
-      return;
-    }
-    setIsTasksLoading(true);
-    try {
-      const observationUuids = new Set();
-      instructions.forEach((instruction) => {
-        observationUuids.add(instruction.observationUuid);
-        if (instruction.previousVersionUuid) {
-          observationUuids.add(instruction.previousVersionUuid);
-        }
-      });
-
-      const tasks = await fetchTasksByObservationUuids(
-        Array.from(observationUuids)
-      );
-
-      setAllTasks(tasks);
-    } catch (error) {
-      console.error("Failed to fetch tasks", error);
-      setAllTasks([]);
-    } finally {
-      setIsTasksLoading(false);
-    }
-  }, [instructions]);
-
   useEffect(() => {
-    refetchTasks();
-  }, [refetchTasks]);
+    const fetchTasks = async () => {
+      if (instructions.length === 0) {
+        return;
+      }
+      setIsTasksLoading(true);
+      try {
+        const observationUuids = new Set();
+        instructions.forEach((instruction) => {
+          observationUuids.add(instruction.observationUuid);
+          if (instruction.previousVersionUuid) {
+            observationUuids.add(instruction.previousVersionUuid);
+          }
+        });
+
+        const tasks = await fetchTasksByObservationUuids(
+          Array.from(observationUuids)
+        );
+
+        setAllTasks(tasks);
+      } catch (error) {
+        console.error("Failed to fetch tasks", error);
+        setAllTasks([]);
+      } finally {
+        setIsTasksLoading(false);
+      }
+    };
+
+    fetchTasks();
+  }, [instructions]);
 
   const getPendingTaskCount = (instruction) => {
     const currentVersionCount =
@@ -403,15 +401,15 @@ const CareInstructions = (props) => {
           hideMedicationTab={true}
           observationUuid={selectedInstruction.observationUuid}
           orderUuid={selectedInstruction.orderUuid}
-          onTaskSaved={refetchTasks}
+          instruction={selectedInstruction.instruction}
+          initialTaskName={selectedInstruction.initialTaskName}
         />
       )}
       {showNotification && (
         <Notification
           hostData={{
             notificationKind: notificationStatus,
-            messageId: notificationMessage,
-            defaultMessage: notificationDirectMessage || undefined,
+            defaultMessage: notificationMessage,
           }}
           hostApi={{
             onClose: () => {
@@ -444,21 +442,11 @@ const CareInstructions = (props) => {
         onRequestSubmit={async () => {
           setIsSubmittingStop(true);
           try {
-            const currentVersionTaskUuids =
-              pendingTaskUuidsByObservation[
-                selectedInstruction.observationUuid
-              ] || [];
-            const previousVersionTaskUuids =
-              selectedInstruction.previousVersionUuid
-                ? pendingTaskUuidsByObservation[
-                    selectedInstruction.previousVersionUuid
-                  ] || []
-                : [];
+            const { observationUuid, previousVersionUuid } = selectedInstruction;
 
-            const taskUuidsToStop = [
-              ...currentVersionTaskUuids,
-              ...previousVersionTaskUuids,
-            ];
+            const taskUuidsToStop = [observationUuid, previousVersionUuid]
+              .filter(Boolean)
+              .flatMap(uuid => pendingTaskUuidsByObservation[uuid] ?? []);
 
             if (taskUuidsToStop.length === 0) {
               setIsStoppingTasks(false);
@@ -475,17 +463,14 @@ const CareInstructions = (props) => {
             const response = await updateNonMedicationTask(updatePayload);
 
             if (response?.status === 200) {
-              setNotificationDirectMessage(
+              setNotificationMessage(
                 intl.formatMessage({
                   id: "ALL_PENDING_TASKS_STOPPED_SUCCESSFULLY",
                   defaultMessage: "All pending tasks stopped successfully.",
                 })
               );
-              setNotificationMessage("");
               setNotificationStatus("success");
               setShowNotification(true);
-
-              await refetchTasks();
             } else {
               throw new Error("Failed to update tasks");
             }
@@ -495,13 +480,12 @@ const CareInstructions = (props) => {
           } catch (error) {
             setIsStoppingTasks(false);
             setIsSubmittingStop(false);
-            setNotificationDirectMessage(
+            setNotificationMessage(
               intl.formatMessage({
                 id: "FAILED_TO_STOP_TASKS",
                 defaultMessage: "Failed to stop tasks. Please try again.",
               })
             );
-            setNotificationMessage("");
             setNotificationStatus("error");
             setShowNotification(true);
           }

@@ -616,7 +616,7 @@ export default function NursingTasks(props) {
         <Notification
           hostData={{
             notificationKind: notificationStatus,
-            messageId: notificationMessage,
+            defaultMessage: notificationMessage,
           }}
           hostApi={{
             onClose: () => {

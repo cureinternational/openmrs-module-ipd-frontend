@@ -31,19 +31,12 @@ export const fetchCareInstructionsObs = async (visitUuid, conceptNames) => {
   }
 };
 
-export const fetchTasksByObservationUuids = async (
-  observationUuids,
-  status = null
-) => {
+export const fetchTasksByObservationUuids = async (observationUuids) => {
   if (!observationUuids || observationUuids.length === 0) return [];
   try {
-    let url = `${FHIR_TASK_URL}?focus=${observationUuids
+    const url = `${FHIR_TASK_URL}?focus=${observationUuids
       .map((uuid) => `Observation/${uuid}`)
       .join(",")}&_count=500`;
-
-    if (status) {
-      url += `&status=${status}`;
-    }
 
     const response = await axios.get(url, { withCredentials: true });
     const entries = response.data?.entry || [];
@@ -72,7 +65,6 @@ export const getPendingTaskUuidsByObservation = (allTasks) => {
   }, {});
 };
 
-// Kept for backward compatibility if needed elsewhere
 export const fetchAcknowledgedObservationUuids = async (obsUuids) => {
   const tasks = await fetchTasksByObservationUuids(obsUuids);
   return getAcknowledgedObservationUuids(tasks);

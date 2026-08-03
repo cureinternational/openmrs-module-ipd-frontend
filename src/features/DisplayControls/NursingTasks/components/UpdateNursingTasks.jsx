@@ -121,7 +121,12 @@ const UpdateNursingTasks = (props) => {
   const saveAdministeredMedicationTasks = (status, messageId) => {
     setShowNotification(true);
     setNotificationStatus(status);
-    setNotificationMessage(messageId);
+    setNotificationMessage(
+      intl.formatMessage({
+        id: messageId,
+        defaultMessage: messageId,
+      })
+    );
     setOpenConfirmationModal(false);
     updateNursingTasksSlider(false);
     updateIsPRNMedication(false);
@@ -130,7 +135,12 @@ const UpdateNursingTasks = (props) => {
   const saveAdministeredNonMedicationTasks = (status, messageId) => {
     setShowNotification(true);
     setNotificationStatus(status);
-    setNotificationMessage(messageId);
+    setNotificationMessage(
+      intl.formatMessage({
+        id: messageId,
+        defaultMessage: messageId,
+      })
+    );
     updateNursingTasksSlider(false);
     updateIsPRNMedication(false);
   };
