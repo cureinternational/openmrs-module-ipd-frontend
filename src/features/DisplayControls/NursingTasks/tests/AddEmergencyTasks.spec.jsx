@@ -732,12 +732,25 @@ describe("AddEmergencyTasks", () => {
   });
 
   describe("non-medication task payload", () => {
-    const renderNonMedicationTab = async (extraProps = {}, options = {}) => {
+    const renderNonMedicationTab = async (
+      extraProps = {},
+      options = {},
+      configOverrides = {}
+    ) => {
+      const config = {
+        ...mockConfig,
+        ...configOverrides,
+        nursingTaskScheduling: {
+          ...mockConfig.nursingTaskScheduling,
+          ...(configOverrides.nursingTaskScheduling || {}),
+        },
+      };
+
       const utils = render(
         <IntlProvider locale="en">
           <IPDContext.Provider
             value={{
-              config: mockConfig,
+              config,
               handleAuditEvent: mockHandleAuditEvent,
               currentUser: mockUserWithAllRequiredPrivileges,
             }}
@@ -891,6 +904,38 @@ describe("AddEmergencyTasks", () => {
 
       const payload = mockSaveBulkNonMedicationTasks.mock.calls[0][0][0];
       const expectedDateTime = moment("03 Jan 2024 9:00", "DD MMM YYYY H:mm");
+      const expectedEpochMillis = expectedDateTime.unix() * 1000;
+
+      expect(payload.requestedStartTime).toEqual(expectedEpochMillis);
+      expect(payload.requestedEndTime).toEqual(expectedEpochMillis);
+    });
+
+    it("should show scheduled date picker when date selection is enabled", async () => {
+      const { container } = await renderNonMedicationTab(
+        {},
+        { scheduleTimeInput: "9:00" },
+        { nursingTaskScheduling: { enableDateSelection: true } }
+      );
+
+      expect(container.querySelector(".bx--date-picker__input")).toBeTruthy();
+    });
+
+    it("should hide scheduled date picker and use today's date when date selection is disabled", async () => {
+      const { container } = await renderNonMedicationTab(
+        {},
+        { scheduleTimeInput: "9:00" },
+        { nursingTaskScheduling: { enableDateSelection: false } }
+      );
+
+      expect(container.querySelector(".bx--date-picker__input")).toBeFalsy();
+
+      await waitFor(() => {
+        expect(mockSaveBulkNonMedicationTasks).toHaveBeenCalled();
+      });
+
+      const payload = mockSaveBulkNonMedicationTasks.mock.calls[0][0][0];
+      const todayDate = moment().format("DD MMM YYYY");
+      const expectedDateTime = moment(`${todayDate} 9:00`, "DD MMM YYYY H:mm");
       const expectedEpochMillis = expectedDateTime.unix() * 1000;
 
       expect(payload.requestedStartTime).toEqual(expectedEpochMillis);
