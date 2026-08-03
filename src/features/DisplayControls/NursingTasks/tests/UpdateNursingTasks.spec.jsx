@@ -11,6 +11,7 @@ import {
   mockUpdateResponse,
 } from "./NursingTasksUtilsMockData";
 import { IPDContext } from "../../../../context/IPDContext";
+import RefreshDisplayControl from "../../../../context/RefreshDisplayControl";
 import {
   mockConfig,
   mockConfigFor12HourFormat,
@@ -30,6 +31,7 @@ const mockSetSuccessMessage = jest.fn();
 const mockUpdateEmergencyTasksSlider = jest.fn();
 const mockUpdateNonMedicationTask = jest.fn();
 const mockHandleAuditLogEvent = jest.fn();
+const mockRefreshDisplayControl = jest.fn();
 
 jest.mock("../utils/NursingTasksUtils", () => {
   const originalModule = jest.requireActual("../utils/NursingTasksUtils");
@@ -174,18 +176,20 @@ describe("UpdateNursingTasksSlider", function () {
             currentUser: mockUserWithAllRequiredPrivileges,
           }}
         >
-          <UpdateNursingTasks
-            medicationTasks={mockNonMedicationTileData}
-            groupSlotsByOrderId={mockGroupSlotsByOrderId}
-            updateNursingTasksSlider={mockUpdateEmergencyTasksSlider}
-            patientId="test_patient_uuid"
-            providerId="test_provider_uuid"
-            setShowSuccessNotification={mockSetShowSuccessNotification}
-            setSuccessMessage={mockSetSuccessMessage}
-            setShowNotification={mockSetShowNotification}
-            setNotificationMessage={mockSetNotificationMessage}
-            setNotificationStatus={mockSetNotificationStatus}
-          />
+          <RefreshDisplayControl.Provider value={mockRefreshDisplayControl}>
+            <UpdateNursingTasks
+              medicationTasks={mockNonMedicationTileData}
+              groupSlotsByOrderId={mockGroupSlotsByOrderId}
+              updateNursingTasksSlider={mockUpdateEmergencyTasksSlider}
+              patientId="test_patient_uuid"
+              providerId="test_provider_uuid"
+              setShowSuccessNotification={mockSetShowSuccessNotification}
+              setSuccessMessage={mockSetSuccessMessage}
+              setShowNotification={mockSetShowNotification}
+              setNotificationMessage={mockSetNotificationMessage}
+              setNotificationStatus={mockSetNotificationStatus}
+            />
+          </RefreshDisplayControl.Provider>
         </IPDContext.Provider>
       </IntlProvider>
     );

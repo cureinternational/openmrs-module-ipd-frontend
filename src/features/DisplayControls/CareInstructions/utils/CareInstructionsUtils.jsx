@@ -47,6 +47,7 @@ export const fetchTasksByObservationUuids = async (observationUuids, status = nu
     return entries.map((entry) => ({
       uuid: entry.resource?.id,
       observationUuid: entry.resource?.focus?.reference?.split("/").pop(),
+      status: entry.resource?.status,
     }));
   } catch (error) {
     console.error("Failed to fetch tasks by observation UUIDs", error);
@@ -54,9 +55,25 @@ export const fetchTasksByObservationUuids = async (observationUuids, status = nu
   }
 };
 
+// Filter functions for task data
+export const getAcknowledgedObservationUuids = (allTasks) => {
+  return new Set(allTasks.map((task) => task.observationUuid).filter(Boolean));
+};
+
+export const getPendingTaskUuidsByObservation = (allTasks) => {
+  return allTasks.reduce((acc, task) => {
+    if (task.status === "requested" && task.observationUuid) {
+      acc[task.observationUuid] = acc[task.observationUuid] || [];
+      acc[task.observationUuid].push(task.uuid);
+    }
+    return acc;
+  }, {});
+};
+
+// Kept for backward compatibility if needed elsewhere
 export const fetchAcknowledgedObservationUuids = async (obsUuids) => {
   const tasks = await fetchTasksByObservationUuids(obsUuids);
-  return new Set(tasks.map((task) => task.observationUuid).filter(Boolean));
+  return getAcknowledgedObservationUuids(tasks);
 };
 
 export const fetchBatchObservations = async (visitUuids, concepts, filterObsWithOrders = false) => {
