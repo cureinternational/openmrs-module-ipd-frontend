@@ -43,7 +43,7 @@ const CareInstructions = (props) => {
   const ipdContext = useContext(IPDContext);
   const intl = useIntl();
   const { visit, config, currentUser } = ipdContext;
-  const { enable24HourTime = false } = config || {};
+  const { enable24HourTime = false, enableStopTasks = false } = config || {};
   const { isSliderOpen, updateSliderOpen, provider } =
     useContext(SliderContext);
   const refreshDisplayControl = useContext(RefreshDisplayControl);
@@ -136,12 +136,9 @@ const CareInstructions = (props) => {
           defaultMessage: "Action",
         }),
       },
-      {
-        key: "stopTasks",
-        header: "",
-      },
+      ...(enableStopTasks ? [{ key: "stopTasks", header: "" }] : []),
     ],
-    [intl]
+    [intl, enableStopTasks]
   );
 
   useEffect(() => {
@@ -294,28 +291,30 @@ const CareInstructions = (props) => {
                 </Link>
               )}
             </TableCell>
-            <TableCell className="stop-tasks-cell">
-              {getPendingTaskCount(row) > 0 &&
-                isUserPrivileged(
-                  currentUser,
-                  PRIVILEGE_CONSTANTS.EDIT_TASKS
-                ) && (
-                  <Link
-                    onClick={() => {
-                      setSelectedInstruction({
-                        observationUuid: row.observationUuid,
-                        previousVersionUuid: row.previousVersionUuid,
-                      });
-                      setIsStoppingTasks(true);
-                    }}
-                  >
-                    <FormattedMessage
-                      id="STOP_TASKS"
-                      defaultMessage="Stop Tasks"
-                    />
-                  </Link>
-                )}
-            </TableCell>
+            {enableStopTasks && (
+              <TableCell className="stop-tasks-cell">
+                {getPendingTaskCount(row) > 0 &&
+                  isUserPrivileged(
+                    currentUser,
+                    PRIVILEGE_CONSTANTS.EDIT_TASKS
+                  ) && (
+                    <Link
+                      onClick={() => {
+                        setSelectedInstruction({
+                          observationUuid: row.observationUuid,
+                          previousVersionUuid: row.previousVersionUuid,
+                        });
+                        setIsStoppingTasks(true);
+                      }}
+                    >
+                      <FormattedMessage
+                        id="STOP_TASKS"
+                        defaultMessage="Stop Tasks"
+                      />
+                    </Link>
+                  )}
+              </TableCell>
+            )}
           </TableRow>
         ))}
       </TableBody>
@@ -419,7 +418,7 @@ const CareInstructions = (props) => {
           }}
         />
       )}
-      <Modal
+      {enableStopTasks && <Modal
         open={isStoppingTasks}
         modalHeading={intl.formatMessage({
           id: "STOP_TASKS_CONFIRMATION_TITLE",
@@ -497,7 +496,7 @@ const CareInstructions = (props) => {
             defaultMessage="Are you sure you want to stop all pending tasks for this instruction?"
           />
         </p>
-      </Modal>
+      </Modal>}
     </div>
   );
 };

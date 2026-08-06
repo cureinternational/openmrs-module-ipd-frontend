@@ -1030,7 +1030,7 @@ describe("UpdateNursingTasksSlider", function () {
       <IntlProvider locale="en">
         <IPDContext.Provider
           value={{
-            config: mockConfig,
+            config: { ...mockConfig, enableStopTasks: true },
             handleAuditEvent: mockHandleAuditLogEvent,
             currentUser: mockUserWithAllRequiredPrivileges,
           }}
@@ -1059,7 +1059,7 @@ describe("UpdateNursingTasksSlider", function () {
       <IntlProvider locale="en">
         <IPDContext.Provider
           value={{
-            config: mockConfig,
+            config: { ...mockConfig, enableStopTasks: true },
             handleAuditEvent: mockHandleAuditLogEvent,
             currentUser: mockUserWithAllRequiredPrivileges,
           }}
@@ -1090,7 +1090,7 @@ describe("UpdateNursingTasksSlider", function () {
       <IntlProvider locale="en">
         <IPDContext.Provider
           value={{
-            config: mockConfig,
+            config: { ...mockConfig, enableStopTasks: true },
             handleAuditEvent: mockHandleAuditLogEvent,
             currentUser: mockUserWithAllRequiredPrivileges,
           }}
@@ -1125,7 +1125,7 @@ describe("UpdateNursingTasksSlider", function () {
       <IntlProvider locale="en">
         <IPDContext.Provider
           value={{
-            config: mockConfig,
+            config: { ...mockConfig, enableStopTasks: true },
             handleAuditEvent: mockHandleAuditLogEvent,
             currentUser: mockUserWithAllRequiredPrivileges,
           }}
@@ -1159,7 +1159,7 @@ describe("UpdateNursingTasksSlider", function () {
       <IntlProvider locale="en">
         <IPDContext.Provider
           value={{
-            config: mockConfig,
+            config: { ...mockConfig, enableStopTasks: true },
             handleAuditEvent: mockHandleAuditLogEvent,
             currentUser: mockUserWithAllRequiredPrivileges,
           }}
@@ -1188,7 +1188,7 @@ describe("UpdateNursingTasksSlider", function () {
       <IntlProvider locale="en">
         <IPDContext.Provider
           value={{
-            config: mockConfig,
+            config: { ...mockConfig, enableStopTasks: true },
             handleAuditEvent: mockHandleAuditLogEvent,
             currentUser: mockUserWithAllRequiredPrivileges,
           }}
@@ -1220,7 +1220,7 @@ describe("UpdateNursingTasksSlider", function () {
       <IntlProvider locale="en">
         <IPDContext.Provider
           value={{
-            config: mockConfig,
+            config: { ...mockConfig, enableStopTasks: true },
             handleAuditEvent: mockHandleAuditLogEvent,
             currentUser: mockUserWithAllRequiredPrivileges,
           }}
@@ -1267,7 +1267,7 @@ describe("UpdateNursingTasksSlider", function () {
       <IntlProvider locale="en">
         <IPDContext.Provider
           value={{
-            config: mockConfig,
+            config: { ...mockConfig, enableStopTasks: true },
             handleAuditEvent: mockHandleAuditLogEvent,
             currentUser: mockUserWithAllRequiredPrivileges,
           }}
@@ -1314,7 +1314,7 @@ describe("UpdateNursingTasksSlider", function () {
       <IntlProvider locale="en">
         <IPDContext.Provider
           value={{
-            config: mockConfig,
+            config: { ...mockConfig, enableStopTasks: true },
             handleAuditEvent: mockHandleAuditLogEvent,
             currentUser: mockUserWithAllRequiredPrivileges,
           }}

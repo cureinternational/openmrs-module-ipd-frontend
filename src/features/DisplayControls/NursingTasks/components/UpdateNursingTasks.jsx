@@ -107,6 +107,7 @@ const UpdateNursingTasks = (props) => {
     nursingTasks = {},
     enable24HourTime = {},
     taskToFormMapping = {},
+    enableStopTasks = false,
   } = config;
   const relevantTaskStatusWindowInSeconds =
     nursingTasks && nursingTasks.timeInMinutesFromNowToShowTaskAsRelevant * 60;
@@ -874,7 +875,7 @@ const UpdateNursingTasks = (props) => {
                           }}
                         />
                       )}
-                      {medicationTask?.isANonMedicationTask && (
+                      {medicationTask?.isANonMedicationTask && enableStopTasks && (
                         <>
                           {tasks[medicationTask.uuid]?.stopped ? (
                             <OverflowMenuItem
