@@ -876,33 +876,29 @@ const UpdateNursingTasks = (props) => {
                         />
                       )}
                       {medicationTask?.isANonMedicationTask && enableStopTasks && (
-                        <>
-                          {tasks[medicationTask.uuid]?.stopped ? (
-                            <OverflowMenuItem
-                              itemText={getLocalizedLabel(
-                                intl,
-                                getTranslationKey("Unstop Task"),
-                                "Unstop Task"
-                              )}
-                              onClick={(e) => {
-                                e?.preventDefault?.();
-                                handleStopTask(medicationTask, false);
-                              }}
-                            />
-                          ) : (
-                            <OverflowMenuItem
-                              itemText={getLocalizedLabel(
-                                intl,
-                                getTranslationKey("Stop Task"),
-                                "Stop Task"
-                              )}
-                              onClick={(e) => {
-                                e?.preventDefault?.();
-                                handleStopTask(medicationTask, true);
-                              }}
-                            />
-                          )}
-                        </>
+                        tasks[medicationTask.uuid]?.stopped ? (
+                          <OverflowMenuItem
+                            itemText={getLocalizedLabel(
+                              intl,
+                              getTranslationKey("Unstop Task"),
+                              "Unstop Task"
+                            )}
+                            onClick={() => {
+                              handleStopTask(medicationTask, false);
+                            }}
+                          />
+                        ) : (
+                          <OverflowMenuItem
+                            itemText={getLocalizedLabel(
+                              intl,
+                              getTranslationKey("Stop Task"),
+                              "Stop Task"
+                            )}
+                            onClick={() => {
+                              handleStopTask(medicationTask, true);
+                            }}
+                          />
+                        )
                       )}
                     </OverflowMenu>
                   )}
