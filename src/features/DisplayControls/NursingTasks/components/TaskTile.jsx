@@ -57,9 +57,10 @@ export default function TaskTile(props) {
     creator,
     taskType,
     intradayDoseString,
-    requestedStartTime,
   } = newMedicationNursingTask;
-  const moreTask = <FormattedMessage id="TASK_TILE_MORE" defaultMessage="more task(s)" />;
+  const moreTask = (
+    <FormattedMessage id="TASK_TILE_MORE" defaultMessage="more task(s)" />
+  );
 
   const isRelevantTask = getRelevantTaskStatus(
     startTimeInEpochSeconds,
@@ -67,9 +68,14 @@ export default function TaskTile(props) {
   );
 
   const isSystemTask = taskType?.display === NURSING_ACTIVITY_SYSTEM;
-  const taskLabel = isSystemTask
-    ? <FormattedMessage id={getTranslationKey(drugName, nonMedicationTaskKey)} defaultMessage={drugName} />
-    : drugName;
+  const taskLabel = isSystemTask ? (
+    <FormattedMessage
+      id={getTranslationKey(drugName, nonMedicationTaskKey)}
+      defaultMessage={drugName}
+    />
+  ) : (
+    drugName
+  );
   const isFormLink = isSystemTask && formUuid && patientId;
   const fontWeight = !isANonMedicationTask && isRelevantTask ? 500 : 400;
   const taskTitleStyle = isFormLink
@@ -199,7 +205,10 @@ export default function TaskTile(props) {
                     <Calendar16 />
                     <span className="tile-content-subtext-date">
                       &nbsp;
-                      {formatDate(new Date(startTimeInEpochSeconds * 1000), "DD MMMM YYYY")}
+                      {formatDate(
+                        new Date(startTimeInEpochSeconds * 1000),
+                        "DD MMMM YYYY"
+                      )}
                     </span>
                   </div>
                   <div className="time-row">
