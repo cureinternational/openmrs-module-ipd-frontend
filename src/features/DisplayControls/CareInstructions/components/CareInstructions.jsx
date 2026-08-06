@@ -1,9 +1,4 @@
-import React, {
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import { FormattedMessage, useIntl } from "react-intl";
 import {
@@ -58,7 +53,9 @@ const CareInstructions = (props) => {
   const providerUuid = provider?.uuid;
 
   const handleSetNotificationMessage = (msg) => {
-    setNotificationMessage(msg);
+    setNotificationMessage(
+      intl.formatMessage({ id: msg, defaultMessage: msg })
+    );
   };
 
   const updateCareInstructionsTasksSlider = (value) => {
@@ -442,11 +439,12 @@ const CareInstructions = (props) => {
         onRequestSubmit={async () => {
           setIsSubmittingStop(true);
           try {
-            const { observationUuid, previousVersionUuid } = selectedInstruction;
+            const { observationUuid, previousVersionUuid } =
+              selectedInstruction;
 
             const taskUuidsToStop = [observationUuid, previousVersionUuid]
               .filter(Boolean)
-              .flatMap(uuid => pendingTaskUuidsByObservation[uuid] ?? []);
+              .flatMap((uuid) => pendingTaskUuidsByObservation[uuid] ?? []);
 
             if (taskUuidsToStop.length === 0) {
               setIsStoppingTasks(false);
