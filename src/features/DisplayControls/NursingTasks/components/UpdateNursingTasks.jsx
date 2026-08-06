@@ -891,14 +891,24 @@ const UpdateNursingTasks = (props) => {
                       {medicationTask?.isANonMedicationTask && enableStopTasks && (
                         tasks[medicationTask.uuid]?.stopped ? (
                           <OverflowMenuItem
-                            itemText={<FormattedMessage id="IPD_UNSTOP_TASK" defaultMessage="Unstop Task" />}
+                            itemText={
+                              <FormattedMessage
+                                id="IPD_UNSTOP_TASK"
+                                defaultMessage="Un-Stop Task"
+                              />
+                            }
                             onClick={() => {
                               handleStopTask(medicationTask, false);
                             }}
                           />
                         ) : (
                           <OverflowMenuItem
-                            itemText={<FormattedMessage id="IPD_STOP_TASK" defaultMessage="Stop Task" />}
+                            itemText={
+                              <FormattedMessage
+                                id="IPD_STOP_TASK"
+                                defaultMessage="Stop Task"
+                              />
+                            }
                             onClick={() => {
                               handleStopTask(medicationTask, true);
                             }}
