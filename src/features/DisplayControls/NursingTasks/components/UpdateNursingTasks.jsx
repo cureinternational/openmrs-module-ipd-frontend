@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import PropTypes from "prop-types";
 import "../styles/UpdateNursingTasks.scss";
 import SideBarPanel from "../../../SideBarPanel/components/SideBarPanel";
@@ -42,7 +42,6 @@ import {
   isTimeInFuture,
 } from "../../../../utils/DateTimeUtils";
 import {
-  getLocalizedLabel,
   getTranslationKey,
   isSystemGeneratedTask,
   isUserPrivileged,
@@ -80,8 +79,6 @@ const UpdateNursingTasks = (props) => {
   const [isInvalidTime, setIsInvalidTime] = useState(false);
   const [invalidText, setInvalidText] = useState();
   const [isSavingConfirmation, setIsSavingConfirmation] = useState(false);
-  const intl = useIntl();
-
   const invalidTimeText = (
     <FormattedMessage
       id={"INVALID_TIME"}
@@ -216,11 +213,7 @@ const UpdateNursingTasks = (props) => {
     const isSystemTask =
       medicationTask?.taskType?.display === NURSING_ACTIVITY_SYSTEM;
     const taskLabel = isSystemTask
-      ? getLocalizedLabel(
-          intl,
-          getTranslationKey(medicationTask.drugName, nonMedicationTaskKey),
-          medicationTask.drugName
-        )
+      ? <FormattedMessage id={getTranslationKey(medicationTask.drugName, nonMedicationTaskKey)} defaultMessage={medicationTask.drugName} />
       : medicationTask.drugName;
 
     if (isSystemTask && allFormsSummary && taskToFormMapping) {
