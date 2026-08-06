@@ -474,7 +474,6 @@ const UpdateNursingTasks = (props) => {
           "NON_MEDICATION_TASK_UPDATE_MESSAGE"
         );
         refreshDisplayControl([
-          componentKeys.NURSING_TASKS,
           componentKeys.CARE_INSTRUCTIONS,
         ]);
       } else {
