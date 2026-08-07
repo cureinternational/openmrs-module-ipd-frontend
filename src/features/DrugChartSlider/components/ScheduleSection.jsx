@@ -35,7 +35,6 @@ export const ScheduleSection = ({
   onApplyToAllDaysToggle = () => {},
   isToggleEnabled = false,
   duration,
-  showApplyToAllDaysRequiredWarning = false,
 }) => {
   const intl = useIntl();
   const hasFirstDayNextDay = showFirstDayScheduleNextDayWarning.some(
@@ -162,37 +161,24 @@ export const ScheduleSection = ({
             )}
           </div>
           {duration > 1 && (
-            <>
-              <div className="apply-to-all-days-toggle">
-                <Toggle
-                  id="apply-to-all-days-toggle"
-                  size="sm"
-                  toggled={applyToAllDays}
-                  disabled={!isToggleEnabled}
-                  onToggle={onApplyToAllDaysToggle}
-                  labelA=""
-                  labelB=""
-                  labelText=""
+            <div className="apply-to-all-days-toggle">
+              <Toggle
+                id="apply-to-all-days-toggle"
+                size="sm"
+                toggled={applyToAllDays}
+                disabled={!isToggleEnabled}
+                onToggle={onApplyToAllDaysToggle}
+                labelA=""
+                labelB=""
+                labelText=""
+              />
+              <span className="toggle-label-text">
+                <FormattedMessage
+                  id="DRUG_CHART_UPDATE_COMPLETE_SCHEDULE"
+                  defaultMessage="Update Complete Schedule"
                 />
-                <span className="toggle-label-text">
-                  <FormattedMessage
-                    id="DRUG_CHART_UPDATE_COMPLETE_SCHEDULE"
-                    defaultMessage="Update Complete Schedule"
-                  />
-                </span>
-              </div>
-              {showApplyToAllDaysRequiredWarning && (
-                <div className="schedule-info-notification schedule-next-day-notification">
-                  <Information20 />
-                  <span>
-                    <FormattedMessage
-                      id="DRUG_CHART_UPDATE_COMPLETE_SCHEDULE_REQUIRED_WARNING"
-                      defaultMessage="Please ensure complete schedule is updated to proceed."
-                    />
-                  </span>
-                </div>
-              )}
-            </>
+              </span>
+            </div>
           )}
           {schedules.length != 0 && (
             <div className="schedule-section">
@@ -497,5 +483,4 @@ ScheduleSection.propTypes = {
   onApplyToAllDaysToggle: PropTypes.func,
   isToggleEnabled: PropTypes.bool,
   duration: PropTypes.number,
-  showApplyToAllDaysRequiredWarning: PropTypes.bool,
 };
