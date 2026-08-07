@@ -210,9 +210,8 @@ export const shouldIncludeInIPDDashboard = (
   drugOrderObject,
   allMedicinesInPrescriptionAvailableForIPD
 ) => {
+  
   if (drugOrderObject.isDischargeMedication) return false;
-  if (!allMedicinesInPrescriptionAvailableForIPD)
-    return isIPDrugOrder(drugOrderObject.drugOrder);
   return true;
 };
 
