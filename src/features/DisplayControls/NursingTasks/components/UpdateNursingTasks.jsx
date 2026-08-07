@@ -31,11 +31,9 @@ import {
   PRIVILEGE_CONSTANTS,
   nonMedicationTaskKey,
   NURSING_ACTIVITY_SYSTEM,
-  componentKeys,
 } from "../../../../constants";
 import DisplayTags from "../../../../components/DisplayTags/DisplayTags";
 import { IPDContext } from "../../../../context/IPDContext";
-import RefreshDisplayControl from "../../../../context/RefreshDisplayControl";
 import {
   formatDate,
   formatTime,
@@ -98,7 +96,6 @@ const UpdateNursingTasks = (props) => {
 
   const { config, handleAuditEvent, currentUser, allFormsSummary } =
     useContext(IPDContext);
-  const refreshDisplayControl = useContext(RefreshDisplayControl);
   const {
     nursingTasks = {},
     enable24HourTime = {},
@@ -421,7 +418,6 @@ const UpdateNursingTasks = (props) => {
     } else {
       updateShowErrors(true);
       if (Object.keys(errors).length > 0) return;
-      setSkippedTasks({});
       const nonMedicationPayload = [];
       let saveDisabled = true;
       Object.keys(tasks).forEach((key) => {
@@ -436,22 +432,12 @@ const UpdateNursingTasks = (props) => {
           });
         }
         if (tasks[key].skipped) {
-          const payload = updateTaskStatusAndPayload(
-            key,
-            "not-done",
-            "REJECTED",
-            setSkippedTasks
-          );
+          const payload = updateTaskStatusAndPayload(key, "REJECTED");
           nonMedicationPayload.push(payload);
         }
         if (tasks[key].stopped) {
           saveDisabled = false;
-          const payload = updateTaskStatusAndPayload(
-            key,
-            "stopped",
-            "CANCELLED",
-            () => {}
-          );
+          const payload = updateTaskStatusAndPayload(key, "CANCELLED");
           nonMedicationPayload.push(payload);
         }
       });
@@ -470,9 +456,6 @@ const UpdateNursingTasks = (props) => {
           "success",
           "NON_MEDICATION_TASK_UPDATE_MESSAGE"
         );
-        refreshDisplayControl([
-          componentKeys.CARE_INSTRUCTIONS,
-        ]);
       } else {
         saveAdministeredNonMedicationTasks(
           "error",
@@ -558,16 +541,7 @@ const UpdateNursingTasks = (props) => {
       : handleTaskAction(medicationTask, "stopped", stopped);
   };
 
-  const updateTaskStatusAndPayload = (
-    taskKey,
-    displayStatus,
-    apiStatus,
-    setter
-  ) => {
-    setter((prev) => ({
-      ...prev,
-      [taskKey]: { ...tasks[taskKey], status: displayStatus },
-    }));
+  const updateTaskStatusAndPayload = (taskKey, apiStatus) => {
     return {
       uuid: taskKey,
       executionEndTime: Date.now(),
@@ -888,8 +862,9 @@ const UpdateNursingTasks = (props) => {
                           }}
                         />
                       )}
-                      {medicationTask?.isANonMedicationTask && enableStopTasks && (
-                        tasks[medicationTask.uuid]?.stopped ? (
+                      {medicationTask?.isANonMedicationTask &&
+                        enableStopTasks &&
+                        (tasks[medicationTask.uuid]?.stopped ? (
                           <OverflowMenuItem
                             itemText={
                               <FormattedMessage
@@ -913,8 +888,7 @@ const UpdateNursingTasks = (props) => {
                               handleStopTask(medicationTask, true);
                             }}
                           />
-                        )
-                      )}
+                        ))}
                     </OverflowMenu>
                   )}
               </div>
