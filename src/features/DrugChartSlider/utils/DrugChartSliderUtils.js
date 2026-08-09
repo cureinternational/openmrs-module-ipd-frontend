@@ -190,30 +190,20 @@ export const computeShiftedSchedules = (
   firstDoseNew,
   enable24HourTimers
 ) => {
-  const origMoment = enable24HourTimers
-    ? moment(firstDoseOriginal, "HH:mm")
-    : moment.isMoment(firstDoseOriginal)
-    ? firstDoseOriginal.clone()
-    : moment(firstDoseOriginal, timeFormatFor12Hr);
-  const newMoment = enable24HourTimers
-    ? moment(firstDoseNew, "HH:mm")
-    : moment(firstDoseNew, timeFormatFor12Hr);
-  const offsetMinutes = newMoment.diff(origMoment, "minutes");
+  const offsetMinutes = computeOffsetMinutes(
+    firstDoseOriginal,
+    firstDoseNew,
+    enable24HourTimers
+  );
 
-  return schedules.map((schedule, index) => {
-    if (index === 0) {
-      return enable24HourTimers
-        ? firstDoseNew
-        : moment(firstDoseNew, timeFormatFor12Hr);
-    }
-    const scheduleMoment = enable24HourTimers
-      ? moment(schedule, "HH:mm")
-      : moment.isMoment(schedule)
-      ? schedule.clone()
-      : moment(schedule, timeFormatFor12Hr);
-    const shifted = scheduleMoment.add(offsetMinutes, "minutes");
-    return enable24HourTimers ? shifted.format("HH:mm") : shifted;
-  });
+  return [
+    enable24HourTimers ? firstDoseNew : moment(firstDoseNew, timeFormatFor12Hr),
+    ...shiftScheduleByOffset(
+      schedules.slice(1),
+      offsetMinutes,
+      enable24HourTimers
+    ),
+  ];
 };
 
 export const isNextDayCrossing = (newTime, prevTime, enable24HourTimers) => {
@@ -272,6 +262,24 @@ export const computeOffsetMinutes = (original, updated, enable24HourTimers) => {
   return newM.diff(origM, "minutes");
 };
 
+// Helper: shift all items by offsetMinutes
+// Returns strings for 24-hr mode or moment objects for 12-hr mode
+const shiftScheduleByOffset = (
+  schedules,
+  offsetMinutes,
+  enable24HourTimers
+) => {
+  return schedules.map((schedule) => {
+    const m = enable24HourTimers
+      ? moment(schedule, "HH:mm")
+      : moment.isMoment(schedule)
+      ? schedule.clone()
+      : moment(schedule, timeFormatFor12Hr);
+    const shifted = m.add(offsetMinutes, "minutes");
+    return enable24HourTimers ? shifted.format("HH:mm") : shifted;
+  });
+};
+
 // Shifts all scheduleTimings (24-hr strings) by offsetMinutes.
 // Returns strings for 24-hr mode or moment objects for 12-hr mode,
 // matching the format expected by the `schedules` state.
@@ -280,8 +288,9 @@ export const computeShiftedScheduleTimings = (
   offsetMinutes,
   enable24HourTimers
 ) => {
-  return scheduleTimings.map((time) => {
-    const m = moment(time, "HH:mm").add(offsetMinutes, "minutes");
-    return enable24HourTimers ? m.format("HH:mm") : m;
-  });
+  return shiftScheduleByOffset(
+    scheduleTimings,
+    offsetMinutes,
+    enable24HourTimers
+  );
 };
