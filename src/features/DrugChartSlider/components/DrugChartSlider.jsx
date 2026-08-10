@@ -1055,7 +1055,7 @@ const DrugChartSlider = (props) => {
       setFirstDayMidnightCrossingSlots(firstDayFlags);
 
       const normalizedDayWiseFromApi = dayWiseFromApi.filter(
-        (time) => !firstDayNonRecurringCrossingsFromApi.includes(time)
+        (time) => !firstDayCrossingsFromApi.includes(time)
       );
 
       const dayWiseDisplaySlots = [
@@ -1074,7 +1074,10 @@ const DrugChartSlider = (props) => {
       );
       setSubsequentDayMidnightCrossingSlots(nextDayFlags);
 
-      const remainingSlots = scheduleTimings.remainingDaySlotsStartTime ?? [];
+      const remainingSlotsRaw = scheduleTimings.remainingDaySlotsStartTime ?? [];
+      const remainingSlots = remainingSlotsRaw.filter(
+        (time) => !dayWiseCrossingsFromApi.includes(time)
+      );
       setFinalDaySchedules(remainingSlots);
       if (remainingSlots.length > 1) {
         setFinalDayMidnightCrossingSlots(
