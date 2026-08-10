@@ -294,3 +294,83 @@ export const computeShiftedScheduleTimings = (
     enable24HourTimers
   );
 };
+
+const toDisplayTime = (absoluteMinutes, enable24HourTimers) => {
+  const minutesInDay = 24 * 60;
+  const normalized =
+    ((absoluteMinutes % minutesInDay) + minutesInDay) % minutesInDay;
+  const hour = Math.floor(normalized / 60);
+  const minute = normalized % 60;
+  const hhmm = `${String(hour).padStart(2, "0")}:${String(minute).padStart(
+    2,
+    "0"
+  )}`;
+  return enable24HourTimers ? hhmm : moment(hhmm, "HH:mm");
+};
+
+const buildFixedIntervalSeries = (startAbsoluteMinutes, count, intervalMinutes) => {
+  const slots = [];
+  const flags = [];
+  let previousAbsolute = null;
+  for (let index = 0; index < count; index += 1) {
+    const currentAbsolute = startAbsoluteMinutes + index * intervalMinutes;
+    slots.push(currentAbsolute);
+    flags.push(
+      previousAbsolute !== null &&
+        Math.floor(currentAbsolute / (24 * 60)) >
+          Math.floor(previousAbsolute / (24 * 60))
+    );
+    previousAbsolute = currentAbsolute;
+  }
+  return { slots, flags, nextStartAbsoluteMinutes: startAbsoluteMinutes + count * intervalMinutes };
+};
+
+export const regenerateByFrequencyInterval = ({
+  firstDose,
+  frequencyPerDay,
+  firstDayEditableCount,
+  subsequentCount,
+  remainderCount,
+  enable24HourTimers,
+}) => {
+  if (!frequencyPerDay || frequencyPerDay <= 0) {
+    return null;
+  }
+
+  const intervalMinutes = Math.round((24 * 60) / frequencyPerDay);
+  const firstMoment = enable24HourTimers
+    ? moment(firstDose, "HH:mm", true)
+    : moment.isMoment(firstDose)
+    ? firstDose.clone()
+    : moment(firstDose, timeFormatFor12Hr, true);
+
+  if (!firstMoment.isValid()) {
+    return null;
+  }
+
+  const startAbsoluteMinutes = firstMoment.hours() * 60 + firstMoment.minutes();
+  const firstDay = buildFixedIntervalSeries(
+    startAbsoluteMinutes,
+    firstDayEditableCount,
+    intervalMinutes
+  );
+  const subsequent = buildFixedIntervalSeries(
+    firstDay.nextStartAbsoluteMinutes,
+    subsequentCount,
+    intervalMinutes
+  );
+  const remainder = buildFixedIntervalSeries(
+    subsequent.nextStartAbsoluteMinutes,
+    remainderCount,
+    intervalMinutes
+  );
+
+  return {
+    firstDaySchedules: firstDay.slots.map((m) => toDisplayTime(m, enable24HourTimers)),
+    firstDayCrossings: firstDay.flags,
+    subsequentSchedules: subsequent.slots.map((m) => toDisplayTime(m, enable24HourTimers)),
+    subsequentCrossings: subsequent.flags,
+    finalDaySchedules: remainder.slots.map((m) => toDisplayTime(m, enable24HourTimers)),
+    finalDayCrossings: remainder.flags,
+  };
+};

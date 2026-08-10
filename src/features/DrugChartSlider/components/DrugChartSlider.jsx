@@ -30,6 +30,7 @@ import {
   isNextDayCrossing,
   computeShiftedScheduleTimings,
   computeOffsetMinutes,
+  regenerateByFrequencyInterval,
 } from "../utils/DrugChartSliderUtils";
 import {
   epochTo24HourTimeFormat,
@@ -203,13 +204,63 @@ const DrugChartSlider = (props) => {
         : moment.isMoment(currentFirstSlot)
         ? currentFirstSlot.format(timeFormatFor12Hr)
         : currentFirstSlot;
+
+      const autoFilledFirstSlotStr =
+        autoFilledFirstEditableSlotRef.current !== null
+          ? enable24HourTimers
+            ? autoFilledFirstEditableSlotRef.current.format("HH:mm")
+            : autoFilledFirstEditableSlotRef.current.format(timeFormatFor12Hr)
+          : null;
+      const isUntouchedAutoFilledFirstSlot =
+        autoFilledFirstSlotStr !== null && timeStr === autoFilledFirstSlotStr;
+
+      const firstDoseForRegeneration = isUntouchedAutoFilledFirstSlot
+        ? enableSchedule.scheduleTiming[firstDaySlotsMissed]
+        : timeStr;
       const isValid = enable24HourTimers
         ? moment(timeStr, "HH:mm", true).isValid()
         : moment(timeStr, timeFormatFor12Hr, true).isValid();
       if (isValid) {
-        propagateToSubsequentDays(timeStr);
         const editableCount = firstDaySchedules.length - firstDaySlotsMissed;
-        if (editableCount > 1) {
+        let usedFixedIntervalRegeneration = false;
+        const regenerated = regenerateByFrequencyInterval({
+          firstDose: firstDoseForRegeneration,
+          frequencyPerDay: enableSchedule?.frequencyPerDay,
+          firstDayEditableCount: editableCount,
+          subsequentCount: subsequentDaySchedules.length,
+          remainderCount: finalDaySchedules.length,
+          enable24HourTimers,
+        });
+
+        if (regenerated) {
+          usedFixedIntervalRegeneration = true;
+          if (editableCount > 1) {
+            setFirstDaySchedules((prev) => {
+              const updated = [...prev];
+              regenerated.firstDaySchedules.forEach((value, valueIndex) => {
+                updated[firstDaySlotsMissed + valueIndex] = value;
+              });
+              if (isUntouchedAutoFilledFirstSlot) {
+                updated[firstDaySlotsMissed] = currentFirstSlot;
+              }
+              return updated;
+            });
+            setFirstDayMidnightCrossingSlots(
+              Array(firstDaySlotsMissed)
+                .fill(false)
+                .concat(regenerated.firstDayCrossings)
+            );
+          }
+          setSubsequentDaySchedules(regenerated.subsequentSchedules);
+          setSubsequentDayMidnightCrossingSlots(regenerated.subsequentCrossings);
+          if (firstDaySlotsMissed > 0) {
+            setFinalDaySchedules(regenerated.finalDaySchedules);
+            setFinalDayMidnightCrossingSlots(regenerated.finalDayCrossings);
+          }
+        } else {
+          propagateToSubsequentDays(timeStr);
+        }
+        if (!usedFixedIntervalRegeneration && editableCount > 1) {
           const base =
             autoFilledFirstEditableSlotRef.current !== null
               ? autoFilledFirstEditableSlotRef.current
@@ -281,6 +332,41 @@ const DrugChartSlider = (props) => {
 
       if (isOriginalValid) {
         const editablePortion = firstDaySchedules.slice(firstDaySlotsMissed);
+
+        const regenerated = regenerateByFrequencyInterval({
+          firstDose: newSchedule,
+          frequencyPerDay: enableSchedule?.frequencyPerDay,
+          firstDayEditableCount: editableCount,
+          subsequentCount: subsequentDaySchedules.length,
+          remainderCount: finalDaySchedules.length,
+          enable24HourTimers,
+        });
+
+        if (regenerated) {
+          const newScheduleArray = [...firstDaySchedules];
+          regenerated.firstDaySchedules.forEach((value, valueIndex) => {
+            newScheduleArray[firstDaySlotsMissed + valueIndex] = value;
+          });
+          setFirstDaySchedules(newScheduleArray);
+          setFirstDayMidnightCrossingSlots(
+            Array(firstDaySlotsMissed)
+              .fill(false)
+              .concat(regenerated.firstDayCrossings)
+          );
+
+          if (applyToAllDays) {
+            setSubsequentDaySchedules(regenerated.subsequentSchedules);
+            setSubsequentDayMidnightCrossingSlots(
+              regenerated.subsequentCrossings
+            );
+            setFinalDaySchedules(regenerated.finalDaySchedules);
+            setFinalDayMidnightCrossingSlots(regenerated.finalDayCrossings);
+          }
+
+          setIsToggleEnabled(true);
+          return;
+        }
+
         const shiftedEditable = computeShiftedSchedules(
           editablePortion,
           firstDoseOriginal,
