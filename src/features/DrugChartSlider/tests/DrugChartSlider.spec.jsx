@@ -1030,7 +1030,7 @@ describe("DrugChartSlider", () => {
       ).toBe(8 * 3600);
     });
 
-    it("AC5: midnight-crossing subsequent slot stays in dayWiseSlotsStartTime (no double +86400)", async () => {
+    it("AC5: midnight-crossing subsequent slot is carried via crossingSlots (no double +86400)", async () => {
       renderMultiDay();
 
       await waitFor(() => {
@@ -1050,9 +1050,14 @@ describe("DrugChartSlider", () => {
       });
 
       const payload = mockSaveMedication.mock.calls[0][0];
-      const slots = payload.dayWiseSlotsStartTime;
-      expect(slots.length).toBe(3);
-      expect(slots[0] - slots[2]).toBe(8 * 3600);
+      expect(payload.dayWiseSlotsStartTime.length).toBe(2);
+      const crossingEpochs = (payload.crossingSlots || [])
+        .map((slot) => slot?.epoch)
+        .filter((epoch) => epoch != null);
+      crossingEpochs.forEach((epoch) => {
+        expect(payload.dayWiseSlotsStartTime).not.toContain(epoch);
+        expect(payload.remainingDaySlotsStartTime).not.toContain(epoch);
+      });
     });
 
     it("AC4: toggle ON then OFF reverts subsequent days to original schedule timings (Scenario 2 revert)", async () => {
