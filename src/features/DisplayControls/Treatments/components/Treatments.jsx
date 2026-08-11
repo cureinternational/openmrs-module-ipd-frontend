@@ -400,7 +400,9 @@ const Treatments = (props) => {
     const admissionDate = visitSummary?.startDateTime;
     const dischargeRevisedUuids = getDischargeRevisedOrderUuids(drugOrders);
     drugOrders = drugOrders.filter((drugOrderObject) => {
-      if (isSupersededByDischargeRevision(drugOrderObject, dischargeRevisedUuids)) {
+      if (
+        isSupersededByDischargeRevision(drugOrderObject, dischargeRevisedUuids)
+      ) {
         return false;
       }
       if (
@@ -542,10 +544,14 @@ const Treatments = (props) => {
             id: drugOrder.uuid,
             startDate: formatDate(drugOrder.effectiveStartDate),
             drugName: getDrugName(drugOrderObject),
-            dosageDetails: setDosingInstructions(drugOrder, drugOrderObject.intradayDose),
+            dosageDetails: setDosingInstructions(
+              drugOrder,
+              drugOrderObject.intradayDose
+            ),
             providerName: drugOrderObject.provider.name,
             status: getStatus(),
             actions: isVariableDose ? null : actionsObjectValue.link,
+            isExpanded: true,
             additionalData: {
               instructions: drugOrderObject.instructions
                 ? drugOrderObject.instructions

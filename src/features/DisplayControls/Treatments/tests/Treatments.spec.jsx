@@ -1508,6 +1508,117 @@ describe("Treatments", () => {
       "STOP_SCHEDULED_MEDICATION_TASK"
     );
   });
+
+  describe("VDP default expanded state", () => {
+    const secondVdpOrder = {
+      ...variableDoseStopDrugOrder,
+      drugOrder: {
+        ...variableDoseStopDrugOrder.drugOrder,
+        uuid: "vdp-2",
+        drug: { name: "VDP Drug 2" },
+      },
+    };
+
+    const renderTreatments = (ipdDrugOrders) => {
+      const updatedAllMedications = {
+        ...mockAllMedicationsProviderValue,
+        data: { emergencyMedications: [], ipdDrugOrders },
+      };
+      return render(
+        <IPDContext.Provider value={{ config: mockConfig, isReadMode: false }}>
+          <SliderContext.Provider value={mockProviderValue}>
+            <AllMedicationsContext.Provider value={updatedAllMedications}>
+              <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            </AllMedicationsContext.Provider>
+          </SliderContext.Provider>
+        </IPDContext.Provider>
+      );
+    };
+
+    it("renders a single VDP expanded by default", async () => {
+      const { getByTestId, getByText } = renderTreatments([
+        variableDoseStopDrugOrder,
+      ]);
+      await waitFor(() => expect(getByText("VDP Drug")).toBeTruthy());
+      expect(getByTestId("expandable-row")).toHaveClass("bx--expandable-row");
+    });
+
+    it("renders all VDPs expanded by default", async () => {
+      const { getAllByTestId, getByText } = renderTreatments([
+        variableDoseStopDrugOrder,
+        secondVdpOrder,
+      ]);
+      await waitFor(() => expect(getByText("VDP Drug")).toBeTruthy());
+      const rows = getAllByTestId("expandable-row");
+      expect(rows).toHaveLength(2);
+      rows.forEach((row) => expect(row).toHaveClass("bx--expandable-row"));
+    });
+
+    it("renders normal medications without the expanded class", async () => {
+      const { getByTestId, getByText } = renderTreatments([stopDrugOrder]);
+      await waitFor(() => expect(getByText("Drug 1")).toBeTruthy());
+      expect(getByTestId("non-expandable-row")).not.toHaveClass(
+        "bx--expandable-row"
+      );
+    });
+
+    it("allows a user to manually collapse an expanded VDP", async () => {
+      const { getByTestId, getByLabelText, getByText } = renderTreatments([
+        variableDoseStopDrugOrder,
+      ]);
+      await waitFor(() => expect(getByText("VDP Drug")).toBeTruthy());
+      expect(getByTestId("expandable-row")).toHaveClass("bx--expandable-row");
+      fireEvent.click(getByLabelText("Collapse current row"));
+      expect(getByTestId("expandable-row")).not.toHaveClass(
+        "bx--expandable-row"
+      );
+    });
+
+    it("allows a user to expand a collapsed VDP again", async () => {
+      const { getByTestId, getByLabelText, getByText } = renderTreatments([
+        variableDoseStopDrugOrder,
+      ]);
+      await waitFor(() => expect(getByText("VDP Drug")).toBeTruthy());
+      fireEvent.click(getByLabelText("Collapse current row"));
+      expect(getByTestId("expandable-row")).not.toHaveClass(
+        "bx--expandable-row"
+      );
+      fireEvent.click(getByLabelText("Expand current row"));
+      expect(getByTestId("expandable-row")).toHaveClass("bx--expandable-row");
+    });
+
+    it("preserves manual collapse and defaults new VDPs to expanded on data refresh", async () => {
+      const { rerender, getByLabelText, getByText } = renderTreatments([
+        variableDoseStopDrugOrder,
+      ]);
+      await waitFor(() => expect(getByText("VDP Drug")).toBeTruthy());
+      fireEvent.click(getByLabelText("Collapse current row"));
+
+      rerender(
+        <IPDContext.Provider value={{ config: mockConfig, isReadMode: false }}>
+          <SliderContext.Provider value={mockProviderValue}>
+            <AllMedicationsContext.Provider
+              value={{
+                ...mockAllMedicationsProviderValue,
+                data: {
+                  emergencyMedications: [],
+                  ipdDrugOrders: [variableDoseStopDrugOrder, secondVdpOrder],
+                },
+              }}
+            >
+              <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            </AllMedicationsContext.Provider>
+          </SliderContext.Provider>
+        </IPDContext.Provider>
+      );
+
+      await waitFor(() => expect(getByText("VDP Drug 2")).toBeTruthy());
+      const collapsedRow = getByText("VDP Drug").closest("tr");
+      const expandedRow = getByText("VDP Drug 2").closest("tr");
+      expect(collapsedRow).not.toHaveClass("bx--expandable-row");
+      expect(expandedRow).toHaveClass("bx--expandable-row");
+    });
+  });
 });
 
 it("should render an Edit Drug Chart link disabled for IPD treatments read mode", async () => {
@@ -1679,7 +1790,8 @@ it("should hide a stopped order whose uuid matches a REVISE discharge order's pr
           doseUnits: "mg",
           route: "Oral",
           frequency: "Once a day",
-          administrationInstructions: '{"instructions":"As directed","isDischargeMedication":true}',
+          administrationInstructions:
+            '{"instructions":"As directed","isDischargeMedication":true}',
         },
         duration: 7,
         durationUnits: "Day(s)",
