@@ -252,7 +252,9 @@ const DrugChartSlider = (props) => {
             );
           }
           setSubsequentDaySchedules(regenerated.subsequentSchedules);
-          setSubsequentDayMidnightCrossingSlots(regenerated.subsequentCrossings);
+          setSubsequentDayMidnightCrossingSlots(
+            regenerated.subsequentCrossings
+          );
           if (firstDaySlotsMissed > 0) {
             setFinalDaySchedules(regenerated.finalDaySchedules);
             setFinalDayMidnightCrossingSlots(regenerated.finalDayCrossings);
@@ -851,22 +853,9 @@ const DrugChartSlider = (props) => {
           []
         );
 
-        const dayWiseRegularEpochs = [...dayWiseScheduleEpochs];
-        let crossingsToDrop = firstDayCrossingEpochs.length;
-        for (
-          let i = dayWiseRegularEpochs.length - 1;
-          i >= 0 && crossingsToDrop > 0;
-          i -= 1
-        ) {
-          if (dayWiseRegularEpochs[i]?.isCrossing) {
-            dayWiseRegularEpochs.splice(i, 1);
-            crossingsToDrop -= 1;
-          }
-        }
-
-        const dayWiseSlotsWithoutCrossings = dayWiseRegularEpochs.map(
-          (slot) => slot.epoch
-        );
+        const dayWiseRegularEpochs = dayWiseScheduleEpochs
+          .filter((slot) => !slot?.isCrossing)
+          .map((slot) => slot.epoch);
 
         const crossingSlots = [
           ...firstDayCrossingEpochs.map((epoch) => ({
@@ -875,6 +864,40 @@ const DrugChartSlider = (props) => {
             sourceBucket: "FIRST_DAY",
           })),
         ];
+
+        const hasFirstDayCrossing = firstDayCrossingEpochs.length > 0;
+
+        const finalDaySchedulesUTCTimeEpoch = finalDaySchedules?.map(
+          (schedule) =>
+            getUTCTimeEpoch(
+              schedule,
+              enable24HourTimers,
+              hostData?.drugOrder?.drugOrder?.scheduledDate
+            )
+        );
+
+        const remainingDaySlotsStartTime = finalDaySchedulesUTCTimeEpoch?.map(
+          (scheduleEpoch) => scheduleEpoch + finalScheduleDate
+        );
+
+        const dayWiseAnchorEpoch =
+          dayWiseRegularEpochs.length > 0
+            ? Math.min(...dayWiseRegularEpochs)
+            : null;
+        const remainingAnchorEpoch =
+          (remainingDaySlotsStartTime || []).length > 0
+            ? Math.min(...remainingDaySlotsStartTime)
+            : null;
+        const dayWiseToRemainingOffsetDays =
+          dayWiseAnchorEpoch != null && remainingAnchorEpoch != null
+            ? Math.max(
+                1,
+                moment
+                  .unix(remainingAnchorEpoch)
+                  .startOf("day")
+                  .diff(moment.unix(dayWiseAnchorEpoch).startOf("day"), "days")
+              )
+            : 1;
 
         (subsequentDaySchedules || []).forEach((schedule, i) => {
           if (
@@ -887,31 +910,42 @@ const DrugChartSlider = (props) => {
               enable24HourTimers,
               hostData?.drugOrder?.drugOrder?.scheduledDate
             );
+            const dayWiseCrossingEpoch = getDayWiseEpoch(epoch, true);
+
+            let recurringDayWiseEpoch =
+              !hasFirstDayCrossing &&
+              dayWiseCrossingEpoch <=
+                (Math.min(...dayWiseRegularEpochs) || Number.MAX_SAFE_INTEGER)
+                ? dayWiseCrossingEpoch + nextScheduleDate
+                : dayWiseCrossingEpoch;
+
+            const isDuplicateWithFirstDay =
+              firstDayCrossingEpochs.includes(dayWiseCrossingEpoch);
+            if (isDuplicateWithFirstDay) {
+              recurringDayWiseEpoch =
+                dayWiseCrossingEpoch +
+                dayWiseToRemainingOffsetDays * nextScheduleDate;
+            }
+
             crossingSlots.push({
-              epoch: getDayWiseEpoch(epoch, true),
+              epoch: recurringDayWiseEpoch,
               recurring: true,
               sourceBucket: "DAY_WISE",
             });
           }
         });
 
-        const finalDaySchedulesUTCTimeEpoch = finalDaySchedules?.map(
-          (schedule) =>
-            getUTCTimeEpoch(
-              schedule,
-              enable24HourTimers,
-              hostData?.drugOrder?.drugOrder?.scheduledDate
-            )
-        );
-
         payload.firstDaySlotsStartTime =
           firstDaySlotsMissed > 0 ? firstDaySchedulesUTCTimeEpoch : [];
-        payload.dayWiseSlotsStartTime = dayWiseSlotsWithoutCrossings;
-        const remainingDaySlotsStartTime = finalDaySchedulesUTCTimeEpoch?.map(
-          (scheduleEpoch) => scheduleEpoch + finalScheduleDate
+        const crossingEpochSet = new Set(
+          crossingSlots.map((slot) => slot.epoch)
         );
-
-        payload.remainingDaySlotsStartTime = remainingDaySlotsStartTime;
+        payload.dayWiseSlotsStartTime = dayWiseRegularEpochs.filter(
+          (epoch) => !crossingEpochSet.has(epoch)
+        );
+        payload.remainingDaySlotsStartTime = (
+          remainingDaySlotsStartTime || []
+        ).filter((epoch) => !crossingEpochSet.has(epoch));
         payload.crossingSlots = crossingSlots;
         payload.medicationFrequency =
           medicationFrequency.FIXED_SCHEDULE_FREQUENCY;
@@ -1060,6 +1094,10 @@ const DrugChartSlider = (props) => {
   useEffect(() => {
     if (isEdit) {
       const drugOrderSchedule = hostData?.drugOrder?.drugOrderSchedule;
+      const toDisplayTime = (epoch) =>
+        enable24HourTimers
+          ? epochTo24HourTimeFormat(epoch)
+          : epochTo12HourTimeFormat(epoch);
       const scheduleTimings = enable24HourTimers
         ? setDrugOrderScheduleIn24HourFormat(drugOrderSchedule)
         : setDrugOrderScheduleIn12HourFormat(drugOrderSchedule);
@@ -1071,11 +1109,20 @@ const DrugChartSlider = (props) => {
         setStartTime(startTimeValue);
       }
       const frequency = enableSchedule?.frequencyPerDay || 0;
-      const firstDayFromApi = scheduleTimings.firstDaySlotsStartTime
-        ? [...scheduleTimings.firstDaySlotsStartTime]
+      const firstDayFromApiEpochs = Array.isArray(
+        drugOrderSchedule?.firstDaySlotsStartTime
+      )
+        ? [...drugOrderSchedule.firstDaySlotsStartTime]
         : [];
-      const dayWiseFromApi = scheduleTimings.dayWiseSlotsStartTime
-        ? [...scheduleTimings.dayWiseSlotsStartTime]
+      const dayWiseFromApiEpochs = Array.isArray(
+        drugOrderSchedule?.dayWiseSlotsStartTime
+      )
+        ? [...drugOrderSchedule.dayWiseSlotsStartTime]
+        : [];
+      const remainingFromApiEpochs = Array.isArray(
+        drugOrderSchedule?.remainingDaySlotsStartTime
+      )
+        ? [...drugOrderSchedule.remainingDaySlotsStartTime]
         : [];
       const crossingSlotsFromApi =
         drugOrderSchedule?.crossingSlots &&
@@ -1083,37 +1130,24 @@ const DrugChartSlider = (props) => {
           ? drugOrderSchedule.crossingSlots
           : [];
 
+      const hasRecurringCrossings = crossingSlotsFromApi.some(
+        (slot) => slot?.recurring === true
+      );
+      setApplyToAllDays(hasRecurringCrossings);
+
       const firstDayCrossingsFromApi = crossingSlotsFromApi
         .filter((slot) => slot?.sourceBucket === "FIRST_DAY")
-        .map((slot) =>
-          enable24HourTimers
-            ? epochTo24HourTimeFormat(slot.epoch)
-            : epochTo12HourTimeFormat(slot.epoch)
-        );
-
-      const firstDayNonRecurringCrossingsFromApi = crossingSlotsFromApi
-        .filter(
-          (slot) =>
-            slot?.sourceBucket === "FIRST_DAY" && slot?.recurring === false
-        )
-        .map((slot) =>
-          enable24HourTimers
-            ? epochTo24HourTimeFormat(slot.epoch)
-            : epochTo12HourTimeFormat(slot.epoch)
-        );
+        .map((slot) => slot.epoch);
 
       const dayWiseCrossingsFromApi = crossingSlotsFromApi
         .filter((slot) => slot?.sourceBucket === "DAY_WISE")
-        .map((slot) =>
-          enable24HourTimers
-            ? epochTo24HourTimeFormat(slot.epoch)
-            : epochTo12HourTimeFormat(slot.epoch)
-        );
+        .map((slot) => slot.epoch);
 
-      const firstDayDisplaySlots = [
-        ...firstDayFromApi,
+      const firstDayDisplayEpochs = [
+        ...firstDayFromApiEpochs,
         ...firstDayCrossingsFromApi,
       ];
+      const firstDayDisplaySlots = firstDayDisplayEpochs.map(toDisplayTime);
       const firstDaySlotsMissedCount = Math.max(
         0,
         frequency - firstDayDisplaySlots.length
@@ -1135,35 +1169,51 @@ const DrugChartSlider = (props) => {
         ),
         ...firstDayDisplaySlots,
       ];
-      const firstDayFlags = firstDaySchedulesForDisplay.map((time) =>
-        firstDayCrossingTimeSet.has(time)
-      );
+      const firstEditableSchedule =
+        firstDaySchedulesForDisplay[firstDaySlotsMissedCount];
+      const isFirstEditableScheduleValid =
+        firstEditableSchedule != null &&
+        firstEditableSchedule !== UNSET_SCHEDULE_TIME &&
+        (enable24HourTimers
+          ? moment(firstEditableSchedule, "HH:mm", true).isValid()
+          : moment.isMoment(firstEditableSchedule)
+          ? firstEditableSchedule.isValid()
+          : moment(firstEditableSchedule, timeFormatFor12Hr, true).isValid());
+      setIsToggleEnabled(isFirstEditableScheduleValid);
+      const firstDayFlags = [
+        ...Array.from({ length: firstDaySlotsMissedCount }, () => false),
+        ...firstDayDisplayEpochs.map((epoch) =>
+          firstDayCrossingTimeSet.has(epoch)
+        ),
+      ];
       setFirstDayMidnightCrossingSlots(firstDayFlags);
 
-      const normalizedDayWiseFromApi = dayWiseFromApi.filter(
-        (time) => !firstDayCrossingsFromApi.includes(time)
+      const normalizedDayWiseFromApiEpochs = dayWiseFromApiEpochs.filter(
+        (epoch) => !firstDayCrossingsFromApi.includes(epoch)
       );
 
-      const dayWiseDisplaySlots = [
-        ...normalizedDayWiseFromApi,
+      const dayWiseDisplayEpochs = [
+        ...normalizedDayWiseFromApiEpochs,
         ...dayWiseCrossingsFromApi,
       ];
-      const uniqueDayWiseDisplaySlots = [...new Set(dayWiseDisplaySlots)];
-      const dayWiseSlotsForDisplay = uniqueDayWiseDisplaySlots.slice(
+      const uniqueDayWiseDisplayEpochs = [...new Set(dayWiseDisplayEpochs)];
+      const dayWiseSlotsForDisplayEpochs = uniqueDayWiseDisplayEpochs.slice(
         0,
         frequency
       );
+      const dayWiseSlotsForDisplay =
+        dayWiseSlotsForDisplayEpochs.map(toDisplayTime);
       setSubsequentDaySchedules(dayWiseSlotsForDisplay);
       const dayWiseCrossingTimeSet = new Set(dayWiseCrossingsFromApi);
-      const nextDayFlags = dayWiseSlotsForDisplay.map((time) =>
-        dayWiseCrossingTimeSet.has(time)
+      const nextDayFlags = dayWiseSlotsForDisplayEpochs.map((epoch) =>
+        dayWiseCrossingTimeSet.has(epoch)
       );
       setSubsequentDayMidnightCrossingSlots(nextDayFlags);
 
-      const remainingSlotsRaw = scheduleTimings.remainingDaySlotsStartTime ?? [];
-      const remainingSlots = remainingSlotsRaw.filter(
-        (time) => !dayWiseCrossingsFromApi.includes(time)
+      const remainingSlotsEpochs = remainingFromApiEpochs.filter(
+        (epoch) => !dayWiseCrossingsFromApi.includes(epoch)
       );
+      const remainingSlots = remainingSlotsEpochs.map(toDisplayTime);
       setFinalDaySchedules(remainingSlots);
       if (remainingSlots.length > 1) {
         setFinalDayMidnightCrossingSlots(
