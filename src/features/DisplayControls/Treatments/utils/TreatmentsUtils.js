@@ -23,6 +23,7 @@ import {
   fromUcumDurationUnit,
   fhirDosageToDisplayStage,
   LOADING_DOSE_DURATION_DISPLAY,
+  MS_PER_DAY,
 } from "../../../../utils/FhirDosingUtils";
 import { isIPDrugOrder } from "../../../../utils/CommonUtils";
 import moment from "moment";
@@ -648,8 +649,7 @@ export const getActiveStageIndex = (fhirDosages, stageSchedules, startDates) => 
     const stage = fhirDosageToDisplayStage(fhirDosages[index]);
     if (!stage || stage.durationDays == null) return Infinity;
     return (
-      startDates[index] +
-      Math.max(stage.durationDays, 1) * 24 * 60 * 60 * 1000
+      startDates[index] + Math.max(stage.durationDays, 1) * MS_PER_DAY
     );
   };
   const isStageMissed = (index) => moment().valueOf() >= stageWindowEnd(index);
