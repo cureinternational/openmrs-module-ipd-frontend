@@ -489,6 +489,42 @@ const DrugChartSlider = (props) => {
           moment(firstDoseOriginal, timeFormatFor12Hr, true).isValid();
 
       if (isOriginalValid) {
+        if (!applyToAllDays) {
+          const regenerated = regenerateByFrequencyInterval({
+            firstDose: newSchedule,
+            frequencyPerDay: enableSchedule?.frequencyPerDay,
+            firstDayEditableCount: 0,
+            subsequentCount: subsequentDaySchedules.length,
+            remainderCount: 0,
+            enable24HourTimers,
+          });
+
+          if (regenerated) {
+            const regeneratedSubsequent = regenerated.subsequentSchedules;
+            setSubsequentDaySchedules(regeneratedSubsequent);
+            setSubsequentDayMidnightCrossingSlots(
+              regenerated.subsequentCrossings
+            );
+
+            setShowSchedulePassedWarning((prev) => {
+              const updated = [...prev];
+              regeneratedSubsequent.forEach((val, i) => {
+                if (regenerated.subsequentCrossings[i]) {
+                  updated[i] = false;
+                } else {
+                  updated[i] = isTimePassed(
+                    val,
+                    timeWindowToDisableSlots,
+                    enable24HourTimers
+                  );
+                }
+              });
+              return updated;
+            });
+            return;
+          }
+        }
+
         const shifted = computeShiftedSchedules(
           subsequentDaySchedules,
           firstDoseOriginal,
