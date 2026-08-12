@@ -108,10 +108,8 @@ const VariableDoseStagesTable = ({
             const isScheduled = stageStatus?.isScheduled;
             const adminStarted = stageStatus?.administrationStarted;
             const pendingSlotsAvailable = stageStatus?.pendingSlotsAvailable;
-            const allAttended = stageStatus?.allAttended;
             const isActiveStage = index === activeStageIndex;
             const neverAdded = !isScheduled && !adminStarted;
-            const isCompleted = isScheduled && adminStarted && allAttended;
             const canEdit = isScheduled && !adminStarted;
             const canStop =
               adminStarted && pendingSlotsAvailable && onStopDrugChart;
@@ -197,7 +195,7 @@ const VariableDoseStagesTable = ({
                 <TableCell>{stage.frequency}</TableCell>
                 <TableCell>{stage.duration}</TableCell>
                 <TableCell>
-                  {(neverAdded) && onAddToDrugChart && (
+                  {neverAdded && onAddToDrugChart && (
                     <Link
                       disabled={!isActiveStage || isButtonDisabled}
                       onClick={() => {
