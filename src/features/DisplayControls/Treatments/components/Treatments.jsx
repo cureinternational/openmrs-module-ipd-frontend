@@ -28,6 +28,7 @@ import {
   buildStageDrugOrder,
   getDischargeRevisedOrderUuids,
   isSupersededByDischargeRevision,
+  getActiveStageIndex,
 } from "../utils/TreatmentsUtils";
 import { getCookies, isUserPrivileged } from "../../../../utils/CommonUtils";
 import {
@@ -362,6 +363,7 @@ const Treatments = (props) => {
           </Link>
         ),
         isScheduled: drugOrder.dosingInstructions?.asNeeded,
+        isButtonDisabled,
       };
     } else if (!showStopDrugChartLink) {
       return {
@@ -480,6 +482,10 @@ const Treatments = (props) => {
               drugOrderObject.drugOrderAttributes,
               drugOrderObject
             );
+          const hasScheduleEditPrivilege = isUserPrivileged(
+            currentUser,
+            PRIVILEGE_CONSTANTS.EDIT_MEDICATION_TASKS
+          );
           const totalFhirStages = isVariableDose
             ? (drugOrderObject.fhirDosages || []).length
             : 0;
@@ -492,6 +498,23 @@ const Treatments = (props) => {
             !drugOrder.dateStopped &&
             isAnyStageScheduled &&
             !isAllStagesAttended;
+          const addToDrugChartEnabled = isVariableDose
+            ? !drugOrder.dateStopped &&
+              !isAddToDrugChartDisabled &&
+              hasScheduleEditPrivilege &&
+              getActiveStageIndex(
+                drugOrderObject.fhirDosages || [],
+                stageSchedules,
+                computeStageStartDates(
+                  drugOrderObject.fhirDosages || [],
+                  drugOrder.effectiveStartDate
+                )
+              ) >= 0
+            : !showEditDrugChartLink &&
+              !showStopDrugChartLink &&
+              !!actionsObjectValue?.link &&
+              !actionsObjectValue?.isButtonDisabled &&
+              !drugOrder.dosingInstructions?.asNeeded;
           const getStatus = () => {
             if (drugOrder.dateStopped) {
               return (
@@ -552,6 +575,7 @@ const Treatments = (props) => {
             status: getStatus(),
             actions: isVariableDose ? null : actionsObjectValue.link,
             isExpanded: true,
+            addToDrugChartEnabled,
             additionalData: {
               instructions: drugOrderObject.instructions
                 ? drugOrderObject.instructions
