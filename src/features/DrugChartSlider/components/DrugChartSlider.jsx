@@ -42,6 +42,10 @@ import { StartTimeSection } from "./StartTimeSection";
 import { ScheduleSection } from "./ScheduleSection";
 
 const UNSET_SCHEDULE_TIME = "hh:mm";
+const getOriginDoseBucket = (slot) =>
+  slot?.originDoseBucket ?? slot?.sourceBucket;
+const getIsRecurringAcrossDays = (slot) =>
+  slot?.isRecurringAcrossDays ?? slot?.recurring;
 
 const DrugChartSlider = (props) => {
   const intl = useIntl();
@@ -661,6 +665,7 @@ const DrugChartSlider = (props) => {
   };
 
   const handleFirstDayScheduleWarnings = async () => {
+    // Validate only real first-day slots so crossing flags line up with the filtered list.
     const filteredSchedules = firstDaySchedules.filter(
       (firstDaySchedule) => firstDaySchedule !== UNSET_SCHEDULE_TIME
     );
@@ -792,6 +797,7 @@ const DrugChartSlider = (props) => {
         const finalScheduleDate =
           nextScheduleDate * hostData?.drugOrder?.drugOrder?.duration;
 
+        // Split first-day slots into normal and midnight-crossing epochs before building the payload.
         const firstDaySchedulesUTCTimeEpoch = firstDaySchedules.reduce(
           (result, schedule, i) => {
             if (schedule !== UNSET_SCHEDULE_TIME) {
@@ -862,8 +868,8 @@ const DrugChartSlider = (props) => {
         const crossingSlots = [
           ...firstDayCrossingEpochs.map((epoch) => ({
             epoch,
-            recurring: applyToAllDays,
-            sourceBucket: "FIRST_DAY",
+            isRecurringAcrossDays: applyToAllDays,
+            originDoseBucket: "FIRST_DAY",
           })),
         ];
 
@@ -882,25 +888,27 @@ const DrugChartSlider = (props) => {
           (scheduleEpoch) => scheduleEpoch + finalScheduleDate
         );
 
-        const dayWiseAnchorEpoch =
+        // Use the earliest normal day-wise slot and the earliest remaining-day slot as span anchors.
+        const dayWiseStartEpoch =
           dayWiseRegularEpochs.length > 0
             ? Math.min(...dayWiseRegularEpochs)
             : null;
-        const remainingAnchorEpoch =
+        const remainingStartEpoch =
           (remainingDaySlotsStartTime || []).length > 0
             ? Math.min(...remainingDaySlotsStartTime)
             : null;
         const dayWiseToRemainingOffsetDays =
-          dayWiseAnchorEpoch != null && remainingAnchorEpoch != null
+          dayWiseStartEpoch != null && remainingStartEpoch != null
             ? Math.max(
                 1,
                 moment
-                  .unix(remainingAnchorEpoch)
+                  .unix(remainingStartEpoch)
                   .startOf("day")
-                  .diff(moment.unix(dayWiseAnchorEpoch).startOf("day"), "days")
+                  .diff(moment.unix(dayWiseStartEpoch).startOf("day"), "days")
               )
             : 1;
 
+        // Build recurring day-wise crossing slots from the next-day buckets.
         (subsequentDaySchedules || []).forEach((schedule, i) => {
           if (
             schedule !== UNSET_SCHEDULE_TIME &&
@@ -927,12 +935,12 @@ const DrugChartSlider = (props) => {
               recurringDayWiseEpoch = dayWiseCrossingEpoch + nextScheduleDate;
             }
 
-            const recurringSpanDays =
-              remainingAnchorEpoch != null
+            const recurrenceDurationDays =
+              remainingStartEpoch != null
                 ? Math.max(
                     1,
                     moment
-                      .unix(remainingAnchorEpoch)
+                      .unix(remainingStartEpoch)
                       .startOf("day")
                       .diff(
                         moment.unix(recurringDayWiseEpoch).startOf("day"),
@@ -942,21 +950,22 @@ const DrugChartSlider = (props) => {
                 : Math.max(1, dayWiseToRemainingOffsetDays);
             for (
               let dayOffset = 0;
-              dayOffset < recurringSpanDays;
+              dayOffset < recurrenceDurationDays;
               dayOffset++
             ) {
               crossingSlots.push({
                 epoch: recurringDayWiseEpoch + dayOffset * nextScheduleDate,
-                recurring: true,
-                sourceBucket: "DAY_WISE",
+                isRecurringAcrossDays: true,
+                originDoseBucket: "DAY_WISE",
               });
             }
           }
         });
 
+        // If editing with apply-to-all-days, drop duplicate crossing slots and keep recurrence flags aligned.
         if (isEdit && applyToAllDays) {
           const firstDayCrossingEpochsForEdit = crossingSlots
-            .filter((slot) => slot?.sourceBucket === "FIRST_DAY")
+            .filter((slot) => getOriginDoseBucket(slot) === "FIRST_DAY")
             .map((slot) => slot.epoch)
             .filter((epoch) => epoch != null);
 
@@ -967,7 +976,10 @@ const DrugChartSlider = (props) => {
           );
 
           const normalizedCrossingSlots = crossingSlots.filter((slot) => {
-            if (slot?.sourceBucket !== "DAY_WISE" || slot?.epoch == null) {
+            if (
+              getOriginDoseBucket(slot) !== "DAY_WISE" ||
+              slot?.epoch == null
+            ) {
               return true;
             }
 
@@ -977,14 +989,17 @@ const DrugChartSlider = (props) => {
 
           const dayWiseCrossingEpochSet = new Set(
             normalizedCrossingSlots
-              .filter((slot) => slot?.sourceBucket === "DAY_WISE")
+              .filter((slot) => getOriginDoseBucket(slot) === "DAY_WISE")
               .map((slot) => slot.epoch)
           );
 
           normalizedCrossingSlots.forEach((slot) => {
-            if (slot?.sourceBucket !== "FIRST_DAY" || slot?.epoch == null)
+            if (
+              getOriginDoseBucket(slot) !== "FIRST_DAY" ||
+              slot?.epoch == null
+            )
               return;
-            slot.recurring = dayWiseCrossingEpochSet.has(
+            slot.isRecurringAcrossDays = dayWiseCrossingEpochSet.has(
               slot.epoch + nextScheduleDate
             );
           });
@@ -993,11 +1008,14 @@ const DrugChartSlider = (props) => {
           crossingSlots.push(...normalizedCrossingSlots);
         }
 
+        // De-duplicate crossing slots one last time before sending the save payload.
         const uniqueCrossingSlots = [];
         const uniqueCrossingSlotKeys = new Set();
         crossingSlots.forEach((slot) => {
           if (slot?.epoch == null) return;
-          const key = `${slot.epoch}-${slot.sourceBucket}-${slot.recurring}`;
+          const key = `${slot.epoch}-${getOriginDoseBucket(
+            slot
+          )}-${getIsRecurringAcrossDays(slot)}`;
           if (!uniqueCrossingSlotKeys.has(key)) {
             uniqueCrossingSlotKeys.add(key);
             uniqueCrossingSlots.push(slot);
@@ -1206,16 +1224,16 @@ const DrugChartSlider = (props) => {
           : [];
 
       const hasRecurringCrossings = crossingSlotsFromApi.some(
-        (slot) => slot?.recurring === true
+        (slot) => getIsRecurringAcrossDays(slot) === true
       );
       setApplyToAllDays(hasRecurringCrossings);
 
       const firstDayCrossingsFromApi = crossingSlotsFromApi
-        .filter((slot) => slot?.sourceBucket === "FIRST_DAY")
+        .filter((slot) => getOriginDoseBucket(slot) === "FIRST_DAY")
         .map((slot) => slot.epoch);
 
       const dayWiseCrossingsFromApi = crossingSlotsFromApi
-        .filter((slot) => slot?.sourceBucket === "DAY_WISE")
+        .filter((slot) => getOriginDoseBucket(slot) === "DAY_WISE")
         .map((slot) => slot.epoch);
 
       const firstDayCrossingTimeSet = new Set(
@@ -1231,11 +1249,12 @@ const DrugChartSlider = (props) => {
 
       const recurringDayWiseCrossingsFromApi = crossingSlotsFromApi.filter(
         (slot) =>
-          slot?.sourceBucket === "DAY_WISE" &&
-          slot?.recurring === true &&
+          getOriginDoseBucket(slot) === "DAY_WISE" &&
+          getIsRecurringAcrossDays(slot) === true &&
           slot?.epoch != null
       );
 
+      // Rebuild the first-day view from saved API slots and keep crossing slots out of the normal list.
       const firstDayDisplayEpochs = [
         ...firstDayFromApiEpochs,
         ...firstDayCrossingsFromApi.filter(
@@ -1248,6 +1267,7 @@ const DrugChartSlider = (props) => {
         frequency - firstDayDisplaySlots.length
       );
       setFirstDaySlotsMissed(firstDaySlotsMissedCount);
+      // Recreate the editable first-day array with placeholders before the visible times.
       setFirstDaySchedules([
         ...Array.from(
           { length: firstDaySlotsMissedCount },
@@ -1256,6 +1276,7 @@ const DrugChartSlider = (props) => {
         ...firstDayDisplaySlots,
       ]);
 
+      // Keep the toggle enabled only when the first editable slot has a valid time.
       const firstDaySchedulesForDisplay = [
         ...Array.from(
           { length: firstDaySlotsMissedCount },
@@ -1274,6 +1295,7 @@ const DrugChartSlider = (props) => {
           ? firstEditableSchedule.isValid()
           : moment(firstEditableSchedule, timeFormatFor12Hr, true).isValid());
       setIsToggleEnabled(isFirstEditableScheduleValid);
+      // Mark which first-day entries are midnight crossings so validation and save stay aligned.
       const firstDayFlags = [
         ...Array.from({ length: firstDaySlotsMissedCount }, () => false),
         ...firstDayDisplayEpochs.map((epoch) =>
@@ -1282,6 +1304,7 @@ const DrugChartSlider = (props) => {
       ];
       setFirstDayMidnightCrossingSlots(firstDayFlags);
 
+      // Split day-wise and remaining-day slots into normal slots and crossing slots.
       const dayWiseSlotsForDisplayEpochs = [
         ...dayWiseFromApiEpochs.filter(
           (epoch) => !firstDayCrossingTimeSet.has(epoch)
@@ -1297,12 +1320,14 @@ const DrugChartSlider = (props) => {
         dayWiseSlotsForDisplayEpochs.map(toDisplayTime);
       setSubsequentDaySchedules(dayWiseSlotsForDisplay);
 
+      // Remove any epochs already accounted for as crossings from the final-day view.
       const remainingSlotsEpochs = remainingFromApiEpochs.filter(
         (epoch) => !allCrossingTimeSet.has(epoch)
       );
       const remainingSlots = remainingSlotsEpochs.map(toDisplayTime);
       setFinalDaySchedules(remainingSlots);
 
+      // Highlight recurring day-wise crossings across all applicable days.
       const dayWiseAndRemainingEpochs = [
         ...dayWiseSlotsForDisplayEpochs,
         ...remainingSlotsEpochs,
