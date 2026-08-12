@@ -686,3 +686,17 @@ export const getActiveStageIndex = (fhirDosages, stageSchedules, startDates) => 
 
   return stageToAddToDrugChart;
 };
+
+export const getMedicationIndicators = (treatments) => {
+  const qualifyingTreatments = (treatments || []).filter(
+    (treatment) => !!treatment.addToDrugChartEnabled
+  );
+  return {
+    regularCount: qualifyingTreatments.filter(
+      (treatment) => !treatment.additionalData?.isVariableDose
+    ).length,
+    vdpCount: qualifyingTreatments.filter(
+      (treatment) => treatment.additionalData?.isVariableDose
+    ).length,
+  };
+};

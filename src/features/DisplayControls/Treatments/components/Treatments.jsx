@@ -29,6 +29,7 @@ import {
   getDischargeRevisedOrderUuids,
   isSupersededByDischargeRevision,
   getActiveStageIndex,
+  getMedicationIndicators,
 } from "../utils/TreatmentsUtils";
 import { getCookies, isUserPrivileged } from "../../../../utils/CommonUtils";
 import {
@@ -56,6 +57,7 @@ import ExpandableDataTable from "../../../../components/ExpandableDataTable/Expa
 import TreatmentExpandableRow from "./TreatmentExpandableRow";
 import Notification from "../../../../components/Notification/Notification";
 import { AllMedicationsContext } from "../../../../context/AllMedications";
+import { MedicationIndicatorsContext } from "../../../../context/MedicationIndicatorsContext";
 import moment from "moment";
 
 const Treatments = (props) => {
@@ -85,6 +87,7 @@ const Treatments = (props) => {
   const [additionalData, setAdditionalData] = useState([]);
   const [showEditMessage, setShowEditMessage] = useState(false);
   const allMedications = useContext(AllMedicationsContext);
+  const { setMedicationIndicators } = useContext(MedicationIndicatorsContext);
   const { isReadMode } = useContext(IPDContext);
   const [showStopDrugChartModal, setShowStopDrugChartModal] = useState(false);
   const [stopReason, setStopReason] = useState("");
@@ -727,6 +730,14 @@ const Treatments = (props) => {
 
     setMedicationsData();
   }, [allMedications.data, allMedications.error]);
+
+  useEffect(() => {
+    setMedicationIndicators(getMedicationIndicators(treatments));
+  }, [treatments, setMedicationIndicators]);
+
+  useEffect(() => {
+    return () => setMedicationIndicators({ regularCount: 0, vdpCount: 0 });
+  }, [setMedicationIndicators]);
 
   return (
     <>

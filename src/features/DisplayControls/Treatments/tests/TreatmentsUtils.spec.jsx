@@ -17,6 +17,7 @@ import {
   formatIntradayDoseString,
   modifyEmergencyTreatmentData,
   buildStageDrugOrder,
+  getMedicationIndicators,
 } from "../utils/TreatmentsUtils";
 import { IPDContext } from "../../../../context/IPDContext";
 import { mockConfig } from "../../../../utils/CommonUtils";
@@ -966,6 +967,42 @@ describe("TreatmentsUtils", () => {
 
       expect(result.drugOrder.duration).toBe(0);
       expect(result.drugOrder.durationUnits).toBe("Day(s)");
+    });
+  });
+
+  describe("getMedicationIndicators", () => {
+    const treatment = ({ addToDrugChartEnabled, isVariableDose }) => ({
+      addToDrugChartEnabled,
+      additionalData: { isVariableDose },
+    });
+
+    it("counts qualifying regular and vdp treatments", () => {
+      const result = getMedicationIndicators([
+        treatment({ addToDrugChartEnabled: true, isVariableDose: false }),
+        treatment({ addToDrugChartEnabled: true, isVariableDose: false }),
+        treatment({ addToDrugChartEnabled: true, isVariableDose: true }),
+      ]);
+      expect(result).toEqual({ regularCount: 2, vdpCount: 1 });
+    });
+
+    it("ignores treatments that do not have Add to Drug Chart enabled", () => {
+      const result = getMedicationIndicators([
+        treatment({ addToDrugChartEnabled: true, isVariableDose: false }),
+        treatment({ addToDrugChartEnabled: false, isVariableDose: true }),
+        treatment({ addToDrugChartEnabled: false, isVariableDose: false }),
+      ]);
+      expect(result).toEqual({ regularCount: 1, vdpCount: 0 });
+    });
+
+    it("returns zero counts when there are no treatments", () => {
+      expect(getMedicationIndicators([])).toEqual({
+        regularCount: 0,
+        vdpCount: 0,
+      });
+      expect(getMedicationIndicators(undefined)).toEqual({
+        regularCount: 0,
+        vdpCount: 0,
+      });
     });
   });
 });

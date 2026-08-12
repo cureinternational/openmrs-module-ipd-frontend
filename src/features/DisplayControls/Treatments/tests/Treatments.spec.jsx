@@ -8,6 +8,7 @@ import {
 } from "../utils/TreatmentsUtils";
 import { SliderContext } from "../../../../context/SliderContext";
 import { AllMedicationsContext } from "../../../../context/AllMedications";
+import { MedicationIndicatorsContext } from "../../../../context/MedicationIndicatorsContext";
 import { IPDContext } from "../../../../context/IPDContext";
 import { mockConfig } from "../../../../utils/CommonUtils";
 import RefreshDisplayControl from "../../../../context/RefreshDisplayControl";
@@ -58,6 +59,18 @@ const mockAllMedicationsProviderValue = {
   getAllDrugOrders: jest.fn(),
 };
 
+const withMedicationIndicators = (element) => (
+  <MedicationIndicatorsContext.Provider
+    value={{
+      regularCount: 0,
+      vdpCount: 0,
+      setMedicationIndicators: jest.fn(),
+    }}
+  >
+    {element}
+  </MedicationIndicatorsContext.Provider>
+);
+
 let stopDrugOrder = {
   drugOrder: {
     uuid: "1",
@@ -105,7 +118,7 @@ describe("Treatments", () => {
           <AllMedicationsContext.Provider
             value={mockAllMedicationsProviderValue}
           >
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
       </IPDContext.Provider>
@@ -183,7 +196,7 @@ describe("Treatments", () => {
       <IPDContext.Provider value={{ config: mockConfig, isReadMode: false }}>
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
       </IPDContext.Provider>
@@ -225,7 +238,7 @@ describe("Treatments", () => {
       <IPDContext.Provider value={{ config: mockConfig, isReadMode: false }}>
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
       </IPDContext.Provider>
@@ -281,7 +294,7 @@ describe("Treatments", () => {
                 data: { emergencyMedications: [], ipdDrugOrders: treatments },
               }}
             >
-              <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+              withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
             </AllMedicationsContext.Provider>
           </SliderContext.Provider>
         </IPDContext.Provider>
@@ -307,7 +320,7 @@ describe("Treatments", () => {
                 data: { emergencyMedications: [], ipdDrugOrders: treatments },
               }}
             >
-              <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+              withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
             </AllMedicationsContext.Provider>
           </SliderContext.Provider>
         </IPDContext.Provider>
@@ -335,7 +348,7 @@ describe("Treatments", () => {
                 data: { emergencyMedications: [], ipdDrugOrders: treatments },
               }}
             >
-              <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+              withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
             </AllMedicationsContext.Provider>
           </SliderContext.Provider>
         </IPDContext.Provider>
@@ -358,7 +371,7 @@ describe("Treatments", () => {
                 data: { emergencyMedications: [], ipdDrugOrders: treatments },
               }}
             >
-              <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+              withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
             </AllMedicationsContext.Provider>
           </SliderContext.Provider>
         </IPDContext.Provider>
@@ -385,7 +398,7 @@ describe("Treatments", () => {
                 data: { emergencyMedications: [], ipdDrugOrders: treatments },
               }}
             >
-              <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+              withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
             </AllMedicationsContext.Provider>
           </SliderContext.Provider>
         </IPDContext.Provider>
@@ -438,7 +451,7 @@ describe("Treatments", () => {
                 },
               }}
             >
-              <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+              withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
             </AllMedicationsContext.Provider>
           </SliderContext.Provider>
         </IPDContext.Provider>
@@ -489,7 +502,7 @@ describe("Treatments", () => {
                 },
               }}
             >
-              <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+              withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
             </AllMedicationsContext.Provider>
           </SliderContext.Provider>
         </IPDContext.Provider>
@@ -545,7 +558,7 @@ describe("Treatments", () => {
                 },
               }}
             >
-              <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+              withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
             </AllMedicationsContext.Provider>
           </SliderContext.Provider>
         </IPDContext.Provider>
@@ -603,7 +616,7 @@ describe("Treatments", () => {
       >
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
       </IPDContext.Provider>
@@ -663,7 +676,7 @@ describe("Treatments", () => {
       >
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
       </IPDContext.Provider>
@@ -723,7 +736,7 @@ describe("Treatments", () => {
       >
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
       </IPDContext.Provider>
@@ -784,7 +797,7 @@ describe("Treatments", () => {
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
             <RefreshDisplayControl.Provider value={[]}>
-              <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+              withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
             </RefreshDisplayControl.Provider>
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
@@ -840,7 +853,7 @@ describe("Treatments", () => {
       <IPDContext.Provider value={{ config: mockConfig, isReadMode: false }}>
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
       </IPDContext.Provider>
@@ -904,7 +917,7 @@ describe("Treatments", () => {
           }}
         >
           <AllMedicationsContext.Provider value={updatedAllMedications}>
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </IPDContext.Provider>
       </SliderContext.Provider>
@@ -969,7 +982,7 @@ describe("Treatments", () => {
           }}
         >
           <AllMedicationsContext.Provider value={updatedAllMedications}>
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </IPDContext.Provider>
       </SliderContext.Provider>
@@ -999,7 +1012,7 @@ describe("Treatments", () => {
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
             <RefreshDisplayControl.Provider value={[]}>
-              <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+              withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
             </RefreshDisplayControl.Provider>
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
@@ -1031,7 +1044,7 @@ describe("Treatments", () => {
       >
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
       </IPDContext.Provider>
@@ -1062,7 +1075,7 @@ describe("Treatments", () => {
       >
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
       </IPDContext.Provider>
@@ -1101,7 +1114,7 @@ describe("Treatments", () => {
       >
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
       </IPDContext.Provider>
@@ -1155,7 +1168,7 @@ describe("Treatments", () => {
       >
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
       </IPDContext.Provider>
@@ -1226,7 +1239,7 @@ describe("Treatments", () => {
       <IPDContext.Provider value={{ config: mockConfig, isReadMode: false }}>
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
       </IPDContext.Provider>
@@ -1258,7 +1271,7 @@ describe("Treatments", () => {
       >
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
       </IPDContext.Provider>
@@ -1322,7 +1335,7 @@ describe("Treatments", () => {
       >
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
       </IPDContext.Provider>
@@ -1376,7 +1389,7 @@ describe("Treatments", () => {
       <IPDContext.Provider value={{ config: mockConfig, isReadMode: false }}>
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
       </IPDContext.Provider>
@@ -1406,7 +1419,7 @@ describe("Treatments", () => {
       >
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
       </IPDContext.Provider>
@@ -1452,7 +1465,7 @@ describe("Treatments", () => {
       >
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
       </IPDContext.Provider>
@@ -1489,7 +1502,7 @@ describe("Treatments", () => {
       >
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
-            <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
           </AllMedicationsContext.Provider>
         </SliderContext.Provider>
       </IPDContext.Provider>
@@ -1528,7 +1541,7 @@ describe("Treatments", () => {
         <IPDContext.Provider value={{ config: mockConfig, isReadMode: false }}>
           <SliderContext.Provider value={mockProviderValue}>
             <AllMedicationsContext.Provider value={updatedAllMedications}>
-              <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+              withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
             </AllMedicationsContext.Provider>
           </SliderContext.Provider>
         </IPDContext.Provider>
@@ -1606,7 +1619,7 @@ describe("Treatments", () => {
                 },
               }}
             >
-              <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+              withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
             </AllMedicationsContext.Provider>
           </SliderContext.Provider>
         </IPDContext.Provider>
@@ -1674,7 +1687,7 @@ it("should render an Edit Drug Chart link disabled for IPD treatments read mode"
     >
       <SliderContext.Provider value={mockProviderValue}>
         <AllMedicationsContext.Provider value={updatedAllMedications}>
-          <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+          withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
         </AllMedicationsContext.Provider>
       </SliderContext.Provider>
     </IPDContext.Provider>
@@ -1740,7 +1753,7 @@ it("should render Add to Tasks link as disabled when PRN drug order autoExpireDa
         }}
       >
         <AllMedicationsContext.Provider value={updatedAllMedications}>
-          <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+          withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
         </AllMedicationsContext.Provider>
       </SliderContext.Provider>
     </IPDContext.Provider>
@@ -1811,7 +1824,7 @@ it("should hide a stopped order whose uuid matches a REVISE discharge order's pr
     <IPDContext.Provider value={{ config: mockConfig, isReadMode: false }}>
       <SliderContext.Provider value={mockProviderValue}>
         <AllMedicationsContext.Provider value={updatedAllMedications}>
-          <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+          withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
         </AllMedicationsContext.Provider>
       </SliderContext.Provider>
     </IPDContext.Provider>
@@ -1866,7 +1879,7 @@ it("should keep a stopped order whose uuid does NOT match any discharge REVISE p
     <IPDContext.Provider value={{ config: mockConfig, isReadMode: false }}>
       <SliderContext.Provider value={mockProviderValue}>
         <AllMedicationsContext.Provider value={updatedAllMedications}>
-          <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+          withMedicationIndicators(<Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />)
         </AllMedicationsContext.Provider>
       </SliderContext.Provider>
     </IPDContext.Provider>
@@ -1874,5 +1887,265 @@ it("should keep a stopped order whose uuid does NOT match any discharge REVISE p
 
   await waitFor(() => {
     expect(queryByText("Retained Stopped Drug")).toBeTruthy();
+  });
+});
+
+describe("Medication indicators", () => {
+  const FHIR_DOSING_INSTRUCTION_TYPE =
+    "org.openmrs.module.bahmniemrapi.drugorder.dosinginstructions.FhirDosingInstructions";
+
+  const buildRegularOrder = () => ({
+    drugOrder: {
+      uuid: "reg-1",
+      effectiveStartDate: 1704785404,
+      dateStopped: null,
+      dateActivated: 1704785404,
+      scheduledDate: 1704785404,
+      drug: { name: "Reg Drug" },
+      dosingInstructions: {
+        dose: 1,
+        doseUnits: "mg",
+        route: "Oral",
+        frequency: "Once a day",
+        administrationInstructions:
+          '{"instructions":"As directed","additionalInstructions":"all good"}',
+      },
+      duration: 7,
+      durationUnits: "Day(s)",
+      careSetting: "INPATIENT",
+    },
+    drugOrderSchedule: {
+      allSlotsAttended: false,
+      medicationAdministrationStarted: false,
+    },
+    provider: { name: "Dr. John Doe" },
+  });
+
+  const buildPrescribedRegularOrder = () => ({
+    ...buildRegularOrder(),
+    drugOrderSchedule: null,
+  });
+
+  const buildVdpOrder = () => ({
+    drugOrder: {
+      uuid: "vdp-1",
+      effectiveStartDate: Date.now() - 3 * 86400000,
+      dateStopped: null,
+      dateActivated: Date.now() - 3 * 86400000,
+      dosingInstructionType: FHIR_DOSING_INSTRUCTION_TYPE,
+      dosingInstructions: {
+        dose: null,
+        doseUnits: "Tablet(s)",
+        route: "Oral",
+        frequency: null,
+        asNeeded: false,
+        administrationInstructions: JSON.stringify([
+          {
+            sequence: 1,
+            text: "Stage 1",
+            timing: {
+              code: { text: "Once a day" },
+              repeat: { duration: 2, durationUnit: "d" },
+            },
+            doseAndRate: [{ doseQuantity: { value: 1, unit: "Tablet(s)" } }],
+          },
+          {
+            sequence: 2,
+            text: "Stage 2",
+            timing: {
+              code: { text: "Once a day" },
+              repeat: { duration: 2, durationUnit: "d" },
+            },
+            doseAndRate: [{ doseQuantity: { value: 2, unit: "Tablet(s)" } }],
+          },
+        ]),
+      },
+      drug: { name: "VDP Drug" },
+      duration: 4,
+      durationUnits: "Day(s)",
+      careSetting: "INPATIENT",
+    },
+    drugOrderSchedule: {
+      stageSchedules: [
+        {
+          variableDosageSequence: 1,
+          isScheduled: true,
+          administrationStarted: true,
+          pendingSlotsAvailable: false,
+          allAttended: true,
+        },
+        {
+          variableDosageSequence: 2,
+          isScheduled: false,
+          administrationStarted: false,
+          pendingSlotsAvailable: true,
+          allAttended: false,
+        },
+      ],
+      medicationAdministrationStarted: true,
+    },
+    provider: { name: "Dr. Jane Smith" },
+  });
+
+  const renderWithIndicators = (treatments, setMedicationIndicators) => {
+    return render(
+      <IPDContext.Provider
+        value={{
+          config: mockConfig,
+          isReadMode: false,
+          currentUser: mockUserWithAllRequiredPrivileges,
+        }}
+      >
+        <SliderContext.Provider value={mockProviderValue}>
+          <MedicationIndicatorsContext.Provider
+            value={{
+              regularCount: 0,
+              vdpCount: 0,
+              setMedicationIndicators,
+            }}
+          >
+            <AllMedicationsContext.Provider
+              value={{
+                ...mockAllMedicationsProviderValue,
+                data: { emergencyMedications: [], ipdDrugOrders: treatments },
+              }}
+            >
+              <Treatments patientId="3ae1ee52-e9b2-4934-876d-30711c0e3e2f" />
+            </AllMedicationsContext.Provider>
+          </MedicationIndicatorsContext.Provider>
+        </SliderContext.Provider>
+      </IPDContext.Provider>
+    );
+  };
+
+  it("publishes regular and vdp counts for medications with Add to Drug Chart enabled", async () => {
+    const setMedicationIndicators = jest.fn();
+    renderWithIndicators(
+      [buildPrescribedRegularOrder(), buildVdpOrder()],
+      setMedicationIndicators
+    );
+    await waitFor(() => {
+      expect(setMedicationIndicators).toHaveBeenCalledWith({
+        regularCount: 1,
+        vdpCount: 1,
+      });
+    });
+  });
+
+  it("counts a prescribed regular drug with Add to Drug Chart enabled", async () => {
+    const setMedicationIndicators = jest.fn();
+    renderWithIndicators(
+      [buildPrescribedRegularOrder()],
+      setMedicationIndicators
+    );
+    await waitFor(() => {
+      expect(setMedicationIndicators).toHaveBeenCalledWith({
+        regularCount: 1,
+        vdpCount: 0,
+      });
+    });
+  });
+
+  it("does not count a regular drug already added to the drug chart", async () => {
+    const setMedicationIndicators = jest.fn();
+    renderWithIndicators([buildRegularOrder()], setMedicationIndicators);
+    await waitFor(() => {
+      expect(setMedicationIndicators).toHaveBeenCalledWith({
+        regularCount: 0,
+        vdpCount: 0,
+      });
+    });
+  });
+
+  it("does not count a regular drug whose drug chart course is completed", async () => {
+    const setMedicationIndicators = jest.fn();
+    const completedRegularOrder = {
+      ...buildRegularOrder(),
+      drugOrderSchedule: {
+        ...buildRegularOrder().drugOrderSchedule,
+        allSlotsAttended: true,
+      },
+    };
+    renderWithIndicators([completedRegularOrder], setMedicationIndicators);
+    await waitFor(() => {
+      expect(setMedicationIndicators).toHaveBeenCalledWith({
+        regularCount: 0,
+        vdpCount: 0,
+      });
+    });
+  });
+
+  it("counts a VDP drug with a stage available to add to the drug chart", async () => {
+    const setMedicationIndicators = jest.fn();
+    const vdpOrder = {
+      ...buildVdpOrder(),
+      drugOrderSchedule: {
+        ...buildVdpOrder().drugOrderSchedule,
+        stageSchedules: [],
+      },
+    };
+    renderWithIndicators([vdpOrder], setMedicationIndicators);
+    await waitFor(() => {
+      expect(setMedicationIndicators).toHaveBeenCalledWith({
+        regularCount: 0,
+        vdpCount: 1,
+      });
+    });
+  });
+
+  it("does not count a VDP drug when all its stages are already scheduled", async () => {
+    const setMedicationIndicators = jest.fn();
+    const vdpOrderAdded = {
+      ...buildVdpOrder(),
+      drugOrderSchedule: {
+        ...buildVdpOrder().drugOrderSchedule,
+        stageSchedules: [
+          {
+            variableDosageSequence: 1,
+            isScheduled: true,
+            administrationStarted: true,
+            pendingSlotsAvailable: true,
+            allAttended: false,
+          },
+          {
+            variableDosageSequence: 2,
+            isScheduled: true,
+            administrationStarted: false,
+            pendingSlotsAvailable: false,
+            allAttended: false,
+          },
+        ],
+      },
+    };
+    renderWithIndicators([vdpOrderAdded], setMedicationIndicators);
+    await waitFor(() => {
+      expect(setMedicationIndicators).toHaveBeenCalledWith({
+        regularCount: 0,
+        vdpCount: 0,
+      });
+    });
+  });
+
+  it("publishes zero counts when no medication has Add to Drug Chart enabled", async () => {
+    const setMedicationIndicators = jest.fn();
+    const prnOrder = {
+      ...buildRegularOrder(),
+      drugOrder: {
+        ...buildRegularOrder().drugOrder,
+        uuid: "prn-1",
+        drug: { name: "PRN Drug" },
+        dosingInstructions: {
+          ...buildRegularOrder().drugOrder.dosingInstructions,
+          asNeeded: true,
+        },
+      },
+    };
+    renderWithIndicators([prnOrder], setMedicationIndicators);
+    await waitFor(() => {
+      expect(setMedicationIndicators).toHaveBeenCalledWith({
+        regularCount: 0,
+        vdpCount: 0,
+      });
+    });
   });
 });
