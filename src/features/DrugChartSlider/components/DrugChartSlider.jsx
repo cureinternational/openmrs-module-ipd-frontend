@@ -143,6 +143,8 @@ const DrugChartSlider = (props) => {
   // preventing minute-level drift between the auto-filled day-1 slot and propagated subsequent-day slots.
   const autoFilledFirstEditableSlotRef = useRef(null);
 
+  // Midnight crossing slot flags: boolean arrays tracking which slots cross from one day to next (crossing = true).
+  // Used to visually highlight slots that span midnight boundaries in the UI.
   const [
     subsequentDayMidnightCrossingSlots,
     setSubsequentDayMidnightCrossingSlots,

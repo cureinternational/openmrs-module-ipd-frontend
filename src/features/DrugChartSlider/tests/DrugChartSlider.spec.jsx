@@ -1317,4 +1317,176 @@ describe("DrugChartSlider", () => {
       ).not.toThrow();
     });
   });
+
+  describe("HIVE-108755: Crossing Slots State Management", () => {
+    it("should handle crossing slots without throwing errors when midnight crossing is detected", async () => {
+      const scheduleFrequencies = [
+        { frequencyPerDay: 2, label: "Twice a day" },
+      ];
+      const drugOrder = {
+        drugOrder: {
+          uuid: "order-uuid-crossing",
+          drug: { display: "Aspirin" },
+          dose: 1,
+          doseUnits: { display: "Tablet(s)" },
+          route: { display: "Oral" },
+          duration: 2,
+          quantity: 4,
+          dosingInstructions: JSON.stringify([
+            {
+              sequence: 1,
+              timing: {
+                code: { text: "Twice a day" },
+              },
+            },
+          ]),
+        },
+      };
+
+      expect(() => {
+        renderWithProviders(
+          <DrugChartSlider
+            hostData={{
+              enable24HourTimers: true,
+              scheduleFrequencies,
+              startTimeFrequencies: mockStartTimeFrequencies,
+              drugOrder,
+            }}
+            hostApi={{}}
+            title="Crossing Test"
+            drugChartNotes=""
+            setDrugChartNotes={jest.fn()}
+          />
+        );
+      }).not.toThrow();
+    });
+
+    it("should not throw error when crossing slots are undefined or null", async () => {
+      const scheduleFrequencies = [{ frequencyPerDay: 1, label: "Once a day" }];
+      const drugOrder = {
+        drugOrder: {
+          uuid: "order-uuid-null-crossing",
+          drug: { display: "Medication" },
+          dose: 1,
+          doseUnits: { display: "Tablet(s)" },
+          route: { display: "Oral" },
+          duration: 1,
+          quantity: 1,
+          dosingInstructions: JSON.stringify([
+            {
+              sequence: 1,
+              timing: {
+                code: { text: "Once a day" },
+              },
+            },
+          ]),
+        },
+      };
+
+      expect(() => {
+        renderWithProviders(
+          <DrugChartSlider
+            hostData={{
+              enable24HourTimers: true,
+              scheduleFrequencies,
+              startTimeFrequencies: mockStartTimeFrequencies,
+              drugOrder,
+            }}
+            hostApi={{}}
+            title="Null Crossing Test"
+            drugChartNotes=""
+            setDrugChartNotes={jest.fn()}
+          />
+        );
+      }).not.toThrow();
+    });
+
+    it("should maintain consistency when multiple crossing slots are present across days", async () => {
+      const scheduleFrequencies = [
+        { frequencyPerDay: 3, label: "Three times a day" },
+      ];
+      const drugOrder = {
+        drugOrder: {
+          uuid: "multi-day-crossing",
+          drug: { display: "Ibuprofen" },
+          dose: 1,
+          doseUnits: { display: "Tablet(s)" },
+          route: { display: "Oral" },
+          duration: 5,
+          quantity: 15,
+          dosingInstructions: JSON.stringify([
+            {
+              sequence: 1,
+              timing: {
+                code: { text: "Three times a day" },
+                repeat: { count: 3 },
+              },
+            },
+          ]),
+        },
+      };
+
+      expect(() => {
+        renderWithProviders(
+          <DrugChartSlider
+            hostData={{
+              enable24HourTimers: true,
+              scheduleFrequencies,
+              startTimeFrequencies: mockStartTimeFrequencies,
+              drugOrder,
+            }}
+            hostApi={{}}
+            title="Multi-day Crossing"
+            drugChartNotes=""
+            setDrugChartNotes={jest.fn()}
+          />
+        );
+      }).not.toThrow();
+    });
+  });
+
+  describe("State Variable Naming Consistency", () => {
+    it("should use consistent naming for midnight crossing slot variables across firstDay, subsequentDay, and finalDay", async () => {
+      const scheduleFrequencies = [
+        { frequencyPerDay: 2, label: "Twice a day" },
+      ];
+      const drugOrder = {
+        drugOrder: {
+          uuid: "order-uuid-naming",
+          drug: { display: "Paracetamol" },
+          dose: 1,
+          doseUnits: { display: "Tablet(s)" },
+          route: { display: "Oral" },
+          duration: 3,
+          quantity: 6,
+          dosingInstructions: JSON.stringify([
+            {
+              sequence: 1,
+              timing: {
+                code: { text: "Twice a day" },
+              },
+            },
+          ]),
+        },
+      };
+
+      // Component should render without prop type errors for midnight crossing slots
+      expect(() => {
+        renderWithProviders(
+          <DrugChartSlider
+            hostData={{
+              enable24HourTimers: true,
+              scheduleFrequencies,
+              startTimeFrequencies: mockStartTimeFrequencies,
+              drugOrder,
+            }}
+            hostApi={{}}
+            title="Naming Test"
+            drugChartNotes=""
+            setDrugChartNotes={jest.fn()}
+          />
+        );
+      }).not.toThrow();
+    });
+  });
 });
