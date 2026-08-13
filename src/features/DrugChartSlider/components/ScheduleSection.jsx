@@ -180,7 +180,7 @@ export const ScheduleSection = ({
               </span>
             </div>
           )}
-          {subsequentDaySchedules.length != 0 && (
+          {subsequentDaySchedules.length !== 0 && (
             <div className="schedule-section">
               <Title
                 text={

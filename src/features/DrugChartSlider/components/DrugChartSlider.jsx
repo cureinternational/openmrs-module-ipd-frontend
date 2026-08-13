@@ -42,6 +42,20 @@ import { StartTimeSection } from "./StartTimeSection";
 import { ScheduleSection } from "./ScheduleSection";
 
 const UNSET_SCHEDULE_TIME = "hh:mm";
+
+// Dose bucket constants
+const DOSE_BUCKETS = {
+  FIRST_DAY: "FIRST_DAY",
+  DAY_WISE: "DAY_WISE",
+};
+
+// Warning type constants
+const WARNING_TYPES = {
+  PASSED: "passed",
+  EMPTY: "empty",
+};
+
+// Helper functions for crossing slot metadata
 const getOriginDoseBucket = (slot) =>
   slot?.originDoseBucket ?? slot?.sourceBucket;
 const getIsRecurringAcrossDays = (slot) =>
@@ -684,7 +698,12 @@ const DrugChartSlider = (props) => {
       subsequentDayMidnightCrossingSlots
     );
     setShowEmptyScheduleWarning(!isValid && warningType === "empty");
-    setShowScheduleOrderWarning(!isValid && warningType === "passed");
+    // Suppress order warning when crossing slots exist (intentionally out of order)
+    setShowScheduleOrderWarning(
+      !isValid &&
+        warningType === WARNING_TYPES.PASSED &&
+        !subsequentDayMidnightCrossingSlots.some(Boolean)
+    );
     return { isValid, warningType };
   };
 
@@ -693,7 +712,7 @@ const DrugChartSlider = (props) => {
     if (!isValid && warningType === "empty") return false;
     if (
       !isValid &&
-      warningType === "passed" &&
+      warningType === WARNING_TYPES.PASSED &&
       !subsequentDayMidnightCrossingSlots.some(Boolean)
     )
       return false;
@@ -721,7 +740,12 @@ const DrugChartSlider = (props) => {
       filteredNextDayFlags
     );
     setShowEmptyFirstDayScheduleWarning(!isValid && warningType === "empty");
-    setShowFirstDayScheduleOrderWarning(!isValid && warningType === "passed");
+    // Suppress order warning when crossing slots exist (intentionally out of order)
+    setShowFirstDayScheduleOrderWarning(
+      !isValid &&
+        warningType === "passed" &&
+        !firstDayMidnightCrossingSlots.some(Boolean)
+    );
     return { isValid, warningType };
   };
 
@@ -742,7 +766,12 @@ const DrugChartSlider = (props) => {
       finalDayMidnightCrossingSlots
     );
     setShowEmptyFinalDayScheduleWarning(!isValid && warningType === "empty");
-    setShowFinalDayScheduleOrderWarning(!isValid && warningType === "passed");
+    // Suppress order warning when crossing slots exist (intentionally out of order)
+    setShowFinalDayScheduleOrderWarning(
+      !isValid &&
+        warningType === "passed" &&
+        !finalDayMidnightCrossingSlots.some(Boolean)
+    );
     return { isValid, warningType };
   };
 
@@ -830,8 +859,13 @@ const DrugChartSlider = (props) => {
       }
       if (enableSchedule) {
         const nextScheduleDate = 24 * 60 * 60;
+        // Remaining-day slots position depends on whether first day is complete or partial:
+        // - Complete first day (firstDaySlotsMissed = 0): remaining day is last day (duration - 1)
+        // - Partial first day (firstDaySlotsMissed > 0): remaining day is one day after (duration)
+        const duration = hostData?.drugOrder?.drugOrder?.duration;
         const finalScheduleDate =
-          nextScheduleDate * hostData?.drugOrder?.drugOrder?.duration;
+          nextScheduleDate *
+          (firstDaySlotsMissed > 0 ? duration : Math.max(0, duration - 1));
 
         // Split first-day slots into normal and midnight-crossing epochs before building the payload.
         const firstDaySchedulesUTCTimeEpoch = firstDaySchedules.reduce(
@@ -905,7 +939,7 @@ const DrugChartSlider = (props) => {
           ...firstDayCrossingEpochs.map((epoch) => ({
             epoch,
             isRecurringAcrossDays: applyToAllDays, // FIRST_DAY: toggle controls recurrence
-            originDoseBucket: "FIRST_DAY",
+            originDoseBucket: DOSE_BUCKETS.FIRST_DAY,
           })),
         ];
 
@@ -993,7 +1027,7 @@ const DrugChartSlider = (props) => {
               crossingSlots.push({
                 epoch: recurringDayWiseEpoch + dayOffset * nextScheduleDate,
                 isRecurringAcrossDays: true, // DAY_WISE: always recurring (dayWise array itself is recurring)
-                originDoseBucket: "DAY_WISE",
+                originDoseBucket: DOSE_BUCKETS.DAY_WISE,
               });
             }
           }
@@ -1002,7 +1036,9 @@ const DrugChartSlider = (props) => {
         // If editing with apply-to-all-days, drop duplicate crossing slots and keep recurrence flags aligned.
         if (isEdit && applyToAllDays) {
           const firstDayCrossingEpochsForEdit = crossingSlots
-            .filter((slot) => getOriginDoseBucket(slot) === "FIRST_DAY")
+            .filter(
+              (slot) => getOriginDoseBucket(slot) === DOSE_BUCKETS.FIRST_DAY
+            )
             .map((slot) => slot.epoch)
             .filter((epoch) => epoch != null);
 
@@ -1014,7 +1050,7 @@ const DrugChartSlider = (props) => {
 
           const normalizedCrossingSlots = crossingSlots.filter((slot) => {
             if (
-              getOriginDoseBucket(slot) !== "DAY_WISE" ||
+              getOriginDoseBucket(slot) !== DOSE_BUCKETS.DAY_WISE ||
               slot?.epoch == null
             ) {
               return true;
@@ -1026,13 +1062,15 @@ const DrugChartSlider = (props) => {
 
           const dayWiseCrossingEpochSet = new Set(
             normalizedCrossingSlots
-              .filter((slot) => getOriginDoseBucket(slot) === "DAY_WISE")
+              .filter(
+                (slot) => getOriginDoseBucket(slot) === DOSE_BUCKETS.DAY_WISE
+              )
               .map((slot) => slot.epoch)
           );
 
           normalizedCrossingSlots.forEach((slot) => {
             if (
-              getOriginDoseBucket(slot) !== "FIRST_DAY" ||
+              getOriginDoseBucket(slot) !== DOSE_BUCKETS.FIRST_DAY ||
               slot?.epoch == null
             )
               return;
@@ -1269,18 +1307,18 @@ const DrugChartSlider = (props) => {
         // DAY_WISE crossings are always recurring by design, so they shouldn't influence toggle state.
         const hasRecurringFirstDayCrossings = crossingSlotsFromApi.some(
           (slot) =>
-            getOriginDoseBucket(slot) === "FIRST_DAY" &&
+            getOriginDoseBucket(slot) === DOSE_BUCKETS.FIRST_DAY &&
             getIsRecurringAcrossDays(slot) === true
         );
         setApplyToAllDays(hasRecurringFirstDayCrossings);
       }
 
       const firstDayCrossingsFromApi = crossingSlotsFromApi
-        .filter((slot) => getOriginDoseBucket(slot) === "FIRST_DAY")
+        .filter((slot) => getOriginDoseBucket(slot) === DOSE_BUCKETS.FIRST_DAY)
         .map((slot) => slot.epoch);
 
       const dayWiseCrossingsFromApi = crossingSlotsFromApi
-        .filter((slot) => getOriginDoseBucket(slot) === "DAY_WISE")
+        .filter((slot) => getOriginDoseBucket(slot) === DOSE_BUCKETS.DAY_WISE)
         .map((slot) => slot.epoch);
 
       const firstDayCrossingTimeSet = new Set(
@@ -1296,7 +1334,7 @@ const DrugChartSlider = (props) => {
 
       const recurringDayWiseCrossingsFromApi = crossingSlotsFromApi.filter(
         (slot) =>
-          getOriginDoseBucket(slot) === "DAY_WISE" &&
+          getOriginDoseBucket(slot) === DOSE_BUCKETS.DAY_WISE &&
           getIsRecurringAcrossDays(slot) === true &&
           slot?.epoch != null
       );
