@@ -209,6 +209,37 @@ const DrugChartSlider = (props) => {
     setSubsequentDayMidnightCrossingSlots(crossings);
   };
 
+  const applyRegeneratedSchedules = (
+    regenerated,
+    shouldUpdateSubsequent = false,
+    shouldUpdateFirstDay = true
+  ) => {
+    // Update first day only if explicitly requested
+    if (shouldUpdateFirstDay) {
+      setFirstDaySchedules((prev) => {
+        const updated = [...prev];
+        regenerated.firstDaySchedules.forEach((value, valueIndex) => {
+          updated[firstDaySlotsMissed + valueIndex] = value;
+        });
+        return updated;
+      });
+
+      setFirstDayMidnightCrossingSlots(
+        Array(firstDaySlotsMissed)
+          .fill(false)
+          .concat(regenerated.firstDayCrossings)
+      );
+    }
+
+    // Update subsequent and final days if requested
+    if (shouldUpdateSubsequent) {
+      setSubsequentDaySchedules(regenerated.subsequentSchedules);
+      setSubsequentDayMidnightCrossingSlots(regenerated.subsequentCrossings);
+      setFinalDaySchedules(regenerated.finalDaySchedules);
+      setFinalDayMidnightCrossingSlots(regenerated.finalDayCrossings);
+    }
+  };
+
   const handleApplyToAllDaysToggle = (checked) => {
     setApplyToAllDays(checked);
     if (checked) {
@@ -254,30 +285,13 @@ const DrugChartSlider = (props) => {
 
         if (regenerated) {
           usedFixedIntervalRegeneration = true;
-          if (editableCount > 1) {
+          applyRegeneratedSchedules(regenerated, checked, false);
+          if (editableCount === 1 && isUntouchedAutoFilledFirstSlot) {
             setFirstDaySchedules((prev) => {
               const updated = [...prev];
-              regenerated.firstDaySchedules.forEach((value, valueIndex) => {
-                updated[firstDaySlotsMissed + valueIndex] = value;
-              });
-              if (isUntouchedAutoFilledFirstSlot) {
-                updated[firstDaySlotsMissed] = currentFirstSlot;
-              }
+              updated[firstDaySlotsMissed] = currentFirstSlot;
               return updated;
             });
-            setFirstDayMidnightCrossingSlots(
-              Array(firstDaySlotsMissed)
-                .fill(false)
-                .concat(regenerated.firstDayCrossings)
-            );
-          }
-          setSubsequentDaySchedules(regenerated.subsequentSchedules);
-          setSubsequentDayMidnightCrossingSlots(
-            regenerated.subsequentCrossings
-          );
-          if (firstDaySlotsMissed > 0) {
-            setFinalDaySchedules(regenerated.finalDaySchedules);
-            setFinalDayMidnightCrossingSlots(regenerated.finalDayCrossings);
           }
         } else {
           propagateToSubsequentDays(timeStr);
@@ -365,26 +379,7 @@ const DrugChartSlider = (props) => {
         });
 
         if (regenerated) {
-          const newScheduleArray = [...firstDaySchedules];
-          regenerated.firstDaySchedules.forEach((value, valueIndex) => {
-            newScheduleArray[firstDaySlotsMissed + valueIndex] = value;
-          });
-          setFirstDaySchedules(newScheduleArray);
-          setFirstDayMidnightCrossingSlots(
-            Array(firstDaySlotsMissed)
-              .fill(false)
-              .concat(regenerated.firstDayCrossings)
-          );
-
-          if (applyToAllDays) {
-            setSubsequentDaySchedules(regenerated.subsequentSchedules);
-            setSubsequentDayMidnightCrossingSlots(
-              regenerated.subsequentCrossings
-            );
-            setFinalDaySchedules(regenerated.finalDaySchedules);
-            setFinalDayMidnightCrossingSlots(regenerated.finalDayCrossings);
-          }
-
+          applyRegeneratedSchedules(regenerated, applyToAllDays, true);
           setIsToggleEnabled(true);
           return;
         }
