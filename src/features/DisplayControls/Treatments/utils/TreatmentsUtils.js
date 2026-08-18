@@ -275,6 +275,7 @@ export const isDrugOrderStoppedWithoutAdministration = (drugOrderObject) => {
 };
 
 export const INTRADAY_SLOTS = ["morning", "afternoon", "evening", "night"];
+export const INTRADAY_SLOT_LABELS = ["Morning", "Afternoon", "Evening", "Night"];
 
 export const isIntradayDosingInstruction = (parsed) =>
   parsed?.morningDose != null ||
@@ -284,14 +285,18 @@ export const isIntradayDosingInstruction = (parsed) =>
 
 export const formatIntradayDoseString = (intradayDose, doseUnits, route, frequency, duration, durationUnits) => {
   const toDisplay = (val) => (val != null ? val : 0);
-  const doseString = [
+  const doseValues = [
     toDisplay(intradayDose.morning),
     toDisplay(intradayDose.afternoon),
     toDisplay(intradayDose.evening),
     toDisplay(intradayDose.night),
-  ].join("-");
+  ];
+  const doseString = doseValues.map((dose, index) => {
+    const doseWithUnit = doseUnits ? `${dose} ${doseUnits}` : dose;
+    return `${doseWithUnit} ${INTRADAY_SLOT_LABELS[index]}`;
+  }).join(" | ");
 
-  let result = doseUnits ? doseString + " " + doseUnits : doseString;
+  let result = doseString;
   if (route) result += " - " + route;
   if (frequency) result += " - " + frequency;
   if (duration) result += " - for " + duration + " " + (durationUnits || "");
