@@ -257,6 +257,7 @@ VariableDoseStagesTable.propTypes = {
   isAddToDrugChartDisabled: PropTypes.bool,
   isReadMode: PropTypes.bool,
   hasScheduleEditPrivilege: PropTypes.bool,
+  dateStopped: PropTypes.bool,
 };
 
 export default VariableDoseStagesTable;

@@ -620,6 +620,7 @@ const Treatments = (props) => {
                 : undefined,
               onStopDrugChart:
                 isVariableDose &&
+                !drugOrder.dateStopped &&
                 showStopDrugChartLink &&
                 stageSchedules.some((s) => s.pendingSlotsAvailable)
                   ? () => handleStopDrugChartClick(drugOrder.uuid)

@@ -2185,7 +2185,7 @@ describe("Medication indicators", () => {
         ipdDrugOrders: [stoppedWithAdmin],
       },
     };
-    const { getByText } = render(
+    const { getByText, queryByText } = render(
       <IPDContext.Provider value={{ config: mockConfig, isReadMode: false }}>
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
@@ -2199,6 +2199,9 @@ describe("Medication indicators", () => {
     await waitFor(() => {
       expect(getByText("Stopped Admin Drug")).toBeTruthy();
       expect(getByText("Stopped")).toBeTruthy();
+      expect(queryByText("Edit Drug Chart")).not.toBeInTheDocument();
+      expect(queryByText("Add to Drug Chart")).not.toBeInTheDocument();
+      expect(queryByText("Stop Drug")).not.toBeInTheDocument();
     });
   });
 
@@ -2232,7 +2235,7 @@ describe("Medication indicators", () => {
         ipdDrugOrders: [stoppedWithoutAdmin],
       },
     };
-    const { getByText } = render(
+    const { getByText, queryByText } = render(
       <IPDContext.Provider value={{ config: mockConfig, isReadMode: false }}>
         <SliderContext.Provider value={mockProviderValue}>
           <AllMedicationsContext.Provider value={updatedAllMedications}>
@@ -2246,6 +2249,9 @@ describe("Medication indicators", () => {
     await waitFor(() => {
       expect(getByText("Stopped Drug")).toBeTruthy();
       expect(getByText("Stopped")).toBeTruthy();
+      expect(queryByText("Edit Drug Chart")).not.toBeInTheDocument();
+      expect(queryByText("Add to Drug Chart")).not.toBeInTheDocument();
+      expect(queryByText("Stop Drug")).not.toBeInTheDocument();
     });
   });
 });
