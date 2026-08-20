@@ -614,7 +614,7 @@ const Treatments = (props) => {
                   ? (stageIndex) =>
                       handleStageAddToDrugChart(drugOrder.uuid, stageIndex)
                   : undefined,
-              onEditDrugChart: isVariableDose
+              onEditDrugChart: isVariableDose && !drugOrder.dateStopped
                 ? (stageIndex) =>
                     handleStageEditDrugChart(drugOrder.uuid, stageIndex)
                 : undefined,
