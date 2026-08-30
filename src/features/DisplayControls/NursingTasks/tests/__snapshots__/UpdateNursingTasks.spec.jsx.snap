@@ -61,56 +61,52 @@ exports[`UpdateNursingTasksSlider should close the slider on click of cancel but
           class="nursing-task-section"
         >
           <div
-            style="display: contents;"
+            class="bx--form-item"
           >
-            <div
-              class="bx--form-item"
+            <input
+              class="bx--toggle-input bx--toggle-input--small"
+              data-testid="done-toggle"
+              id="d9ae1992-63ac-4e05-8dfb-13f021102ec6"
+              type="checkbox"
+            />
+            <label
+              aria-label="Toggle"
+              class="bx--toggle-input__label"
+              for="d9ae1992-63ac-4e05-8dfb-13f021102ec6"
             >
-              <input
-                class="bx--toggle-input bx--toggle-input--small"
-                data-testid="done-toggle"
-                id="d9ae1992-63ac-4e05-8dfb-13f021102ec6"
-                type="checkbox"
-              />
-              <label
-                aria-label="Toggle"
-                class="bx--toggle-input__label"
-                for="d9ae1992-63ac-4e05-8dfb-13f021102ec6"
+              <span
+                class="bx--toggle__switch"
               >
-                <span
-                  class="bx--toggle__switch"
+                <svg
+                  class="bx--toggle__check"
+                  height="5px"
+                  viewBox="0 0 6 5"
+                  width="6px"
                 >
-                  <svg
-                    class="bx--toggle__check"
-                    height="5px"
-                    viewBox="0 0 6 5"
-                    width="6px"
-                  >
-                    <path
-                      d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z"
-                    />
-                  </svg>
-                  <span
-                    aria-hidden="true"
-                    class="bx--toggle__text--off"
-                  >
-                    <div>
-                      Done
-                       
-                    </div>
-                  </span>
-                  <span
-                    aria-hidden="true"
-                    class="bx--toggle__text--on"
-                  >
-                    <div>
-                      Done
-                       
-                    </div>
-                  </span>
+                  <path
+                    d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z"
+                  />
+                </svg>
+                <span
+                  aria-hidden="true"
+                  class="bx--toggle__text--off"
+                >
+                  <div>
+                    Done
+                     
+                  </div>
                 </span>
-              </label>
-            </div>
+                <span
+                  aria-hidden="true"
+                  class="bx--toggle__text--on"
+                >
+                  <div>
+                    Done
+                     
+                  </div>
+                </span>
+              </span>
+            </label>
           </div>
           <div
             class="medication-name"
@@ -187,57 +183,53 @@ exports[`UpdateNursingTasksSlider should close the slider on click of cancel but
           class="nursing-task-section"
         >
           <div
-            style="display: contents;"
+            class="bx--form-item"
           >
-            <div
-              class="bx--form-item"
+            <input
+              class="bx--toggle-input bx--toggle-input--small"
+              data-testid="done-toggle"
+              disabled=""
+              id="b9904678-eb07-4eb0-8d03-53fcaa1d20d0"
+              type="checkbox"
+            />
+            <label
+              aria-label="Toggle"
+              class="bx--toggle-input__label"
+              for="b9904678-eb07-4eb0-8d03-53fcaa1d20d0"
             >
-              <input
-                class="bx--toggle-input bx--toggle-input--small"
-                data-testid="done-toggle"
-                disabled=""
-                id="b9904678-eb07-4eb0-8d03-53fcaa1d20d0"
-                type="checkbox"
-              />
-              <label
-                aria-label="Toggle"
-                class="bx--toggle-input__label"
-                for="b9904678-eb07-4eb0-8d03-53fcaa1d20d0"
+              <span
+                class="bx--toggle__switch"
               >
-                <span
-                  class="bx--toggle__switch"
+                <svg
+                  class="bx--toggle__check"
+                  height="5px"
+                  viewBox="0 0 6 5"
+                  width="6px"
                 >
-                  <svg
-                    class="bx--toggle__check"
-                    height="5px"
-                    viewBox="0 0 6 5"
-                    width="6px"
-                  >
-                    <path
-                      d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z"
-                    />
-                  </svg>
-                  <span
-                    aria-hidden="true"
-                    class="bx--toggle__text--off"
-                  >
-                    <div>
-                      Done
-                       
-                    </div>
-                  </span>
-                  <span
-                    aria-hidden="true"
-                    class="bx--toggle__text--on"
-                  >
-                    <div>
-                      Done
-                       
-                    </div>
-                  </span>
+                  <path
+                    d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z"
+                  />
+                </svg>
+                <span
+                  aria-hidden="true"
+                  class="bx--toggle__text--off"
+                >
+                  <div>
+                    Done
+                     
+                  </div>
                 </span>
-              </label>
-            </div>
+                <span
+                  aria-hidden="true"
+                  class="bx--toggle__text--on"
+                >
+                  <div>
+                    Done
+                     
+                  </div>
+                </span>
+              </span>
+            </label>
           </div>
           <div
             class="medication-name"
@@ -493,56 +485,52 @@ exports[`UpdateNursingTasksSlider should render UpdateNursingTasksSlider 1`] = `
           class="nursing-task-section"
         >
           <div
-            style="display: contents;"
+            class="bx--form-item"
           >
-            <div
-              class="bx--form-item"
+            <input
+              class="bx--toggle-input bx--toggle-input--small"
+              data-testid="done-toggle"
+              id="d9ae1992-63ac-4e05-8dfb-13f021102ec6"
+              type="checkbox"
+            />
+            <label
+              aria-label="Toggle"
+              class="bx--toggle-input__label"
+              for="d9ae1992-63ac-4e05-8dfb-13f021102ec6"
             >
-              <input
-                class="bx--toggle-input bx--toggle-input--small"
-                data-testid="done-toggle"
-                id="d9ae1992-63ac-4e05-8dfb-13f021102ec6"
-                type="checkbox"
-              />
-              <label
-                aria-label="Toggle"
-                class="bx--toggle-input__label"
-                for="d9ae1992-63ac-4e05-8dfb-13f021102ec6"
+              <span
+                class="bx--toggle__switch"
               >
-                <span
-                  class="bx--toggle__switch"
+                <svg
+                  class="bx--toggle__check"
+                  height="5px"
+                  viewBox="0 0 6 5"
+                  width="6px"
                 >
-                  <svg
-                    class="bx--toggle__check"
-                    height="5px"
-                    viewBox="0 0 6 5"
-                    width="6px"
-                  >
-                    <path
-                      d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z"
-                    />
-                  </svg>
-                  <span
-                    aria-hidden="true"
-                    class="bx--toggle__text--off"
-                  >
-                    <div>
-                      Done
-                       
-                    </div>
-                  </span>
-                  <span
-                    aria-hidden="true"
-                    class="bx--toggle__text--on"
-                  >
-                    <div>
-                      Done
-                       
-                    </div>
-                  </span>
+                  <path
+                    d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z"
+                  />
+                </svg>
+                <span
+                  aria-hidden="true"
+                  class="bx--toggle__text--off"
+                >
+                  <div>
+                    Done
+                     
+                  </div>
                 </span>
-              </label>
-            </div>
+                <span
+                  aria-hidden="true"
+                  class="bx--toggle__text--on"
+                >
+                  <div>
+                    Done
+                     
+                  </div>
+                </span>
+              </span>
+            </label>
           </div>
           <div
             class="medication-name"
@@ -619,57 +607,53 @@ exports[`UpdateNursingTasksSlider should render UpdateNursingTasksSlider 1`] = `
           class="nursing-task-section"
         >
           <div
-            style="display: contents;"
+            class="bx--form-item"
           >
-            <div
-              class="bx--form-item"
+            <input
+              class="bx--toggle-input bx--toggle-input--small"
+              data-testid="done-toggle"
+              disabled=""
+              id="b9904678-eb07-4eb0-8d03-53fcaa1d20d0"
+              type="checkbox"
+            />
+            <label
+              aria-label="Toggle"
+              class="bx--toggle-input__label"
+              for="b9904678-eb07-4eb0-8d03-53fcaa1d20d0"
             >
-              <input
-                class="bx--toggle-input bx--toggle-input--small"
-                data-testid="done-toggle"
-                disabled=""
-                id="b9904678-eb07-4eb0-8d03-53fcaa1d20d0"
-                type="checkbox"
-              />
-              <label
-                aria-label="Toggle"
-                class="bx--toggle-input__label"
-                for="b9904678-eb07-4eb0-8d03-53fcaa1d20d0"
+              <span
+                class="bx--toggle__switch"
               >
-                <span
-                  class="bx--toggle__switch"
+                <svg
+                  class="bx--toggle__check"
+                  height="5px"
+                  viewBox="0 0 6 5"
+                  width="6px"
                 >
-                  <svg
-                    class="bx--toggle__check"
-                    height="5px"
-                    viewBox="0 0 6 5"
-                    width="6px"
-                  >
-                    <path
-                      d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z"
-                    />
-                  </svg>
-                  <span
-                    aria-hidden="true"
-                    class="bx--toggle__text--off"
-                  >
-                    <div>
-                      Done
-                       
-                    </div>
-                  </span>
-                  <span
-                    aria-hidden="true"
-                    class="bx--toggle__text--on"
-                  >
-                    <div>
-                      Done
-                       
-                    </div>
-                  </span>
+                  <path
+                    d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z"
+                  />
+                </svg>
+                <span
+                  aria-hidden="true"
+                  class="bx--toggle__text--off"
+                >
+                  <div>
+                    Done
+                     
+                  </div>
                 </span>
-              </label>
-            </div>
+                <span
+                  aria-hidden="true"
+                  class="bx--toggle__text--on"
+                >
+                  <div>
+                    Done
+                     
+                  </div>
+                </span>
+              </span>
+            </label>
           </div>
           <div
             class="medication-name"

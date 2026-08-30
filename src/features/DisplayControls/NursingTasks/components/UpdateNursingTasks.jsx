@@ -79,7 +79,7 @@ const UpdateNursingTasks = (props) => {
 
   const isIPad =
     typeof window !== "undefined" &&
-    /iPad|iPhone|iPod|Apple/.test(navigator.userAgent);
+    /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   const invalidTimeText = (
     <FormattedMessage
@@ -662,7 +662,7 @@ const UpdateNursingTasks = (props) => {
                   (isIPad ? (
                     <div
                       style={{ display: "contents" }}
-                      onClick={onDoneToggleClick}
+                      // onClick={onDoneToggleClick}
                     >
                       <Toggle
                         data-testId="done-toggle"
@@ -689,9 +689,7 @@ const UpdateNursingTasks = (props) => {
                       toggled={tasks[medicationTask.uuid]?.isSelected || false}
                       labelA={getLabel(tasks[medicationTask.uuid]?.actualTime)}
                       labelB={getLabel(tasks[medicationTask.uuid]?.actualTime)}
-                      onToggle={(checked) =>
-                        handleToggle(checked, medicationTask.uuid)
-                      }
+                      onToggle={handleToggle}
                       disabled={isToggleDisabled}
                     />
                   ))}
