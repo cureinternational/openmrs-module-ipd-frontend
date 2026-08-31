@@ -32,6 +32,7 @@ const mockUpdateEmergencyTasksSlider = jest.fn();
 const mockUpdateNonMedicationTask = jest.fn();
 const mockHandleAuditLogEvent = jest.fn();
 const mockRefreshDisplayControl = jest.fn();
+const realUserAgent = navigator.userAgent;
 
 jest.mock("../utils/NursingTasksUtils", () => {
   const originalModule = jest.requireActual("../utils/NursingTasksUtils");
@@ -43,6 +44,10 @@ jest.mock("../utils/NursingTasksUtils", () => {
 describe("UpdateNursingTasksSlider", function () {
   afterEach(() => {
     MockDate.reset();
+    Object.defineProperty(navigator, "userAgent", {
+      value: realUserAgent,
+      configurable: true,
+    });
   });
 
   it("should render UpdateNursingTasksSlider", function () {
@@ -96,7 +101,46 @@ describe("UpdateNursingTasksSlider", function () {
     );
     const saveButton = screen.getAllByText("Save")[1];
     expect(saveButton.disabled).toEqual(true);
-    const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
+    const toggleButton = container.querySelectorAll(
+      '[data-testid="done-toggle"]'
+    )[0];
+    fireEvent.click(toggleButton);
+    expect(saveButton.disabled).toEqual(false);
+  });
+
+  it("should toggle the task on an iPad-like user agent without any device-specific condition", function () {
+    Object.defineProperty(navigator, "userAgent", {
+      value:
+        "Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+      configurable: true,
+    });
+    const { container } = render(
+      <IntlProvider locale="en">
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockMedicationTasks}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
+      </IntlProvider>
+    );
+    const saveButton = screen.getAllByText("Save")[1];
+    expect(saveButton.disabled).toEqual(true);
+    const toggleButton = container.querySelectorAll(
+      '[data-testid="done-toggle"]'
+    )[0];
     fireEvent.click(toggleButton);
     expect(saveButton.disabled).toEqual(false);
   });
@@ -124,7 +168,9 @@ describe("UpdateNursingTasksSlider", function () {
         </IPDContext.Provider>
       </IntlProvider>
     );
-    const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
+    const toggleButton = container.querySelectorAll(
+      '[data-testid="done-toggle"]'
+    )[0];
     fireEvent.click(toggleButton);
 
     const timePicker = container.querySelectorAll(
@@ -158,7 +204,9 @@ describe("UpdateNursingTasksSlider", function () {
         </IPDContext.Provider>
       </IntlProvider>
     );
-    const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
+    const toggleButton = container.querySelectorAll(
+      '[data-testid="done-toggle"]'
+    )[0];
     fireEvent.click(toggleButton);
 
     const timePicker = container.querySelectorAll(".bx--time-picker")[0];
@@ -193,7 +241,9 @@ describe("UpdateNursingTasksSlider", function () {
         </IPDContext.Provider>
       </IntlProvider>
     );
-    const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
+    const toggleButton = container.querySelectorAll(
+      '[data-testid="done-toggle"]'
+    )[0];
     fireEvent.click(toggleButton);
 
     const timePicker = container.querySelectorAll(".bx--time-picker")[0];
@@ -237,7 +287,9 @@ describe("UpdateNursingTasksSlider", function () {
         </IPDContext.Provider>
       </IntlProvider>
     );
-    const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
+    const toggleButton = container.querySelectorAll(
+      '[data-testid="done-toggle"]'
+    )[0];
     fireEvent.click(toggleButton);
 
     const saveButton = screen.getAllByText("Save")[1];
@@ -275,7 +327,9 @@ describe("UpdateNursingTasksSlider", function () {
         </IPDContext.Provider>
       </IntlProvider>
     );
-    const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
+    const toggleButton = container.querySelectorAll(
+      '[data-testid="done-toggle"]'
+    )[0];
     fireEvent.click(toggleButton);
 
     const timePicker = screen.getAllByRole("textbox")[0];
@@ -310,7 +364,9 @@ describe("UpdateNursingTasksSlider", function () {
         </IPDContext.Provider>
       </IntlProvider>
     );
-    const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
+    const toggleButton = container.querySelectorAll(
+      '[data-testid="done-toggle"]'
+    )[0];
     fireEvent.click(toggleButton);
 
     const timePicker = screen.getAllByRole("textbox")[0];
@@ -344,7 +400,9 @@ describe("UpdateNursingTasksSlider", function () {
         </IPDContext.Provider>
       </IntlProvider>
     );
-    const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
+    const toggleButton = container.querySelectorAll(
+      '[data-testid="done-toggle"]'
+    )[0];
     fireEvent.click(toggleButton);
 
     const timePicker = screen.getAllByRole("textbox")[0];
@@ -384,7 +442,9 @@ describe("UpdateNursingTasksSlider", function () {
         </IPDContext.Provider>
       </IntlProvider>
     );
-    const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
+    const toggleButton = container.querySelectorAll(
+      '[data-testid="done-toggle"]'
+    )[0];
     fireEvent.click(toggleButton);
 
     const timePicker = screen.getAllByRole("textbox")[0];
@@ -453,7 +513,9 @@ describe("UpdateNursingTasksSlider", function () {
         </IPDContext.Provider>
       </IntlProvider>
     );
-    const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
+    const toggleButton = container.querySelectorAll(
+      '[data-testid="done-toggle"]'
+    )[0];
     fireEvent.click(toggleButton);
 
     const timePicker = screen.getAllByRole("textbox")[0];
@@ -497,7 +559,9 @@ describe("UpdateNursingTasksSlider", function () {
         </IPDContext.Provider>
       </IntlProvider>
     );
-    const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
+    const toggleButton = container.querySelectorAll(
+      '[data-testid="done-toggle"]'
+    )[0];
     fireEvent.click(toggleButton);
 
     const timePicker = screen.getAllByRole("textbox")[0];
@@ -543,7 +607,9 @@ describe("UpdateNursingTasksSlider", function () {
       </IntlProvider>
     );
 
-    const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
+    const toggleButton = container.querySelectorAll(
+      '[data-testid="done-toggle"]'
+    )[0];
     fireEvent.click(toggleButton);
 
     const timePicker = screen.getAllByRole("textbox")[0];
@@ -584,7 +650,9 @@ describe("UpdateNursingTasksSlider", function () {
       </IntlProvider>
     );
 
-    const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
+    const toggleButton = container.querySelectorAll(
+      '[data-testid="done-toggle"]'
+    )[0];
     fireEvent.click(toggleButton);
 
     const timePicker = screen.getAllByRole("textbox")[0];
@@ -684,7 +752,9 @@ describe("UpdateNursingTasksSlider", function () {
     fireEvent.click(overflowMenuButton);
     const skipDrugButton = screen.getByText("Skip Drug");
     fireEvent.click(skipDrugButton);
-    expect(container.querySelectorAll(".bx--toggle__switch")).toHaveLength(0);
+    expect(
+      container.querySelectorAll('[data-testid="done-toggle"]')
+    ).toHaveLength(0);
   });
 
   it("should show notes as mandatory when Skip Drug button is clicked", () => {
@@ -800,7 +870,9 @@ describe("UpdateNursingTasksSlider", function () {
         </IPDContext.Provider>
       </IntlProvider>
     );
-    const toggleButton = container.querySelectorAll(".bx--toggle__switch")[0];
+    const toggleButton = container.querySelectorAll(
+      '[data-testid="done-toggle"]'
+    )[0];
     fireEvent.click(toggleButton);
 
     const timePicker = screen.getAllByRole("textbox")[0];
@@ -1082,7 +1154,9 @@ describe("UpdateNursingTasksSlider", function () {
     fireEvent.click(overflowMenuButton);
     const stopTaskButton = screen.getByText("Stop Task");
     fireEvent.click(stopTaskButton);
-    expect(container.querySelectorAll(".bx--toggle__switch")).toHaveLength(0);
+    expect(
+      container.querySelectorAll('[data-testid="done-toggle"]')
+    ).toHaveLength(0);
   });
 
   it("should enable save button when Stop Task is clicked", () => {
@@ -1212,7 +1286,9 @@ describe("UpdateNursingTasksSlider", function () {
     const stopTaskButton = screen.getByText("Stop Task");
     fireEvent.click(stopTaskButton);
 
-    expect(container.querySelectorAll(".bx--toggle__switch")).toHaveLength(0);
+    expect(
+      container.querySelectorAll('[data-testid="done-toggle"]')
+    ).toHaveLength(0);
   });
 
   it("should deactivate Stop when Skip is activated (mutual exclusivity)", () => {

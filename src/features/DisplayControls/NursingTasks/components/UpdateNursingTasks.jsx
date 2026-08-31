@@ -10,7 +10,6 @@ import {
   OverflowMenu,
   OverflowMenuItem,
   TextArea,
-  Toggle,
 } from "carbon-components-react";
 import moment from "moment";
 import { TimePicker24Hour, Title, TimePicker } from "bahmni-carbon-ui";
@@ -76,10 +75,6 @@ const UpdateNursingTasks = (props) => {
   const [isInvalidTime, setIsInvalidTime] = useState(false);
   const [invalidText, setInvalidText] = useState();
   const [isSavingConfirmation, setIsSavingConfirmation] = useState(false);
-
-  const isIPad =
-    typeof window !== "undefined" &&
-    /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   const invalidTimeText = (
     <FormattedMessage
@@ -658,41 +653,30 @@ const UpdateNursingTasks = (props) => {
             return (
               <div key={index} className={"nursing-task-section"}>
                 {!tasks[medicationTask.uuid]?.skipped &&
-                  !tasks[medicationTask.uuid]?.stopped &&
-                  (isIPad ? (
-                    <div
-                      style={{ display: "contents" }}
-                      // onClick={onDoneToggleClick}
-                    >
-                      <Toggle
-                        data-testId="done-toggle"
-                        id={medicationTask.uuid}
-                        size={"sm"}
-                        toggled={
-                          tasks[medicationTask.uuid]?.isSelected || false
-                        }
-                        labelA={getLabel(
-                          tasks[medicationTask.uuid]?.actualTime
-                        )}
-                        labelB={getLabel(
-                          tasks[medicationTask.uuid]?.actualTime
-                        )}
-                        onToggle={() => {}}
-                        disabled={isToggleDisabled}
-                      />
-                    </div>
-                  ) : (
-                    <Toggle
+                  !tasks[medicationTask.uuid]?.stopped && (
+                    <button
+                      type="button"
                       data-testId="done-toggle"
-                      id={medicationTask.uuid}
-                      size={"sm"}
-                      toggled={tasks[medicationTask.uuid]?.isSelected || false}
-                      labelA={getLabel(tasks[medicationTask.uuid]?.actualTime)}
-                      labelB={getLabel(tasks[medicationTask.uuid]?.actualTime)}
-                      onToggle={handleToggle}
+                      className={
+                        tasks[medicationTask.uuid]?.isSelected
+                          ? "done-toggle__control done-toggle__on"
+                          : "done-toggle__control"
+                      }
+                      role="switch"
+                      aria-checked={
+                        tasks[medicationTask.uuid]?.isSelected || false
+                      }
                       disabled={isToggleDisabled}
-                    />
-                  ))}
+                      onClick={onDoneToggleClick}
+                    >
+                      <span className="done-toggle__track">
+                        <span className="done-toggle__thumb" />
+                      </span>
+                      <span className="done-toggle__label">
+                        {getLabel(tasks[medicationTask.uuid]?.actualTime)}
+                      </span>
+                    </button>
+                  )}
                 <div className={"medication-name"}>
                   {!isNonMedication ? (
                     <div
