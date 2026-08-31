@@ -240,13 +240,13 @@ describe("TreatmentsUtils", () => {
       ).toBe(false);
     });
 
-    it("should include only INPATIENT orders when allMedicinesInPrescriptionAvailableForIPD is false", () => {
+    it("should include both INPATIENT and OUTPATIENT orders when allMedicinesInPrescriptionAvailableForIPD is false", () => {
       expect(
         shouldIncludeInIPDDashboard(buildOrder("INPATIENT", false), false)
       ).toBe(true);
       expect(
         shouldIncludeInIPDDashboard(buildOrder("OUTPATIENT", false), false)
-      ).toBe(false);
+      ).toBe(true);
     });
 
     it("should exclude INPATIENT discharge order when allMedicinesInPrescriptionAvailableForIPD is false", () => {
