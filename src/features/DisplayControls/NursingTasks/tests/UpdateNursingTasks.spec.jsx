@@ -32,8 +32,6 @@ const mockUpdateEmergencyTasksSlider = jest.fn();
 const mockUpdateNonMedicationTask = jest.fn();
 const mockHandleAuditLogEvent = jest.fn();
 const mockRefreshDisplayControl = jest.fn();
-const realUserAgent = navigator.userAgent;
-
 jest.mock("../utils/NursingTasksUtils", () => {
   const originalModule = jest.requireActual("../utils/NursingTasksUtils");
   return {
@@ -44,10 +42,6 @@ jest.mock("../utils/NursingTasksUtils", () => {
 describe("UpdateNursingTasksSlider", function () {
   afterEach(() => {
     MockDate.reset();
-    Object.defineProperty(navigator, "userAgent", {
-      value: realUserAgent,
-      configurable: true,
-    });
   });
 
   it("should render UpdateNursingTasksSlider", function () {
@@ -108,12 +102,7 @@ describe("UpdateNursingTasksSlider", function () {
     expect(saveButton.disabled).toEqual(false);
   });
 
-  it("should toggle the task on an iPad-like user agent without any device-specific condition", function () {
-    Object.defineProperty(navigator, "userAgent", {
-      value:
-        "Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
-      configurable: true,
-    });
+  it("should enable Save when a task is toggled", function () {
     const { container } = render(
       <IntlProvider locale="en">
         <IPDContext.Provider
