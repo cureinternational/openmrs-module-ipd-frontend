@@ -314,15 +314,9 @@ const Treatments = (props) => {
     showStopDrugChartLink,
     drugOrder,
     drugOrderSchedule,
-    drugOrderAttributes,
+    isDispensePending,
     drugOrderObject
   ) => {
-    const isOrderDispensed =
-      drugOrderAttributes != null &&
-      drugOrderAttributes.some(
-        (attribute) =>
-          attribute.name === "Dispensed" && attribute.value === "true"
-      );
     if (
       !isUserPrivileged(currentUser, PRIVILEGE_CONSTANTS.EDIT_MEDICATION_TASKS)
     ) {
@@ -343,7 +337,7 @@ const Treatments = (props) => {
       const isButtonDisabled =
         isAddToDrugChartDisabled ||
         moment().valueOf() <= drugOrder.effectiveStartDate ||
-        (!isOrderDispensed && addDispensedMedicationToDrugChart) ||
+        isDispensePending ||
         isPRNDisabled ||
         isMedicationCompleted;
       return {
@@ -457,8 +451,7 @@ const Treatments = (props) => {
             );
           } else if (drugOrderObject.drugOrderSchedule != null) {
             showStopDrugChartLink =
-              !!drugOrderObject.drugOrderSchedule
-                .medicationAdministrationStarted;
+              !!drugOrderObject.drugOrderSchedule.medicationAdministrationStarted;
             showEditDrugChartLink = !showStopDrugChartLink;
           } else {
             showEditDrugChartLink = false;
@@ -468,6 +461,14 @@ const Treatments = (props) => {
           const isVariableDose = isVariableDoseOrder(
             drugOrder.dosingInstructionType
           );
+          const isOrderDispensed =
+            drugOrderObject.drugOrderAttributes != null &&
+            drugOrderObject.drugOrderAttributes.some(
+              (attribute) =>
+                attribute.name === "Dispensed" && attribute.value === "true"
+            );
+          const isDispensePending =
+            !isOrderDispensed && addDispensedMedicationToDrugChart;
           const stageSchedules = isVariableDose
             ? drugOrderObject.drugOrderSchedule?.stageSchedules || []
             : [];
@@ -478,7 +479,7 @@ const Treatments = (props) => {
               showStopDrugChartLink,
               drugOrder,
               drugOrderObject.drugOrderSchedule,
-              drugOrderObject.drugOrderAttributes,
+              isDispensePending,
               drugOrderObject
             );
           const hasScheduleEditPrivilege = isUserPrivileged(
@@ -500,6 +501,7 @@ const Treatments = (props) => {
           const addToDrugChartEnabled = isVariableDose
             ? !drugOrder.dateStopped &&
               !isAddToDrugChartDisabled &&
+              !isDispensePending &&
               hasScheduleEditPrivilege &&
               getActiveStageIndex(
                 drugOrderObject.fhirDosages || [],
@@ -604,6 +606,7 @@ const Treatments = (props) => {
               effectiveStartDate: drugOrder.effectiveStartDate,
               stageSchedules,
               isAddToDrugChartDisabled,
+              isDispensePending,
               isReadMode,
               hasScheduleEditPrivilege: isUserPrivileged(
                 currentUser,
@@ -653,6 +656,7 @@ const Treatments = (props) => {
         stageSchedules: treatment.additionalData.stageSchedules,
         isAddToDrugChartDisabled:
           treatment.additionalData.isAddToDrugChartDisabled,
+        isDispensePending: treatment.additionalData.isDispensePending,
         isReadMode: treatment.additionalData.isReadMode,
         hasScheduleEditPrivilege:
           treatment.additionalData.hasScheduleEditPrivilege,
