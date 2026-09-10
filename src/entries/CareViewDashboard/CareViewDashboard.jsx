@@ -64,8 +64,6 @@ const CareViewDashboard = (props) => {
   const getIpdConfig = async () => {
     const configData = await getDashboardConfig();
     let config = configData.data || {};
-    const shiftDetails = await getShiftDetailsFromGlobalProperty();
-    config.shiftDetails = shiftDetails;
     config.config = config.config || {};
     config.config.enableFormDraftFeature = await getFormDraftFeatureEnabled();
     setIpdConfig(config);
