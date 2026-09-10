@@ -518,6 +518,45 @@ describe("stage button behaviour", () => {
     );
   });
 
+  it("shows Add to Drug Chart button as disabled when isDispensePending is true", () => {
+    MockDate.set(new Date("2026-04-25").getTime());
+    render(
+      <VariableDoseStagesTable
+        fhirDosages={noLoadingDoseFhirDosages}
+        effectiveStartDate={effectiveStartDate}
+        {...defaultStageProps}
+        isDispensePending={true}
+        stageSchedules={[]}
+      />
+    );
+
+    const addLinks = screen.getAllByText("Add to Drug Chart");
+    expect(addLinks).toHaveLength(2);
+    addLinks.forEach((link) =>
+      expect(link).toHaveAttribute("aria-disabled", "true")
+    );
+  });
+
+  it("shows Add to Drug Chart button as enabled when isDispensePending is false", () => {
+    MockDate.set(new Date("2026-04-25").getTime());
+    render(
+      <VariableDoseStagesTable
+        fhirDosages={noLoadingDoseFhirDosages}
+        effectiveStartDate={effectiveStartDate}
+        {...defaultStageProps}
+        isDispensePending={false}
+        stageSchedules={[]}
+      />
+    );
+
+    const addLinks = screen.getAllByText("Add to Drug Chart");
+    expect(addLinks).toHaveLength(2);
+    const enabledLinks = addLinks.filter(
+      (link) => link.getAttribute("aria-disabled") !== "true"
+    );
+    expect(enabledLinks).toHaveLength(1);
+  });
+
   it("does not call onAddToDrugChart when a disabled Add to Drug Chart link is clicked", () => {
     MockDate.set(new Date("2026-04-25").getTime());
     const onAddToDrugChart = jest.fn();

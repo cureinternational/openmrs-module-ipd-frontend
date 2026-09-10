@@ -13,6 +13,7 @@ const ExpandableRowData = (props) => {
         effectiveStartDate={expandTreatmentData.effectiveStartDate}
         stageSchedules={expandTreatmentData.stageSchedules || []}
         isAddToDrugChartDisabled={expandTreatmentData.isAddToDrugChartDisabled}
+        isDispensePending={expandTreatmentData.isDispensePending}
         isReadMode={expandTreatmentData.isReadMode}
         hasScheduleEditPrivilege={expandTreatmentData.hasScheduleEditPrivilege}
         onAddToDrugChart={expandTreatmentData.onAddToDrugChart}

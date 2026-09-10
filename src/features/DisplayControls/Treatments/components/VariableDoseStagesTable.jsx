@@ -32,6 +32,7 @@ const VariableDoseStagesTable = ({
   onStopDrugChart,
   stageSchedules,
   isAddToDrugChartDisabled,
+  isDispensePending,
   isReadMode,
   hasScheduleEditPrivilege,
   dateStopped,
@@ -48,7 +49,7 @@ const VariableDoseStagesTable = ({
     startDates
   );
   const isButtonDisabled =
-    !hasScheduleEditPrivilege || isAddToDrugChartDisabled;
+    !hasScheduleEditPrivilege || isAddToDrugChartDisabled || isDispensePending;
 
   return (
     <div className="vdp-section">
@@ -255,6 +256,7 @@ VariableDoseStagesTable.propTypes = {
   onStopDrugChart: PropTypes.func,
   stageSchedules: PropTypes.array,
   isAddToDrugChartDisabled: PropTypes.bool,
+  isDispensePending: PropTypes.bool,
   isReadMode: PropTypes.bool,
   hasScheduleEditPrivilege: PropTypes.bool,
   dateStopped: PropTypes.bool,
