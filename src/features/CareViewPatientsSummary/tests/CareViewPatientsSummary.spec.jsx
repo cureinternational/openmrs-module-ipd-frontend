@@ -54,7 +54,7 @@ jest.mock(
       fetchAcknowledgedObservationUuids: (...args) =>
         mockFetchAcknowledgedObsUuids(...args),
       filterPreviousShiftInstructions: (instructions, shiftStartTime) => {
-        return instructions.filter((instr) => instr.encounterDateTime < shiftStartTime);
+        return instructions.filter((instr) => instr.observationDateTime < shiftStartTime);
       },
     };
   }
@@ -739,8 +739,8 @@ describe("CareViewPatientsSummary", () => {
         {
           visitUuid: visitUuid1,
           observations: [
-            { uuid: "obs-prev", encounterDateTime: previousShiftTime },
-            { uuid: "obs-curr", encounterDateTime: 1713270000000 },
+            { uuid: "obs-prev", observationDateTime: previousShiftTime },
+            { uuid: "obs-curr", observationDateTime: 1713270000000 },
           ],
         },
       ]);
@@ -749,12 +749,12 @@ describe("CareViewPatientsSummary", () => {
         {
           observationUuid: "obs-prev",
           instruction: "NPO",
-          encounterDateTime: previousShiftTime,
+          observationDateTime: previousShiftTime,
         },
         {
           observationUuid: "obs-curr",
           instruction: "Monitor",
-          encounterDateTime: 1713270000000,
+          observationDateTime: 1713270000000,
         },
       ]);
 
@@ -786,8 +786,8 @@ describe("CareViewPatientsSummary", () => {
         {
           visitUuid: visitUuid1,
           observations: [
-            { uuid: "obs-curr-1", encounterDateTime: 1713270000000 },
-            { uuid: "obs-curr-2", encounterDateTime: 1713280000000 },
+            { uuid: "obs-curr-1", observationDateTime: 1713270000000 },
+            { uuid: "obs-curr-2", observationDateTime: 1713280000000 },
           ],
         },
       ]);
@@ -796,12 +796,12 @@ describe("CareViewPatientsSummary", () => {
         {
           observationUuid: "obs-curr-1",
           instruction: "Monitor",
-          encounterDateTime: 1713270000000,
+          observationDateTime: 1713270000000,
         },
         {
           observationUuid: "obs-curr-2",
           instruction: "Check vitals",
-          encounterDateTime: 1713280000000,
+          observationDateTime: 1713280000000,
         },
       ]);
 
@@ -836,9 +836,9 @@ describe("CareViewPatientsSummary", () => {
         {
           visitUuid: visitUuid1,
           observations: [
-            { uuid: "obs-prev-1", encounterDateTime: previousShiftTime },
-            { uuid: "obs-prev-2", encounterDateTime: previousShiftTime + 3600000 },
-            { uuid: "obs-curr", encounterDateTime: 1713270000000 },
+            { uuid: "obs-prev-1", observationDateTime: previousShiftTime },
+            { uuid: "obs-prev-2", observationDateTime: previousShiftTime + 3600000 },
+            { uuid: "obs-curr", observationDateTime: 1713270000000 },
           ],
         },
       ]);
@@ -847,17 +847,17 @@ describe("CareViewPatientsSummary", () => {
         {
           observationUuid: "obs-prev-1",
           instruction: "NPO",
-          encounterDateTime: previousShiftTime,
+          observationDateTime: previousShiftTime,
         },
         {
           observationUuid: "obs-prev-2",
           instruction: "Bed rest",
-          encounterDateTime: previousShiftTime + 3600000,
+          observationDateTime: previousShiftTime + 3600000,
         },
         {
           observationUuid: "obs-curr",
           instruction: "Monitor",
-          encounterDateTime: 1713270000000,
+          observationDateTime: 1713270000000,
         },
       ]);
 
@@ -895,15 +895,15 @@ describe("CareViewPatientsSummary", () => {
         {
           visitUuid: visitUuid1,
           observations: [
-            { uuid: "obs-p1-prev", encounterDateTime: previousShiftTime },
+            { uuid: "obs-p1-prev", observationDateTime: previousShiftTime },
           ],
         },
         {
           visitUuid: visitUuid2,
           observations: [
-            { uuid: "obs-p2-prev-1", encounterDateTime: previousShiftTime },
-            { uuid: "obs-p2-prev-2", encounterDateTime: previousShiftTime + 3600000 },
-            { uuid: "obs-p2-prev-3", encounterDateTime: previousShiftTime + 7200000 },
+            { uuid: "obs-p2-prev-1", observationDateTime: previousShiftTime },
+            { uuid: "obs-p2-prev-2", observationDateTime: previousShiftTime + 3600000 },
+            { uuid: "obs-p2-prev-3", observationDateTime: previousShiftTime + 7200000 },
           ],
         },
       ]);
@@ -913,24 +913,24 @@ describe("CareViewPatientsSummary", () => {
           {
             observationUuid: "obs-p1-prev",
             instruction: "NPO",
-            encounterDateTime: previousShiftTime,
+            observationDateTime: previousShiftTime,
           },
         ])
         .mockReturnValueOnce([
           {
             observationUuid: "obs-p2-prev-1",
             instruction: "NPO",
-            encounterDateTime: previousShiftTime,
+            observationDateTime: previousShiftTime,
           },
           {
             observationUuid: "obs-p2-prev-2",
             instruction: "Bed rest",
-            encounterDateTime: previousShiftTime + 3600000,
+            observationDateTime: previousShiftTime + 3600000,
           },
           {
             observationUuid: "obs-p2-prev-3",
             instruction: "Monitor",
-            encounterDateTime: previousShiftTime + 7200000,
+            observationDateTime: previousShiftTime + 7200000,
           },
         ]);
 
@@ -967,13 +967,13 @@ describe("CareViewPatientsSummary", () => {
         {
           visitUuid: visitUuid1,
           observations: [
-            { uuid: "obs-p1-prev", encounterDateTime: previousShiftTime },
+            { uuid: "obs-p1-prev", observationDateTime: previousShiftTime },
           ],
         },
         {
           visitUuid: visitUuid2,
           observations: [
-            { uuid: "obs-p2-curr", encounterDateTime: 1713270000000 },
+            { uuid: "obs-p2-curr", observationDateTime: 1713270000000 },
           ],
         },
       ]);
@@ -983,14 +983,14 @@ describe("CareViewPatientsSummary", () => {
           {
             observationUuid: "obs-p1-prev",
             instruction: "NPO",
-            encounterDateTime: previousShiftTime,
+            observationDateTime: previousShiftTime,
           },
         ])
         .mockReturnValueOnce([
           {
             observationUuid: "obs-p2-curr",
             instruction: "Monitor",
-            encounterDateTime: 1713270000000,
+            observationDateTime: 1713270000000,
           },
         ]);
 
