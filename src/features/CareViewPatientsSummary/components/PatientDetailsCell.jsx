@@ -30,7 +30,8 @@ export const PatientDetailsCell = ({
   isCareInstructionsLoading,
 }) => {
   const careInstructionsCount = unacknowledgedCareInstructions?.length || 0;
-  const previousShiftCareInstructionsCount = previousShiftCareInstructions?.length || 0;
+  const previousShiftCareInstructionsCount =
+    previousShiftCareInstructions?.length || 0;
   const { person, uuid } = patientDetails;
   const {
     ipdConfig,
@@ -163,7 +164,7 @@ export const PatientDetailsCell = ({
                 )}
                 {isCareInstructionsLoading && (
                   <div data-testid="care-instructions-loading">
-                    <SkeletonText paragraph lineCount={1}/>
+                    <SkeletonText paragraph lineCount={1} />
                   </div>
                 )}
                 {!isCareInstructionsLoading && careInstructionsCount > 0 && (
@@ -194,10 +195,11 @@ export const PatientDetailsCell = ({
                         className="care-instructions-previous-shift"
                         data-testid="previous-shift-care-instructions-notification"
                       >
-
                         <FormattedMessage
                           id={"PREVIOUS_SHIFT_CARE_INSTRUCTIONS"}
-                          defaultMessage={"(Includes {count} from Previous Shift)"}
+                          defaultMessage={
+                            "(Includes {count} from Previous Shift)"
+                          }
                           values={{ count: previousShiftCareInstructionsCount }}
                         />
                       </div>
@@ -265,6 +267,7 @@ PatientDetailsCell.propTypes = {
   patientDetails: propTypes.shape({
     person: propTypes.object.isRequired,
     uuid: propTypes.string.isRequired,
+    display: propTypes.string,
   }).isRequired,
   bedDetails: propTypes.object.isRequired,
   careTeamDetails: propTypes.object.isRequired,
