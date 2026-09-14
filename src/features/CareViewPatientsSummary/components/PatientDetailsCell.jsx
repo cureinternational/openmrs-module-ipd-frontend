@@ -7,7 +7,7 @@ import {
   ResultNew20,
   WarningAlt20,
 } from "@carbon/icons-react";
-import { Link } from "carbon-components-react";
+import { Link, SkeletonText } from "carbon-components-react";
 import { FormattedMessage, useIntl } from "react-intl";
 import propTypes from "prop-types";
 import { CareViewContext } from "../../../context/CareViewContext";
@@ -27,6 +27,7 @@ export const PatientDetailsCell = ({
   previousShiftCareInstructions,
   visitDetails,
   previousShiftPendingTasks,
+  isCareInstructionsLoading,
 }) => {
   const careInstructionsCount = unacknowledgedCareInstructions?.length || 0;
   const previousShiftCareInstructionsCount = previousShiftCareInstructions?.length || 0;
@@ -126,7 +127,9 @@ export const PatientDetailsCell = ({
           <span>
             {getAgeInYearsMonthsDays(person.birthdate, new Date(), intl)}
           </span>
-          {(newTreatments > 0 || careInstructionsCount > 0) && (
+          {(newTreatments > 0 ||
+            careInstructionsCount > 0 ||
+            isCareInstructionsLoading) && (
             <div
               className="treatments-notification"
               data-testid="new-notifications"
@@ -158,7 +161,12 @@ export const PatientDetailsCell = ({
                     </Link>
                   </div>
                 )}
-                {careInstructionsCount > 0 && (
+                {isCareInstructionsLoading && (
+                  <div data-testid="care-instructions-loading">
+                    <SkeletonText paragraph lineCount={1}/>
+                  </div>
+                )}
+                {!isCareInstructionsLoading && careInstructionsCount > 0 && (
                   <div data-testid="new-care-instructions-notification">
                     <div>
                       &bull; {careInstructionsCount + " "}
@@ -266,4 +274,5 @@ PatientDetailsCell.propTypes = {
   unacknowledgedCareInstructions: propTypes.array.isRequired,
   previousShiftCareInstructions: propTypes.array.isRequired,
   previousShiftPendingTasks: propTypes.array.isRequired,
+  isCareInstructionsLoading: propTypes.bool,
 };
