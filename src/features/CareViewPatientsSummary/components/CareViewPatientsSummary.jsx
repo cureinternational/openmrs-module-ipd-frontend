@@ -35,6 +35,7 @@ export const CareViewPatientsSummary = ({
   ] = useState([]);
   const [careInstructionsMap, setCareInstructionsMap] = useState({});
   const [previousShiftCareInstructionsMap, setPreviousShiftCareInstructionsMap] = useState({});
+  const [isCareInstructionsLoading, setIsCareInstructionsLoading] = useState(true);
   const {
     careViewConfig,
     ipdConfig,
@@ -109,64 +110,72 @@ export const CareViewPatientsSummary = ({
       (section) => section.componentKey === "CI"
     );
     const formConcepts = ciSection?.config?.formConcepts ?? [];
-    if (formConcepts.length === 0) return;
+    if (formConcepts.length === 0) {
+      setIsCareInstructionsLoading(false);
+      return;
+    }
 
     const concepts = [
       ...new Set(formConcepts.flatMap((formConcept) => formConcept.concepts)),
     ];
     const visitUuids = patients.map((patient) => patient.visitDetails.uuid);
 
-    const batchResult = await fetchBatchObservations(visitUuids, concepts);
+    try {
+      const batchResult = await fetchBatchObservations(visitUuids, concepts);
 
-    const instructionsMap = {};
-    batchResult.forEach(({ visitUuid, observations }) => {
-      const instructions = mapObservationsToInstructions(
-        observations,
-        formConcepts
-      );
-      instructionsMap[visitUuid] = instructions;
-    });
+      const instructionsMap = {};
+      batchResult.forEach(({ visitUuid, observations }) => {
+        const instructions = mapObservationsToInstructions(
+          observations,
+          formConcepts
+        );
+        instructionsMap[visitUuid] = instructions;
+      });
 
-    const allObsUuids = [
-      ...Object.values(instructionsMap).reduce((obsUuidSet, instructions) => {
-        instructions.forEach((instruction) => {
-          if (instruction.observationUuid)
-            obsUuidSet.add(instruction.observationUuid);
+      const allObsUuids = [
+        ...Object.values(instructionsMap).reduce((obsUuidSet, instructions) => {
+          instructions.forEach((instruction) => {
+            if (instruction.observationUuid)
+              obsUuidSet.add(instruction.observationUuid);
+          });
+          return obsUuidSet;
+        }, new Set()),
+      ];
+
+      if (enableNurseAcknowledgement && allObsUuids.length > 0) {
+        const acknowledgedUuids = await fetchAcknowledgedObservationUuids(
+          allObsUuids
+        );
+        Object.keys(instructionsMap).forEach((visitUuid) => {
+          instructionsMap[visitUuid] = instructionsMap[visitUuid].filter(
+            (instruction) => !acknowledgedUuids.has(instruction.observationUuid)
+          );
         });
-        return obsUuidSet;
-      }, new Set()),
-    ];
+      }
 
-    if (enableNurseAcknowledgement && allObsUuids.length > 0) {
-      const acknowledgedUuids = await fetchAcknowledgedObservationUuids(
-        allObsUuids
-      );
-      Object.keys(instructionsMap).forEach((visitUuid) => {
-        instructionsMap[visitUuid] = instructionsMap[visitUuid].filter(
-          (instruction) => !acknowledgedUuids.has(instruction.observationUuid)
-        );
-      });
+      // Calculate previous-shift care instructions
+      if (shiftDetails && Object.keys(shiftDetails).length > 0) {
+        const [currentShiftStartTime] = setCurrentShiftTimes(shiftDetails);
+        const previousShiftInstructionsMap = {};
+        Object.keys(instructionsMap).forEach((visitUuid) => {
+          const previousShiftInstructions = filterPreviousShiftInstructions(
+            instructionsMap[visitUuid],
+            currentShiftStartTime
+          );
+          previousShiftInstructionsMap[visitUuid] = previousShiftInstructions;
+        });
+        setPreviousShiftCareInstructionsMap(previousShiftInstructionsMap);
+      }
+
+      setCareInstructionsMap(instructionsMap);
+    } finally {
+      setIsCareInstructionsLoading(false);
     }
-
-    // Calculate previous-shift care instructions
-    if (shiftDetails && Object.keys(shiftDetails).length > 0) {
-      const [currentShiftStartTime] = setCurrentShiftTimes(shiftDetails);
-      const previousShiftInstructionsMap = {};
-      Object.keys(instructionsMap).forEach((visitUuid) => {
-        const previousShiftInstructions = filterPreviousShiftInstructions(
-          instructionsMap[visitUuid],
-          currentShiftStartTime
-        );
-        previousShiftInstructionsMap[visitUuid] = previousShiftInstructions;
-      });
-      setPreviousShiftCareInstructionsMap(previousShiftInstructionsMap);
-    }
-
-    setCareInstructionsMap(instructionsMap);
   };
 
   useEffect(() => {
     if (patientsSummary.length > 0) {
+      setIsCareInstructionsLoading(true);
       fetchPreviousShiftTasks(patientsSummary);
       fetchSlots(patientsSummary);
       fetchTasks(patientsSummary);
@@ -225,6 +234,7 @@ export const CareViewPatientsSummary = ({
                   }
                   visitDetails={visitDetails}
                   previousShiftPendingTasks={tasks}
+                  isCareInstructionsLoading={isCareInstructionsLoading}
                 />
                 <SlotDetailsCell
                   slotDetails={slotDetails}
