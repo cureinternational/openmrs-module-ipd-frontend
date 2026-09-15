@@ -666,4 +666,94 @@ describe("PatientDetailsCell", () => {
       expect(queryByTestId("pending-tasks-notification")).toBeTruthy();
     });
   });
+
+  it("should show care instructions skeleton loader when isCareInstructionsLoading is true, even with no new medications", async () => {
+    const { queryByTestId } = render(
+      <IntlProvider locale="en">
+        <CareViewContext.Provider value={mockContext}>
+          <PatientDetailsCell
+            patientDetails={mockPatientsList.admittedPatients[0].patientDetails}
+            bedDetails={mockPatientsList.admittedPatients[0].bedDetails}
+            careTeamDetails={mockPatientsList.admittedPatients[0].careTeam}
+            newTreatments={0}
+            unacknowledgedCareInstructions={[]}
+            visitDetails={{ uuid: "sderf908-3f10-11e4-adec-0800271c1b72" }}
+            navHourEpoch={{
+              startHourEpoch: 1672575400,
+              endHourEpoch: 1710511200,
+            }}
+            previousShiftPendingTasks={[]}
+            isCareInstructionsLoading={true}
+          />
+        </CareViewContext.Provider>
+      </IntlProvider>
+    );
+
+    await waitFor(() => {
+      expect(queryByTestId("new-notifications")).toBeTruthy();
+      expect(queryByTestId("care-instructions-loading")).toBeTruthy();
+      expect(queryByTestId("new-medications-notification")).toBeFalsy();
+      expect(queryByTestId("new-care-instructions-notification")).toBeFalsy();
+    });
+  });
+
+  it("should show medications notification alongside care instructions skeleton loader when isCareInstructionsLoading is true", async () => {
+    const { queryByTestId, queryByText } = render(
+      <IntlProvider locale="en">
+        <CareViewContext.Provider value={mockContext}>
+          <PatientDetailsCell
+            patientDetails={mockPatientsList.admittedPatients[0].patientDetails}
+            bedDetails={mockPatientsList.admittedPatients[0].bedDetails}
+            careTeamDetails={mockPatientsList.admittedPatients[0].careTeam}
+            newTreatments={2}
+            unacknowledgedCareInstructions={[]}
+            visitDetails={{ uuid: "sderf908-3f10-11e4-adec-0800271c1b72" }}
+            navHourEpoch={{
+              startHourEpoch: 1672575400,
+              endHourEpoch: 1710511200,
+            }}
+            previousShiftPendingTasks={[]}
+            isCareInstructionsLoading={true}
+          />
+        </CareViewContext.Provider>
+      </IntlProvider>
+    );
+
+    await waitFor(() => {
+      expect(queryByTestId("new-medications-notification")).toBeTruthy();
+      expect(queryByText(/2 New Medication\(s\)/)).toBeTruthy();
+      expect(queryByTestId("care-instructions-loading")).toBeTruthy();
+      expect(queryByTestId("new-care-instructions-notification")).toBeFalsy();
+    });
+  });
+
+  it("should not show care instructions skeleton loader once isCareInstructionsLoading is false", async () => {
+    const { queryByTestId } = render(
+      <IntlProvider locale="en">
+        <CareViewContext.Provider value={mockContext}>
+          <PatientDetailsCell
+            patientDetails={mockPatientsList.admittedPatients[0].patientDetails}
+            bedDetails={mockPatientsList.admittedPatients[0].bedDetails}
+            careTeamDetails={mockPatientsList.admittedPatients[0].careTeam}
+            newTreatments={0}
+            unacknowledgedCareInstructions={[
+              { instruction: "Do X" },
+            ]}
+            visitDetails={{ uuid: "sderf908-3f10-11e4-adec-0800271c1b72" }}
+            navHourEpoch={{
+              startHourEpoch: 1672575400,
+              endHourEpoch: 1710511200,
+            }}
+            previousShiftPendingTasks={[]}
+            isCareInstructionsLoading={false}
+          />
+        </CareViewContext.Provider>
+      </IntlProvider>
+    );
+
+    await waitFor(() => {
+      expect(queryByTestId("care-instructions-loading")).toBeFalsy();
+      expect(queryByTestId("new-care-instructions-notification")).toBeTruthy();
+    });
+  });
 });
