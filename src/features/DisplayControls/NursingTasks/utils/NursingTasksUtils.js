@@ -318,18 +318,18 @@ const timeToEpoch = (time) => {
 };
 
 export const isTimeWithinAdministeredWindow = (
-  enteredTime,
-  scheduledTime,
+  taskTime,
+  scheduledStartTime,
   nursingTasks
 ) => {
   const enteredTimeInEpochSeconds =
-    typeof enteredTime === "number" ? enteredTime : timeToEpoch(enteredTime);
-  const scheduledTimeInEpochSeconds =
-    typeof scheduledTime === "number"
-      ? scheduledTime
-      : timeToEpoch(scheduledTime);
+    typeof taskTime === "number" ? taskTime : timeToEpoch(taskTime);
+  const scheduledStartTimeInEpochSeconds =
+    typeof scheduledStartTime === "number"
+      ? scheduledStartTime
+      : timeToEpoch(scheduledStartTime);
   const timeWithinWindowInEpochSeconds =
-    scheduledTimeInEpochSeconds +
+    scheduledStartTimeInEpochSeconds +
     nursingTasks.timeInMinutesFromStartTimeToShowAdministeredTaskAsLate * 60;
   return enteredTimeInEpochSeconds <= timeWithinWindowInEpochSeconds;
 };

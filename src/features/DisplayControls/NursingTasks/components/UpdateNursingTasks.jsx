@@ -292,12 +292,16 @@ const UpdateNursingTasks = (props) => {
   };
 
   const handleTimeChange = (time, id) => {
-    const enteredTime = enable24HourTime
-      ? moment(time, timeFormatFor24Hr)
-      : moment(time, timeFormatFor12Hr);
+    const taskTime = Number(
+      formatTime(
+        time,
+        enable24HourTime ? timeFormatFor24Hr : timeFormatFor12Hr,
+        "X"
+      )
+    );
     if (
       !isTimeWithinAdministeredWindow(
-        enteredTime.unix(),
+        taskTime,
         tasks[id].startTimeInEpochSeconds,
         nursingTasks
       )
