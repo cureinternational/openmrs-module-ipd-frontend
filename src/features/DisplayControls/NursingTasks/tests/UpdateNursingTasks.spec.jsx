@@ -294,8 +294,6 @@ describe("UpdateNursingTasksSlider", function () {
   });
 
   it("should require notes when a dose scheduled the previous day is administered after midnight", function () {
-    // Scheduled 2024-01-01 22:30 UTC; administered 2024-01-02 18:53 UTC -
-    // ~20 hours late, crossing a midnight boundary.
     MockDate.set("2024-01-02 18:53");
     const { container } = render(
       <IntlProvider locale="en">

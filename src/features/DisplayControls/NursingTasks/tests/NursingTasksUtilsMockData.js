@@ -1105,8 +1105,6 @@ export const mockMedicationTasks = [
     dosage: "30mg",
     uuid: "d9ae1992-63ac-4e05-8dfb-13f021102ec6",
     orderId: "a526538e-67e0-482f-afdc-939e6d7c75c7",
-    // 2024-01-01 08:00:00 UTC, same day as the MockDate used in the
-    // window-boundary tests below, so the "4 hours late" scenario is real.
     startTimeInEpochSeconds: 1704096000,
     startTime: "08:00",
   },
@@ -1136,8 +1134,6 @@ export const mockMedicationTaskScheduledPreviousDay = [
     dosage: "30mg",
     uuid: "d9ae1992-63ac-4e05-8dfb-13f021102ec7",
     orderId: "a526538e-67e0-482f-afdc-939e6d7c75c7",
-    // 2024-01-01 22:30:00 UTC - the previous calendar day relative to the
-    // "administered" time used in the cross-midnight test below.
     startTimeInEpochSeconds: 1704148200,
     startTime: "22:30",
   },
@@ -1276,8 +1272,6 @@ export const mockNonMedicationTileData = [
   {
     drugName: "Non-Medication task",
     uuid: "72af0cfa-be74-42a8-b650-45f6978314dd",
-    // 2024-01-01 16:38:00 UTC, same day as the MockDate used in the
-    // window-boundary test below, so the "52 minutes late" scenario is real.
     startTimeInEpochSeconds: 1704127080,
     startTime: "16:38",
     isDisabled: false,
