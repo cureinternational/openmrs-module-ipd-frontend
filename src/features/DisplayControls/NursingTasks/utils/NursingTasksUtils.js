@@ -322,9 +322,14 @@ export const isTimeWithinAdministeredWindow = (
   scheduledStartTime,
   nursingTasks
 ) => {
-  const enteredTimeInEpochSeconds = timeToEpoch(taskTime);
+  const enteredTimeInEpochSeconds =
+    typeof taskTime === "number" ? taskTime : timeToEpoch(taskTime);
+  const scheduledStartTimeInEpochSeconds =
+    typeof scheduledStartTime === "number"
+      ? scheduledStartTime
+      : timeToEpoch(scheduledStartTime);
   const timeWithinWindowInEpochSeconds =
-    timeToEpoch(scheduledStartTime) +
+    scheduledStartTimeInEpochSeconds +
     nursingTasks.timeInMinutesFromStartTimeToShowAdministeredTaskAsLate * 60;
   return enteredTimeInEpochSeconds <= timeWithinWindowInEpochSeconds;
 };

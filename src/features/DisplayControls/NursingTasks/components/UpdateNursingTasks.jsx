@@ -254,6 +254,7 @@ const UpdateNursingTasks = (props) => {
             dosage: medicationTask.dosage,
             route: medicationTask.drugRoute,
             startTime: medicationTask.startTime,
+            startTimeInEpochSeconds: medicationTask.startTimeInEpochSeconds,
             dosingInstructions: medicationTask.dosingInstructions,
             isSelected: false,
             actualTime: null,
@@ -291,13 +292,17 @@ const UpdateNursingTasks = (props) => {
   };
 
   const handleTimeChange = (time, id) => {
-    const taskTime = enable24HourTime
-      ? formatTime(time, timeFormatFor24Hr, timeFormatFor24Hr)
-      : formatTime(time, timeFormatFor12Hr, timeFormatFor24Hr);
+    const taskTime = Number(
+      formatTime(
+        time,
+        enable24HourTime ? timeFormatFor24Hr : timeFormatFor12Hr,
+        "X"
+      )
+    );
     if (
       !isTimeWithinAdministeredWindow(
         taskTime,
-        tasks[id].startTime,
+        tasks[id].startTimeInEpochSeconds,
         nursingTasks
       )
     ) {
@@ -333,12 +338,13 @@ const UpdateNursingTasks = (props) => {
   };
 
   const handleToggle = (checked, id) => {
-    const time = enable24HourTime
-      ? moment().format(timeFormatFor24Hr)
-      : moment().format(timeFormatFor12Hr);
     if (
       checked &&
-      !isTimeWithinAdministeredWindow(time, tasks[id].startTime, nursingTasks)
+      !isTimeWithinAdministeredWindow(
+        moment().unix(),
+        tasks[id].startTimeInEpochSeconds,
+        nursingTasks
+      )
     ) {
       updateTasks({
         ...tasks,

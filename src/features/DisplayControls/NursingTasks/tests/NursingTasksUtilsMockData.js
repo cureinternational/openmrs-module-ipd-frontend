@@ -1105,7 +1105,7 @@ export const mockMedicationTasks = [
     dosage: "30mg",
     uuid: "d9ae1992-63ac-4e05-8dfb-13f021102ec6",
     orderId: "a526538e-67e0-482f-afdc-939e6d7c75c7",
-    startTimeInEpochSeconds: 1700620200,
+    startTimeInEpochSeconds: 1704096000,
     startTime: "08:00",
   },
   {
@@ -1118,8 +1118,24 @@ export const mockMedicationTasks = [
     dosage: "25mg",
     orderId: "3d7305c3-e70d-49f4-a3cf-942d4bbc2485",
     uuid: "b9904678-eb07-4eb0-8d03-53fcaa1d20d0",
-    startTimeInEpochSeconds: 1700620200,
+    startTimeInEpochSeconds: 1704096000,
     startTime: "08:00",
+  },
+];
+
+export const mockMedicationTaskScheduledPreviousDay = [
+  {
+    drugName: "Amoxicillin/Clavulanic Acid 125 mg/31.25 mg/5 mL",
+    drugRoute: "Topical",
+    duration: "4 Day(s)",
+    dosingInstructions: {
+      asNeeded: false,
+    },
+    dosage: "30mg",
+    uuid: "d9ae1992-63ac-4e05-8dfb-13f021102ec7",
+    orderId: "a526538e-67e0-482f-afdc-939e6d7c75c7",
+    startTimeInEpochSeconds: 1704148200,
+    startTime: "22:30",
   },
 ];
 
@@ -1256,7 +1272,7 @@ export const mockNonMedicationTileData = [
   {
     drugName: "Non-Medication task",
     uuid: "72af0cfa-be74-42a8-b650-45f6978314dd",
-    startTimeInEpochSeconds: 1703601000,
+    startTimeInEpochSeconds: 1704127080,
     startTime: "16:38",
     isDisabled: false,
     partOf: null,

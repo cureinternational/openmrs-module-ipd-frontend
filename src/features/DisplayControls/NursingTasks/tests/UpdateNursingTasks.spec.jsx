@@ -3,6 +3,7 @@ import React from "react";
 import UpdateNursingTasks from "../components/UpdateNursingTasks";
 import {
   mockMedicationTasks,
+  mockMedicationTaskScheduledPreviousDay,
   mockPRNMedicationTasks,
   mockNonMedicationTileData,
   mockSystemGeneratedTaskWithMapping,
@@ -290,6 +291,41 @@ describe("UpdateNursingTasksSlider", function () {
       expect(mockSetNotificationStatus).toHaveBeenCalledTimes(1);
       expect(mockUpdateEmergencyTasksSlider).toHaveBeenCalledTimes(1);
     });
+  });
+
+  it("should require notes when a dose scheduled the previous day is administered after midnight", function () {
+    MockDate.set("2024-01-02 18:53");
+    const { container } = render(
+      <IntlProvider locale="en">
+        <IPDContext.Provider
+          value={{
+            config: mockConfig,
+            handleAuditEvent: mockHandleAuditLogEvent,
+            currentUser: mockUserWithAllRequiredPrivileges,
+          }}
+        >
+          <UpdateNursingTasks
+            medicationTasks={mockMedicationTaskScheduledPreviousDay}
+            groupSlotsByOrderId={mockGroupSlotsByOrderId}
+            updateNursingTasksSlider={jest.fn}
+            patientId="test_patient_uuid"
+            providerId="test_provider_uuid"
+            setShowNotification={mockSetShowNotification}
+            setNotificationMessage={mockSetNotificationMessage}
+            setNotificationStatus={mockSetNotificationStatus}
+          />
+        </IPDContext.Provider>
+      </IntlProvider>
+    );
+    const toggleButton = container.querySelectorAll(
+      '[data-testid="done-toggle"]'
+    )[0];
+    fireEvent.click(toggleButton);
+
+    const saveButton = screen.getAllByText("Save")[1];
+    fireEvent.click(saveButton);
+
+    expect(screen.getByText("Please enter notes")).toBeTruthy();
   });
 
   it("should show warning for empty notes when time is updated", function () {
